@@ -10,7 +10,7 @@ from preppy.latest import Prep
 from categoryeval.probestore import ProbeStore
 
 from startingabstract import config
-from startingabstract.input import load_docs
+from startingabstract.docs import load_docs
 from startingabstract.evaluation import update_ba_metrics, update_pp_metrics
 from startingabstract.rnn import RNN
 
@@ -43,7 +43,10 @@ def main(param2val):
     params = Params.from_param2val(param2val)
     print(params)
 
-    train_docs, test_docs = load_docs(params)
+    project_path = param2val['project_path']
+    corpus_path = project_path / 'data' / f'{params.corpus}.txt'
+    train_docs, test_docs = load_docs(corpus_path,
+                                      params.shuffle_docs)
 
     # prepare input
     train_prep = Prep(train_docs,

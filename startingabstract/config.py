@@ -1,18 +1,4 @@
 from pathlib import Path
-import sys
-
-if sys.platform == 'darwin':
-    mnt_point = '/Volumes'
-elif 'linux' == sys.platform:
-    mnt_point = '/media'
-else:
-    raise SystemExit('Ludwig does not support this platform')
-
-
-class RemoteDirs:
-    root = Path(mnt_point) / 'research_data' / 'StartingAbstract'
-    runs = root / 'runs'
-    data = root / 'data'
 
 
 class LocalDirs:
