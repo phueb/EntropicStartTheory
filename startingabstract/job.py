@@ -119,7 +119,7 @@ def main(param2val):
         # eval (metrics must be returned to reuse the same object)
         metrics = update_an_metrics(metrics, model, train_prep, test_words)  # TODO test
         # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
-        metrics = update_ba_metrics(metrics, model, train_prep, probe_store)
+        # metrics = update_ba_metrics(metrics, model, train_prep, probe_store)
 
         # print progress to console
         minutes_elapsed = int(float(time.time() - start_train) / 60)

@@ -74,7 +74,7 @@ def update_an_metrics(metrics, model, train_prep, test_words):
     x = np.expand_dims(np.array([train_prep.store.w2id[w] for w in test_words]), axis=1)
     inputs = torch.cuda.LongTensor(x)
     logits = model(inputs)['logits']
-    predictions_mat_nouns = torch.nn.functional.softmax(logits).detach().cpu().numpy()
+    predictions_mat_nouns = torch.nn.functional.softmax(logits, dim=0).detach().cpu().numpy()
 
     an_nouns = score_abstractness(train_prep, predictions_mat_nouns, test_words)
 
