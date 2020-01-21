@@ -4,14 +4,16 @@ import attr
 import pandas as pd
 import numpy as np
 import torch
+from pathlib import Path
 
 from preppy.latest import Prep
 
 from categoryeval.probestore import ProbeStore
+from svdeval.utils import load_test_words
 
 from startingabstract import config
 from startingabstract.docs import load_docs
-from startingabstract.evaluation import update_ba_metrics, update_pp_metrics
+from startingabstract.evaluation import update_ba_metrics, update_pp_metrics, update_an_metrics
 from startingabstract.rnn import RNN
 
 
@@ -21,6 +23,7 @@ class Params(object):
     shuffle_docs = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
     probes = attr.ib(validator=attr.validators.instance_of(str))
+    test_words = attr.ib(validator=attr.validators.instance_of(str))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
     slide_size = attr.ib(validator=attr.validators.instance_of(int))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
@@ -33,7 +36,7 @@ class Params(object):
     @classmethod
     def from_param2val(cls, param2val):
         kwargs = {k: v for k, v in param2val.items()
-                  if k not in ['job_name', 'param_name']}
+                  if k not in ['job_name', 'param_name', 'save_path', 'project_path']}
         return cls(**kwargs)
 
 
@@ -43,7 +46,7 @@ def main(param2val):
     params = Params.from_param2val(param2val)
     print(params)
 
-    project_path = param2val['project_path']
+    project_path = Path(param2val['project_path'])
     corpus_path = project_path / 'data' / f'{params.corpus}.txt'
     train_docs, test_docs = load_docs(corpus_path,
                                       params.shuffle_docs)
@@ -75,6 +78,10 @@ def main(param2val):
     # probes for evaluation  # TODO allow for multiple probe stores
     probe_store = ProbeStore(params.corpus, params.probes, train_prep.store.w2id)
 
+    # test words for evaluation
+    test_words = load_test_words(params.test_words)
+    test_words.intersection_update(train_prep.store.types)
+
     # model
     model = RNN(
         params.flavor,
@@ -97,6 +104,7 @@ def main(param2val):
         'test_pp': [],
         config.Metrics.ba_o: [],
         config.Metrics.ba_n: [],
+        config.Metrics.an_nouns: [],
     }
 
     # train and eval
@@ -109,7 +117,8 @@ def main(param2val):
             train_mb = train_on_corpus(model, optimizer, criterion, train_prep, data_mb, train_mb, windows_generator)
 
         # eval (metrics must be returned to reuse the same object)
-        metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
+        metrics = update_an_metrics(metrics, model, train_prep, test_words)  # TODO test
+        # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
         metrics = update_ba_metrics(metrics, model, train_prep, probe_store)
 
         # print progress to console
@@ -117,17 +126,21 @@ def main(param2val):
         print(f'completed time-point={timepoint} of {config.Eval.num_evaluations}')
         print(f'minutes elapsed={minutes_elapsed}')
         for k, v in metrics.items():
+            if not v:
+                continue
             print(f'{k: <12}={v[-1]:.2f}')
         print(flush=True)
 
-    # to pandas
-    s1 = pd.Series(metrics[config.Metrics.ba_o], index=train_prep.eval_mbs)
-    s1.name = config.Metrics.ba_o
+    # collect performance in list of pandas series
+    res = []
+    for k, v in metrics.items():
+        if not v:
+            continue
+        s = pd.Series(v, index=train_prep.eval_mbs)
+        s.name = k
+        res.append(s)
 
-    s2 = pd.Series(metrics[config.Metrics.ba_n], index=train_prep.eval_mbs)
-    s2.name = config.Metrics.ba_n
-
-    return [s1, s2]
+    return res
 
 
 def train_on_corpus(model, optimizer, criterion, prep, data_mb, train_mb, windows_generator):

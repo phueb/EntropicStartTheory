@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 from categoryeval.score import calc_score
+from svdeval.score import score_abstractness
 
 from startingabstract import config
 
@@ -60,6 +61,24 @@ def update_ba_metrics(metrics, model, train_prep, probe_store):
 
     metrics[config.Metrics.ba_o].append(calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
     metrics[config.Metrics.ba_n].append(calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+
+    return metrics
+
+
+def update_an_metrics(metrics, model, train_prep, test_words):
+    """
+    calculate abstractness of predictions:
+    how well do predictions conform to those expected for an abstract category of words
+    """
+
+    x = np.expand_dims(np.array([train_prep.store.w2id[w] for w in test_words]), axis=1)
+    inputs = torch.cuda.LongTensor(x)
+    logits = model(inputs)['logits']
+    predictions_mat_nouns = torch.nn.functional.softmax(logits).detach().cpu().numpy()
+
+    an_nouns = score_abstractness(train_prep, predictions_mat_nouns, test_words)
+
+    metrics[config.Metrics.an_nouns].append(an_nouns)
 
     return metrics
 
