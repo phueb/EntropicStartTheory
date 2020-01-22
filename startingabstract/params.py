@@ -3,7 +3,7 @@
 # specify params to submit here
 param2requests = {
     'slide_size': [3],
-    'context_size': [1],
+    'context_size': [1],  # context-size = 1 is only way to decrease "abstractness" over time
 }
 
 param2debug = {

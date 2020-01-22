@@ -16,7 +16,7 @@ class Symbols:
 
 
 class Eval:
-    num_evaluations = 100
+    num_evaluations = 50
 
 
 class Metrics:

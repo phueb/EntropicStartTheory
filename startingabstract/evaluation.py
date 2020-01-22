@@ -75,23 +75,35 @@ def update_an_metrics(metrics, model, train_prep, test_words):
     all_logits = model(inputs)['logits'].detach().cpu().numpy()
 
     nouns_ids = [train_prep.store.w2id[w] for w in test_words]
-    vocab_ids = [train_prep.store.w2id[w] for w in train_prep.store.types]
+    # vocab_ids = [train_prep.store.w2id[w] for w in train_prep.store.types]
     predictions_mat_nouns = softmax(all_logits[nouns_ids])
-    predictions_mat_vocab = softmax(all_logits[vocab_ids])
+    # predictions_mat_vocab = softmax(all_logits[vocab_ids])
     an_nouns, an_nouns_std = score_abstractness(train_prep, predictions_mat_nouns, test_words)
-    an_vocab, an_vocab_std = score_abstractness(train_prep, predictions_mat_vocab, train_prep.store.types, plot_distributions=False)
+    # an_vocab, an_vocab_std = score_abstractness(train_prep, predictions_mat_vocab, train_prep.store.types,
+    #                                             plot_distributions=False)
+
+    # TODO debugging
+    print(predictions_mat_nouns.shape)
+    print(predictions_mat_nouns.mean(axis=0))
+    print(predictions_mat_nouns.std(axis=0))
+    max_ids = np.argsort(predictions_mat_nouns.mean(axis=0))
+    print([train_prep.store.types[i] for i in max_ids[-10:]])
+
+    print(predictions_mat_nouns[0, :].sum())
+    print(predictions_mat_nouns[:, 0].sum())
 
     metrics[config.Metrics.an_nouns].append(an_nouns)
-    metrics[config.Metrics.an_vocab].append(an_vocab)
+    # metrics[config.Metrics.an_vocab].append(an_vocab)
     metrics[config.Metrics.an_nouns_std].append(an_nouns_std)
-    metrics[config.Metrics.an_vocab_std].append(an_vocab_std)
+    # metrics[config.Metrics.an_vocab_std].append(an_vocab_std)
 
     return metrics
 
 
 def softmax(z):
-    z_norm=np.exp(z-np.max(z,axis=0,keepdims=True))
-    return np.divide(z_norm, np.sum(z_norm, axis=0, keepdims=True))
+    a = 1  # should be 1 if rows should sum to 1
+    z_norm=np.exp(z-np.max(z,axis=a, keepdims=True))
+    return np.divide(z_norm, np.sum(z_norm, axis=a, keepdims=True))
 
 
 def make_probe_reps_n(model, probe_store):
