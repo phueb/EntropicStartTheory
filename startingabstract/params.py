@@ -2,14 +2,14 @@
 
 # specify params to submit here
 param2requests = {
-    'reverse': [False, True],
-    'shuffle_docs': [False, True],
+    'slide_size': [3],
+    'context_size': [1],
 }
 
 param2debug = {
-    'context_size': 3,
-    'slide_size': 2,
-    'batch_size': 6,
+    'context_size': 7,
+    'slide_size': 64,
+    'batch_size': 64,
 }
 
 # default params

@@ -38,7 +38,7 @@ def calc_perplexity(model, criterion, prep):
 
 
 def update_pp_metrics(metrics, model, criterion, train_prep, test_prep):
-    if config.Global.debug:
+    if not config.Global.train_pp:
         train_pp = np.nan
         test_pp = calc_perplexity(model, criterion, test_prep)
     else:
@@ -53,13 +53,13 @@ def update_ba_metrics(metrics, model, train_prep, probe_store):
 
     # TODO allow for multiple probe stores (evaluate against multiple category structures)
 
+    # probe_reps_o = make_probe_reps_o(model, probe_store, train_prep)
     probe_reps_n = make_probe_reps_n(model, probe_store)
-    probe_reps_o = make_probe_reps_o(model, probe_store, train_prep)
 
-    probe_sims_o = cosine_similarity(probe_reps_o)
+    # probe_sims_o = cosine_similarity(probe_reps_o)
     probe_sims_n = cosine_similarity(probe_reps_n)
 
-    metrics[config.Metrics.ba_o].append(calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+    # metrics[config.Metrics.ba_o].append(calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
     metrics[config.Metrics.ba_n].append(calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
 
     return metrics
@@ -70,17 +70,28 @@ def update_an_metrics(metrics, model, train_prep, test_words):
     calculate abstractness of predictions:
     how well do predictions conform to those expected for an abstract category of words
     """
-
-    x = np.expand_dims(np.array([train_prep.store.w2id[w] for w in test_words]), axis=1)
+    x = np.expand_dims(np.arange(train_prep.num_types), axis=1)
     inputs = torch.cuda.LongTensor(x)
-    logits = model(inputs)['logits']
-    predictions_mat_nouns = torch.nn.functional.softmax(logits, dim=0).detach().cpu().numpy()
+    all_logits = model(inputs)['logits'].detach().cpu().numpy()
 
-    an_nouns = score_abstractness(train_prep, predictions_mat_nouns, test_words)
+    nouns_ids = [train_prep.store.w2id[w] for w in test_words]
+    vocab_ids = [train_prep.store.w2id[w] for w in train_prep.store.types]
+    predictions_mat_nouns = softmax(all_logits[nouns_ids])
+    predictions_mat_vocab = softmax(all_logits[vocab_ids])
+    an_nouns, an_nouns_std = score_abstractness(train_prep, predictions_mat_nouns, test_words)
+    an_vocab, an_vocab_std = score_abstractness(train_prep, predictions_mat_vocab, train_prep.store.types, plot_distributions=False)
 
     metrics[config.Metrics.an_nouns].append(an_nouns)
+    metrics[config.Metrics.an_vocab].append(an_vocab)
+    metrics[config.Metrics.an_nouns_std].append(an_nouns_std)
+    metrics[config.Metrics.an_vocab_std].append(an_vocab_std)
 
     return metrics
+
+
+def softmax(z):
+    z_norm=np.exp(z-np.max(z,axis=0,keepdims=True))
+    return np.divide(z_norm, np.sum(z_norm, axis=0, keepdims=True))
 
 
 def make_probe_reps_n(model, probe_store):

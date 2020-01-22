@@ -8,7 +8,7 @@ class LocalDirs:
 
 
 class Global:
-    debug = False
+    train_pp = False
 
 
 class Symbols:
@@ -16,14 +16,16 @@ class Symbols:
 
 
 class Eval:
-    num_evaluations = 10
+    num_evaluations = 100
 
 
 class Metrics:
     ba_o = 'ba_ordered'
     ba_n = 'ba_none'
     an_nouns = 'an_nouns'  # abstractness of noun representation
-    an_verbs = 'an_verbs'  # abstractness of verb representation
+    an_nouns_std = 'an_nouns_std'
+    an_vocab = 'an_vocab'  # abstractness of all words - just unigram frequency
+    an_vocab_std = 'an_vocab_std'
 
 
 class Figs:

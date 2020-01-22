@@ -75,6 +75,9 @@ def main(param2val):
                      )
     windows_generator = train_prep.gen_windows()  # has to be created once
 
+    gen_size = len([1 for i in train_prep.gen_windows()])
+    print(f'Number of total batches={gen_size}')
+
     # probes for evaluation  # TODO allow for multiple probe stores
     probe_store = ProbeStore(params.corpus, params.probes, train_prep.store.w2id)
 
@@ -105,6 +108,9 @@ def main(param2val):
         config.Metrics.ba_o: [],
         config.Metrics.ba_n: [],
         config.Metrics.an_nouns: [],
+        config.Metrics.an_nouns_std: [],
+        config.Metrics.an_vocab: [],
+        config.Metrics.an_vocab_std: [],
     }
 
     # train and eval
