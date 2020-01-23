@@ -11,15 +11,15 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local results or None if using results form Ludwig
-FILE_NAME: str = 'an_nouns.csv'                   # contains trajectory of some performance measure
+FILE_NAME: str = 'dp_nouns.csv'                   # contains trajectory of some performance measure
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
-PALETTE_IDS: Optional[List[int]] = [0]   # re-assign colors to each line
-V_LINES: Optional[List[int]] = [0]       # add vertical lines to highlight time slices
+PALETTE_IDS: Optional[List[int]] = [0, 1]   # re-assign colors to each line
+V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 TITLE: str = 'Age-ordered vs. Age-reversed Training'
-LABELS: Optional[List[str]] = ['age-ordered', 'reverse age-ordered']  # custom labels for figure legend
+LABELS: Optional[List[str]] = None  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
 Y_LIMS: List[float] = [0, 4]
 Y_LABEL: str = 'Abstractness'
@@ -53,7 +53,7 @@ def make_summary(param_path, label):
 
 # collect summaries
 summaries = []
-param2requests['reverse'] = [False]  # do not show results for shuffled_docs=True
+param2requests['reverse'] = [False, True]  # do not show results for shuffled_docs=True
 project_name = __name__
 for p, label in gen_param_paths(project_name,
                                 param2requests,

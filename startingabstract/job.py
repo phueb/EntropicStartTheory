@@ -5,15 +5,16 @@ import pandas as pd
 import numpy as np
 import torch
 from pathlib import Path
+from itertools import product
 
 from preppy.latest import Prep
 
-from categoryeval.probestore import ProbeStore
-from svdeval.utils import load_test_words
+# from categoryeval.score import Scorer
+from prototypeeval.score import Scorer
 
 from startingabstract import config
 from startingabstract.docs import load_docs
-from startingabstract.evaluation import update_ba_metrics, update_pp_metrics, update_an_metrics
+from startingabstract.evaluation import update_ba_metrics, update_pp_metrics, update_dp_metrics
 from startingabstract.rnn import RNN
 
 
@@ -22,8 +23,8 @@ class Params(object):
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_docs = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
-    probes = attr.ib(validator=attr.validators.instance_of(str))
-    test_words = attr.ib(validator=attr.validators.instance_of(str))
+    ba_names = attr.ib(validator=attr.validators.instance_of(list))
+    dp_names = attr.ib(validator=attr.validators.instance_of(list))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
     slide_size = attr.ib(validator=attr.validators.instance_of(int))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
@@ -78,12 +79,10 @@ def main(param2val):
     gen_size = len([1 for i in train_prep.gen_windows()])
     print(f'Number of total batches={gen_size}')
 
-    # probes for evaluation  # TODO allow for multiple probe stores
-    probe_store = ProbeStore(params.corpus, params.probes, train_prep.store.w2id)
+    # classes that perform scoring
+    # TODO initialize a ba_scorer here that has multiple probe stores as properties
 
-    # test words for evaluation
-    test_words = load_test_words(params.test_words)
-    test_words.intersection_update(train_prep.store.types)
+    dp_scorer = Scorer(train_prep.store.tokens, params.dp_names, config.Eval.dp_num_parts)
 
     # model
     model = RNN(
@@ -107,11 +106,9 @@ def main(param2val):
         'test_pp': [],
         config.Metrics.ba_o: [],
         config.Metrics.ba_n: [],
-        config.Metrics.an_nouns: [],
-        config.Metrics.an_nouns_std: [],
-        config.Metrics.an_vocab: [],
-        config.Metrics.an_vocab_std: [],
     }
+    for dp_name, part in product(params.dp_names, range(config.Eval.dp_num_parts)):
+        metrics[f'dp_{dp_name}_part{part}'] = []
 
     # train and eval
     train_mb = 0
@@ -123,7 +120,7 @@ def main(param2val):
             train_mb = train_on_corpus(model, optimizer, criterion, train_prep, data_mb, train_mb, windows_generator)
 
         # eval (metrics must be returned to reuse the same object)
-        metrics = update_an_metrics(metrics, model, train_prep, test_words)  # TODO test
+        # metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
         # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
         # metrics = update_ba_metrics(metrics, model, train_prep, probe_store)
 

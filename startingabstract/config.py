@@ -16,16 +16,14 @@ class Symbols:
 
 
 class Eval:
-    num_evaluations = 50
+    num_evaluations = 200
+    dp_num_parts = 4
 
 
 class Metrics:
+    # ba = balanced-accuracy
     ba_o = 'ba_ordered'
     ba_n = 'ba_none'
-    an_nouns = 'an_nouns'  # abstractness of noun representation
-    an_nouns_std = 'an_nouns_std'
-    an_vocab = 'an_vocab'  # abstractness of all words - just unigram frequency
-    an_vocab_std = 'an_vocab_std'
 
 
 class Figs:
