@@ -68,6 +68,9 @@ def make_summary_fig(summaries: list,
         except StopIteration:
             raise ValueError('Not enough values in PALETTE_IDS')
 
+        for mean_i, std_i in zip(y_mean, y_std):
+            print(f'mean={mean_i:>6.2f} std={std_i:>6.2f}')
+
         ax.plot(x, y_mean, '-', linewidth=config.Figs.lw, color=color,
                 label=label, zorder=3 if n == 8 else 2)
         ax.fill_between(x, y_mean + y_std, y_mean - y_std, alpha=0.5, color='grey')

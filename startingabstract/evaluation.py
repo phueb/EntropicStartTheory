@@ -70,24 +70,31 @@ def update_an_metrics(metrics, model, train_prep, test_words):
     calculate abstractness of predictions:
     how well do predictions conform to those expected for an abstract category of words
     """
+
+    # get predictions  # TODO separate nouns by lateness
     x = np.expand_dims(np.arange(train_prep.num_types), axis=1)
     inputs = torch.cuda.LongTensor(x)
     all_logits = model(inputs)['logits'].detach().cpu().numpy()
-
     nouns_ids = [train_prep.store.w2id[w] for w in test_words]
     # vocab_ids = [train_prep.store.w2id[w] for w in train_prep.store.types]
     predictions_mat_nouns = softmax(all_logits[nouns_ids])
     # predictions_mat_vocab = softmax(all_logits[vocab_ids])
+
     an_nouns, an_nouns_std = score_abstractness(train_prep, predictions_mat_nouns, test_words)
     # an_vocab, an_vocab_std = score_abstractness(train_prep, predictions_mat_vocab, train_prep.store.types,
     #                                             plot_distributions=False)
+
+    # TODO save individual abstractness trajectories
+
+    # TODO make ideal noun next-word prob distribution non-stationary:
+    #  it should be based on co-o information only up to current poitn in training
 
     # TODO debugging
     print(predictions_mat_nouns.shape)
     print(predictions_mat_nouns.mean(axis=0))
     print(predictions_mat_nouns.std(axis=0))
     max_ids = np.argsort(predictions_mat_nouns.mean(axis=0))
-    print([train_prep.store.types[i] for i in max_ids[-10:]])
+    print('nouns predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
 
     print(predictions_mat_nouns[0, :].sum())
     print(predictions_mat_nouns[:, 0].sum())
