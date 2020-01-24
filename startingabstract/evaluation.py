@@ -3,8 +3,6 @@ import torch
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-from categoryeval.score import calc_score  # TODO use a class, like svdeval to save intermediate results
-
 
 from startingabstract import config
 
@@ -61,8 +59,8 @@ def update_ba_metrics(metrics, model, train_prep, ba_scorer):
         probe_sims_o = cosine_similarity(probe_reps_o)
         probe_sims_n = cosine_similarity(probe_reps_n)
 
-        metrics[config.Metrics.ba_o].append(calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
-        metrics[config.Metrics.ba_n].append(calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+        metrics[config.Metrics.ba_o].append(ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+        metrics[config.Metrics.ba_n].append(ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
 
     return metrics
 
