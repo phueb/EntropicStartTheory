@@ -70,9 +70,6 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
     calculate distance-to-prototype (aka dp):
     how well do predictions conform to an abstract prototype?
     """
-
-    return metrics
-
     for dp_name in dp_scorer.dp_names:
         # collect dp for probes who tend to occur most frequently in some part of corpus
         for part in range(config.Eval.dp_num_parts):
@@ -84,7 +81,7 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
             inputs = torch.cuda.LongTensor(x)
             logits = model(inputs)['logits'].detach().cpu().numpy()
             predictions_mat = softmax(logits)
-            dp = dp_scorer.calc_dp(predictions_mat, dp_name)  # TODO test part
+            dp = dp_scorer.calc_dp(predictions_mat, dp_name)  # TODO test
 
             # check predictions
             max_ids = np.argsort(predictions_mat.mean(axis=0))

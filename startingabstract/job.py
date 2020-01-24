@@ -120,7 +120,7 @@ def main(param2val):
             train_mb = train_on_corpus(model, optimizer, criterion, train_prep, data_mb, train_mb, windows_generator)
 
         # eval (metrics must be returned to reuse the same object)
-        # metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
+        metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
         # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
         # metrics = update_ba_metrics(metrics, model, train_prep, probe_store)
 
