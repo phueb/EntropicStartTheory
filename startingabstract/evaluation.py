@@ -49,18 +49,20 @@ def update_pp_metrics(metrics, model, criterion, train_prep, test_prep):
     return metrics
 
 
-def update_ba_metrics(metrics, model, train_prep, probe_store):
+def update_ba_metrics(metrics, model, train_prep, ba_scorer):
 
-    # TODO allow for multiple probe stores (evaluate against multiple category structures)
+    for ba_name in ba_scorer.ba_names:  # TODO test mltiple ba_names
 
-    # probe_reps_o = make_probe_reps_o(model, probe_store, train_prep)
-    probe_reps_n = make_probe_reps_n(model, probe_store)
+        probe_store = ba_scorer.ba_name2store[ba_name]  # TODO implement ba_scorer
 
-    # probe_sims_o = cosine_similarity(probe_reps_o)
-    probe_sims_n = cosine_similarity(probe_reps_n)
+        probe_reps_o = make_probe_reps_o(model, probe_store, train_prep)
+        probe_reps_n = make_probe_reps_n(model, probe_store)
 
-    # metrics[config.Metrics.ba_o].append(calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
-    metrics[config.Metrics.ba_n].append(calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+        probe_sims_o = cosine_similarity(probe_reps_o)
+        probe_sims_n = cosine_similarity(probe_reps_n)
+
+        metrics[config.Metrics.ba_o].append(calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+        metrics[config.Metrics.ba_n].append(calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
 
     return metrics
 
@@ -81,14 +83,15 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
             inputs = torch.cuda.LongTensor(x)
             logits = model(inputs)['logits'].detach().cpu().numpy()
             predictions_mat = softmax(logits)
-            dp = dp_scorer.calc_dp(predictions_mat, dp_name)  # TODO test
+            dps = dp_scorer.calc_dp(predictions_mat, dp_name, return_mean=False)
 
             # check predictions
             max_ids = np.argsort(predictions_mat.mean(axis=0))
             print(f'{dp_name} predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
 
             # collect
-            metrics[f'dp_{dp_name}_part{part}'].append(dp)
+            for pi, dp in enumerate(dps[:3]):  # TODO test individual dp values
+                metrics[f'dp_{dp_name}_part{part}_probe{pi}'].append(dp)
 
     return metrics
 
