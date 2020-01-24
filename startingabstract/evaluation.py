@@ -40,10 +40,10 @@ def update_pp_metrics(metrics, model, criterion, train_prep, test_prep):
             test_pp = calc_perplexity(model, criterion, test_prep)
             metrics['test_pp'].append(test_pp)
     else:
-        train_pp = calc_perplexity(model, criterion, train_prep)
-        metrics['train_pp'].append(train_pp)
         if config.Eval.num_test_docs > 0:
+            train_pp = calc_perplexity(model, criterion, train_prep)  # TODO cuda error
             test_pp = calc_perplexity(model, criterion, test_prep)
+            metrics['train_pp'].append(train_pp)
             metrics['test_pp'].append(test_pp)
     return metrics
 
