@@ -122,13 +122,15 @@ def main(param2val):
     for t, eval_mb in enumerate(train_prep.eval_mbs[:stop_t]):
         # train
         if t != 0:
+            model.train()
             print(f'Training on items from mb {train_mb:,} to mb {eval_mb:,}...')
             train_on_corpus(model, optimizer, criterion, train_prep, windows_generator)
             train_mb += train_prep.num_mbs_per_eval
 
         # eval (metrics must be returned to reuse the same object)
+        model.eval()
         metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
+        # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 
         # print progress to console
@@ -160,12 +162,11 @@ def train_on_corpus(model: RNN,
                     windows_generator: Iterator[np.ndarray],
                     ) -> None:
     pbar = pyprind.ProgBar(prep.num_mbs_per_eval, stream=1)
-    model.train()
     for windows in islice(windows_generator, 0, prep.num_mbs_per_eval):
 
         x, y = np.split(windows, [prep.context_size], axis=1)
         inputs = torch.cuda.LongTensor(x)
-        targets = torch.cuda.LongTensor(np.squeeze(y))
+        targets = torch.cuda.LongTensor(np.squeeze(y))  # TODO copying batch to GPU each time is costly
 
         # forward step
         model.batch_size = len(windows)  # dynamic batch size

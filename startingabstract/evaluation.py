@@ -9,7 +9,6 @@ from startingabstract import config
 
 def calc_perplexity(model, criterion, prep):
     print(f'Calculating perplexity...')
-    model.eval()
 
     pp_sum = torch.tensor(0.0, requires_grad=False)
     num_batches = 0
