@@ -51,7 +51,9 @@ def main(param2val):
     project_path = Path(param2val['project_path'])
     corpus_path = project_path / 'corpora' / f'{params.corpus}.txt'
     train_docs, test_docs = load_docs(corpus_path,
-                                      params.shuffle_docs)
+                                      params.shuffle_docs,
+                                      num_test_docs=config.Eval.num_test_docs,
+                                      )
 
     # prepare input
     train_prep = Prep(train_docs,
@@ -126,7 +128,7 @@ def main(param2val):
 
         # eval (metrics must be returned to reuse the same object)
         metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
+        metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 
         # print progress to console

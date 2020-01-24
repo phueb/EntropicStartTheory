@@ -37,19 +37,21 @@ def calc_perplexity(model, criterion, prep):
 
 def update_pp_metrics(metrics, model, criterion, train_prep, test_prep):
     if not config.Global.train_pp:
-        train_pp = np.nan
-        test_pp = calc_perplexity(model, criterion, test_prep)
+        if config.Eval.num_test_docs > 0:
+            test_pp = calc_perplexity(model, criterion, test_prep)
+            metrics['test_pp'].append(test_pp)
     else:
         train_pp = calc_perplexity(model, criterion, train_prep)
-        test_pp = calc_perplexity(model, criterion, test_prep)
-    metrics['train_pp'].append(train_pp)
-    metrics['test_pp'].append(test_pp)
+        metrics['train_pp'].append(train_pp)
+        if config.Eval.num_test_docs > 0:
+            test_pp = calc_perplexity(model, criterion, test_prep)
+            metrics['test_pp'].append(test_pp)
     return metrics
 
 
 def update_ba_metrics(metrics, model, train_prep, ba_scorer):
 
-    for ba_name in ba_scorer.ba_names:  # TODO test mltiple ba_names
+    for ba_name in ba_scorer.ba_names:
 
         probe_store = ba_scorer.ba_name2store[ba_name]  # TODO implement ba_scorer
 

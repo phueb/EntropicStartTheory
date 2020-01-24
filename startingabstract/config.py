@@ -19,6 +19,7 @@ class Eval:
     num_ts = 200   # number of time points at which to evaluate performance
     stop_t = None  # number of time points after which to exit (do not exit prematurely if None)
     dp_num_parts = 4
+    num_test_docs = 100
 
 
 class Metrics:

@@ -14,7 +14,7 @@ def load_docs(corpus_path: Path,
 
     text_in_file = corpus_path.read_text()
 
-    # shuffle at sentence-lelve (as opposed to document-level)
+    # shuffle at sentence-level (as opposed to document-level)
     # this remove clustering of same-age utterances within documents
     if shuffle_sentences:
         random.seed(shuffle_seed)
