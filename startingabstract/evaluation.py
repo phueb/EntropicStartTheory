@@ -82,15 +82,13 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
             inputs = torch.cuda.LongTensor(x)
             logits = model(inputs)['logits'].detach().cpu().numpy()
             predictions_mat = softmax(logits)
-            dps = dp_scorer.calc_dp(predictions_mat, dp_name, return_mean=False)
+            dp = dp_scorer.calc_dp(predictions_mat, dp_name, return_mean=True)
 
             # check predictions
             max_ids = np.argsort(predictions_mat.mean(axis=0))
             print(f'{dp_name} predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
 
-            # collect
-            for pi, dp in enumerate(dps[:3]):  # TODO test individual dp values
-                metrics[f'dp_{dp_name}_part{part}_probe{pi}'].append(dp)
+            metrics[f'dp_{dp_name}_part{part}'].append(dp)
 
     return metrics
 

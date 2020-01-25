@@ -111,10 +111,6 @@ def main(param2val):
     for dp_name, part in product(params.dp_names, range(config.Eval.dp_num_parts)):
         metrics[f'dp_{dp_name}_part{part}'] = []
 
-    # TODO test individual dp values
-    for dp_name, part, pi in product(params.dp_names, range(config.Eval.dp_num_parts), range(3)):
-        metrics[f'dp_{dp_name}_part{part}_probe{pi}'] = []
-
     # train and eval
     train_mb = 0
     start_train = time.time()
@@ -130,7 +126,7 @@ def main(param2val):
         # eval (metrics must be returned to reuse the same object)
         model.eval()
         metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        # metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
+        metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 
         # print progress to console
