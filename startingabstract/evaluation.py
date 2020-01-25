@@ -82,6 +82,8 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
             inputs = torch.cuda.LongTensor(x)
             logits = model(inputs)['logits'].detach().cpu().numpy()
             predictions_mat = softmax(logits)
+
+            # dp
             dp = dp_scorer.calc_dp(predictions_mat, dp_name, return_mean=True)
 
             # check predictions
@@ -89,6 +91,55 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
             print(f'{dp_name} predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
 
             metrics[f'dp_{dp_name}_part{part}'].append(dp)
+
+    return metrics
+
+
+def update_dp2_metrics(metrics, model, train_prep, dp_scorer):
+    """
+    calculate distance-to-prototype (aka dp):
+    all divergences are relative to unigram prototype, including:
+    1. model-based next-word distribution given word
+    2. ideal next-word distribution given word
+    3. ideal next-word distribution given category of a word
+    """
+    for dp_name in dp_scorer.dp_names:
+        if dp_name == 'unigram':
+            continue
+
+        assert config.Eval.dp_num_parts == 1
+        part = 0
+
+        # predictions_mat1
+        probes = dp_scorer.dp_name2part2probes[dp_name][part]
+        assert probes
+        w_ids = [train_prep.store.w2id[w] for w in probes]
+        x = np.expand_dims(np.array(w_ids), axis=1)
+        inputs = torch.cuda.LongTensor(x)
+        logits = model(inputs)['logits'].detach().cpu().numpy()
+        predictions_mat1 = softmax(logits)
+
+        # predictions_mat2
+        tmp = []
+        ct_mat_csr = dp_scorer.ct_mat.tocsr()
+        for p in probes:
+            w_id = train_prep.store.w2id[p]
+            fs = np.squeeze(ct_mat_csr[w_id].toarray())
+            probabilities = fs / fs.sum()
+            tmp.append(probabilities)
+        predictions_mat2 = np.array(tmp)
+
+        # predictions_mat3
+        predictions_mat3 = dp_scorer.dp_name2q[dp_name][np.newaxis, :]
+
+        # dp
+        dp1 = dp_scorer.calc_dp(predictions_mat1, 'unigram', return_mean=True)
+        dp2 = dp_scorer.calc_dp(predictions_mat2, 'unigram', return_mean=True)
+        dp3 = dp_scorer.calc_dp(predictions_mat3, 'unigram', return_mean=True)
+
+        metrics[f'dp_{dp_name}_unigram_1'].append(dp1)
+        metrics[f'dp_{dp_name}_unigram_2'].append(dp2)
+        metrics[f'dp_{dp_name}_unigram_3'].append(dp3)
 
     return metrics
 

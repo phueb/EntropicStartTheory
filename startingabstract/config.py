@@ -17,9 +17,9 @@ class Symbols:
 
 class Eval:
     num_ts = 200   # number of time points at which to evaluate performance
-    stop_t = 20  # number of time points after which to exit (do not exit prematurely if None)
-    dp_num_parts = 2
-    num_test_docs = 100
+    stop_t = 10  # number of time points after which to exit (do not exit prematurely if None)
+    dp_num_parts = 1
+    num_test_docs = 0
 
 
 class Metrics:
@@ -30,6 +30,6 @@ class Metrics:
 
 class Figs:
     lw = 2
-    axlabel_fs = 12
-    leg_fs = 10
-    dpi = None
+    axlabel_fs = 14
+    leg_fs = 12
+    dpi = 163

@@ -28,7 +28,7 @@ def make_summary_fig(summaries: list,
                      vlines: List[int] = None,
                      ):
     # fig
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.subplots(figsize=figsize, dpi=config.Figs.dpi)
     plt.title(title)
     ax.set_xlabel('Mini Batch', fontsize=config.Figs.axlabel_fs)
     ax.set_ylabel(ylabel + '\n+/- Std Dev', fontsize=config.Figs.axlabel_fs)
@@ -79,8 +79,13 @@ def make_summary_fig(summaries: list,
     if title:
         plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc='lower right', ncol=1)
     else:
-        plt.legend(bbox_to_anchor=(1.0, 1.0), borderaxespad=1.0,
-                   fontsize=config.Figs.leg_fs, frameon=False, loc='lower right', ncol=3)
+        plt.legend(bbox_to_anchor=(1.0, 1.0),
+                   borderaxespad=1.0,
+                   fontsize=config.Figs.leg_fs,
+                   frameon=False,
+                   loc='lower right',
+                   ncol=3,
+                   )
 
     # max line
     if plot_max_line:

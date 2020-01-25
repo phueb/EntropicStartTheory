@@ -16,7 +16,10 @@ from prototypeeval.score import DPScorer
 
 from startingabstract import config
 from startingabstract.docs import load_docs
-from startingabstract.evaluation import update_ba_metrics, update_pp_metrics, update_dp_metrics
+from startingabstract.evaluation import update_ba_metrics
+from startingabstract.evaluation import update_pp_metrics
+from startingabstract.evaluation import update_dp_metrics
+from startingabstract.evaluation import update_dp2_metrics
 from startingabstract.rnn import RNN
 
 
@@ -77,13 +80,13 @@ def main(param2val):
                      config.Eval.num_ts,
                      vocab=train_prep.store.types
                      )
-    windows_generator = train_prep.gen_windows() # has to be created once
+    windows_generator = train_prep.gen_windows()  # has to be created once
     gen_size = len([1 for i in train_prep.gen_windows()])
     print(f'Number of total batches={gen_size}')
 
     # classes that perform scoring
     ba_scorer = BAScorer(params.ba_names)
-    dp_scorer = DPScorer(train_prep.store.tokens, params.dp_names, config.Eval.dp_num_parts)
+    dp_scorer = DPScorer(train_prep.store.tokens, train_prep.store.types, params.dp_names, config.Eval.dp_num_parts)
 
     # model
     model = RNN(
@@ -110,6 +113,9 @@ def main(param2val):
     }
     for dp_name, part in product(params.dp_names, range(config.Eval.dp_num_parts)):
         metrics[f'dp_{dp_name}_part{part}'] = []
+        metrics[f'dp_{dp_name}_unigram_1'] = []
+        metrics[f'dp_{dp_name}_unigram_2'] = []
+        metrics[f'dp_{dp_name}_unigram_3'] = []
 
     # train and eval
     train_mb = 0
@@ -125,7 +131,8 @@ def main(param2val):
 
         # eval (metrics must be returned to reuse the same object)
         model.eval()
-        metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
+        # metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
+        metrics = update_dp2_metrics(metrics, model, train_prep, dp_scorer)
         metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 

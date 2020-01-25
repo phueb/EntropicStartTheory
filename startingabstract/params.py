@@ -18,7 +18,7 @@ param2default = {
     'shuffle_docs': False,   # this is an important control (contents of parts are randomly chosen)
     'corpus': 'childes-20191112',
     'ba_names': [],
-    'dp_names': ['singular-nouns-4096', 'all-verbs-4096'],
+    'dp_names': ['singular-nouns-4096', 'all-verbs-4096', 'unigram'],
     'num_types': 4096,
     'slide_size': 3,  # 3 is equivalent to approximately 20 iterations when batch_size=64
     'context_size': 7,  # default: 7 (equivalent to number of backprop-through-time steps)
