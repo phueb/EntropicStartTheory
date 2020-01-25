@@ -77,7 +77,7 @@ def make_summary_fig(summaries: list,
 
     # legend
     if title:
-        plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc='lower right', ncol=1)
+        plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc='center right', ncol=1)
     else:
         plt.legend(bbox_to_anchor=(1.0, 1.0),
                    borderaxespad=1.0,
