@@ -9,16 +9,13 @@ class Dirs:
 
 class Global:
     train_pp = False
-
-
-class Symbols:
-    OOV = 'OOV'
+    legacy = True  # TODO remove this option in the future
 
 
 class Eval:
-    num_ts = 500   # number of time points at which to evaluate performance
-    stop_t = 3  # number of time points after which to exit (do not exit prematurely if None)
-    dp_num_parts = 2
+    num_ts = 20   # number of time points at which to evaluate performance
+    stop_t = 20  # number of time points after which to exit (do not exit prematurely if None)
+    dp_num_parts = 1
     num_test_docs = 0
 
 

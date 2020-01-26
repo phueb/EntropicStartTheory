@@ -10,6 +10,7 @@ from itertools import product
 from typing import Iterator
 
 from preppy.latest import Prep
+from preppy.legacy import TrainPrep, TestPrep
 
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
@@ -19,12 +20,13 @@ from startingabstract.docs import load_docs
 from startingabstract.evaluation import update_ba_metrics
 from startingabstract.evaluation import update_pp_metrics
 from startingabstract.evaluation import update_dp_metrics
-from startingabstract.evaluation import update_dp_metrics_unigram
+from startingabstract.evaluation import update_dp_metrics_unconditional
 from startingabstract.rnn import RNN
 
 
 @attr.s
 class Params(object):
+    legacy = attr.ib(validator=attr.validators.instance_of(bool))
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_docs = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
@@ -59,27 +61,40 @@ def main(param2val):
                                       )
 
     # prepare input
-    train_prep = Prep(train_docs,
-                      params.reverse,
-                      params.num_types,
-                      params.slide_size,
-                      params.batch_size,
-                      params.context_size,
-                      config.Eval.num_ts,
-                      )
+    if params.legacy:
+        print('=======================================================')
+        print('WARNING: params.legacy=True')
+        print('=======================================================')
+        train_prep = TrainPrep(train_docs,
+                               params.reverse,
+                               params.num_types,
+                               num_parts=2,
+                               num_iterations=[20, 20],
+                               batch_size=params.batch_size,
+                               context_size=params.context_size,
+                               num_evaluations=config.Eval.num_ts,
+                               shuffle_within_part=False)
+        test_prep = TestPrep(test_docs,
+                             batch_size=params.batch_size,
+                             context_size=params.context_size,
+                             vocab=train_prep.store.types)
+    else:
+        train_prep = Prep(train_docs,
+                          reverse=params.reverse,
+                          num_types=params.num_types,
+                          slide_size=params.slide_size,
+                          batch_size=params.batch_size,
+                          context_size=params.context_size,
+                          num_evaluations=config.Eval.num_ts)
+        test_prep = Prep(test_docs,
+                         reverse=params.reverse,
+                         num_types=params.num_types,
+                         slide_size=params.batch_size,
+                         batch_size=params.batch_size,
+                         context_size=params.context_size,
+                         num_evaluations=config.Eval.num_ts,
+                         vocab=train_prep.store.types)
 
-    # TODO does test prep need to be different other than vocab?
-
-    test_slide_size = params.batch_size
-    test_prep = Prep(test_docs,
-                     params.reverse,
-                     params.num_types,
-                     test_slide_size,  # TODO set slide_size to batch-size
-                     params.batch_size,
-                     params.context_size,
-                     config.Eval.num_ts,
-                     vocab=train_prep.store.types
-                     )
     windows_generator = train_prep.gen_windows()  # has to be created once
     gen_size = len([1 for i in train_prep.gen_windows()])
     print(f'Number of total batches={gen_size}')
@@ -118,9 +133,9 @@ def main(param2val):
         metrics[f'ba_o_{probes_name}'] = []
         metrics[f'ba_n_{probes_name}'] = []
     for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
-        metrics[f'dp_{probes_name}_part{part}_unigram_1'] = []
-        metrics[f'dp_{probes_name}_part{part}_unigram_2'] = []
-        metrics[f'dp_{probes_name}_part{part}_unigram_3'] = []
+        metrics[f'dp_{probes_name}_part{part}_unconditional_1'] = []
+        metrics[f'dp_{probes_name}_part{part}_unconditional_2'] = []
+        metrics[f'dp_{probes_name}_part{part}_unconditional_3'] = []
 
     # train and eval
     train_mb = 0
@@ -137,7 +152,7 @@ def main(param2val):
         # eval (metrics must be returned to reuse the same object)
         model.eval()
         # metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        metrics = update_dp_metrics_unigram(metrics, model, train_prep, dp_scorer)
+        metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
         metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 

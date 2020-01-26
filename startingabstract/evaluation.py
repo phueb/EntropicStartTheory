@@ -95,16 +95,16 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):  # TODO is this st
     return metrics
 
 
-def update_dp_metrics_unigram(metrics, model, train_prep, dp_scorer):
+def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
     """
     calculate distance-to-prototype (aka dp):
-    all divergences are relative to unigram prototype, including:
+    all divergences are relative to unconditional prototype, including:
     1. model-based next-word distribution given word
     2. ideal next-word distribution given word
     3. ideal next-word distribution given category of a word
     """
     for probes_name in dp_scorer.probes_names:
-        if probes_name == 'unigram':
+        if probes_name == 'unconditional':
             continue
 
         for part in range(config.Eval.dp_num_parts):
@@ -132,13 +132,13 @@ def update_dp_metrics_unigram(metrics, model, train_prep, dp_scorer):
             predictions_mat3 = dp_scorer.name2q[probes_name][np.newaxis, :]
 
             # dp
-            dp1 = dp_scorer.calc_dp(predictions_mat1, 'unigram', return_mean=True)
-            dp2 = dp_scorer.calc_dp(predictions_mat2, 'unigram', return_mean=True)
-            dp3 = dp_scorer.calc_dp(predictions_mat3, 'unigram', return_mean=True)
+            dp1 = dp_scorer.calc_dp(predictions_mat1, 'unconditional', return_mean=True)
+            dp2 = dp_scorer.calc_dp(predictions_mat2, 'unconditional', return_mean=True)
+            dp3 = dp_scorer.calc_dp(predictions_mat3, 'unconditional', return_mean=True)
 
-            metrics[f'dp_{probes_name}_part{part}_unigram_1'].append(dp1)
-            metrics[f'dp_{probes_name}_part{part}_unigram_2'].append(dp2)
-            metrics[f'dp_{probes_name}_part{part}_unigram_3'].append(dp3)
+            metrics[f'dp_{probes_name}_part{part}_unconditional_1'].append(dp1)
+            metrics[f'dp_{probes_name}_part{part}_unconditional_2'].append(dp2)
+            metrics[f'dp_{probes_name}_part{part}_unconditional_3'].append(dp3)
 
     return metrics
 
