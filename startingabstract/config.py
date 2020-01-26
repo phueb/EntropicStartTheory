@@ -17,7 +17,7 @@ class Symbols:
 
 class Eval:
     num_ts = 500   # number of time points at which to evaluate performance
-    stop_t = 50  # number of time points after which to exit (do not exit prematurely if None)
+    stop_t = 250  # number of time points after which to exit (do not exit prematurely if None)
     dp_num_parts = 1
     num_test_docs = 0
 

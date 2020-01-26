@@ -17,20 +17,24 @@ def human_format(num, pos):  # pos is required for formatting mpl axis ticklabel
 
 def make_summary_fig(summaries: list,
                      ylabel: str,
-                     title: str = 'Un-titled',
+                     title: str = '',
                      palette_ids: List[int] = None,
                      figsize: Tuple[int, int] = None,
                      ylims: List[float] = None,
+                     log_x: bool = False,
+                     start_x_at_zero: bool = True,
                      y_grid: bool = False,
                      plot_max_line: bool = False,
                      plot_max_lines: bool = False,
-                     alternative_labels: Union[None, list] = None,
+                     legend_labels: Union[None, list] = None,
                      vlines: List[int] = None,
+                     legend_loc: str = 'lower right',
+                     verbose: bool = False,
                      ):
     # fig
     fig, ax = plt.subplots(figsize=figsize, dpi=config.Figs.dpi)
     plt.title(title)
-    ax.set_xlabel('Mini Batch', fontsize=config.Figs.axlabel_fs)
+    ax.set_xlabel('Training step (mini batch)', fontsize=config.Figs.axlabel_fs)
     ax.set_ylabel(ylabel + '\n+/- Std Dev', fontsize=config.Figs.axlabel_fs)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
@@ -40,6 +44,10 @@ def make_summary_fig(summaries: list,
         ax.yaxis.grid(True)
     if ylims is not None:
         ax.set_ylim(ylims)
+    if log_x:
+        ax.set_xscale('log')
+    elif start_x_at_zero:
+        ax.set_xlim(xmin=0, xmax=summaries[0][0][-1])
 
     # palette
     num_summaries = len(summaries)
@@ -49,17 +57,20 @@ def make_summary_fig(summaries: list,
     else:
         colors = iter(palette)
 
-    if alternative_labels is not None:
-        alternative_labels = iter(alternative_labels)
+    if legend_labels is not None:
+        legend_labels = iter(legend_labels)
 
     # plot summary
     max_ys = []
     for x, y_mean, y_std, label, n in summaries:
         max_ys.append(max(y_mean))
 
-        if alternative_labels is not None:
+        if log_x:
+            x += 1  # can't set x-lim to 0 when using log x-axis, so use 1 instead
+
+        if legend_labels is not None:
             try:
-                label = next(alternative_labels)
+                label = next(legend_labels)
             except StopIteration:
                 raise ValueError('Not enough values in ALTERNATIVE_LABELS')
 
@@ -68,8 +79,9 @@ def make_summary_fig(summaries: list,
         except StopIteration:
             raise ValueError('Not enough values in PALETTE_IDS')
 
-        for mean_i, std_i in zip(y_mean, y_std):
-            print(f'mean={mean_i:>6.2f} std={std_i:>6.2f}')
+        if verbose:
+            for mean_i, std_i in zip(y_mean, y_std):
+                print(f'mean={mean_i:>6.2f} std={std_i:>6.2f}')
 
         ax.plot(x, y_mean, '-', linewidth=config.Figs.lw, color=color,
                 label=label, zorder=3 if n == 8 else 2)
@@ -77,7 +89,7 @@ def make_summary_fig(summaries: list,
 
     # legend
     if title:
-        plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc='center right', ncol=1)
+        plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc=legend_loc, ncol=1)
     else:
         plt.legend(bbox_to_anchor=(1.0, 1.0),
                    borderaxespad=1.0,
@@ -100,7 +112,7 @@ def make_summary_fig(summaries: list,
             if vline == 0:
                 continue
             print(x[-1], vline / len(vlines))
-            ax.axvline(x=x[-1] * (vline / len(vlines)) , color='grey', linestyle=':', zorder=1)
+            ax.axvline(x=x[-1] * (vline / len(vlines)), color='grey', linestyle=':', zorder=1)
 
     plt.tight_layout()
     return fig

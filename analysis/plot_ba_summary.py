@@ -11,7 +11,7 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local results or None if using results form Ludwig
-FILE_NAME: str = 'dp_all-verbs-4096_part0.csv'                   # contains trajectory of some performance measure
+FILE_NAME: str = 'ba_o.csv'                   # contains trajectory of some performance measure
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
@@ -21,8 +21,8 @@ V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time
 TITLE: str = ''
 LABELS: Optional[List[str]] = ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
-Y_LIMS: List[float] = [0, 4]
-Y_LABEL: str = 'Bits Divergence from Verb Prototype' or FILE_NAME
+Y_LIMS: List[float] = [0, 1]
+Y_LABEL: str = 'Balanced Accuracy'
 
 
 def correct_artifacts(y, tolerance=0.00):
@@ -86,7 +86,7 @@ fig = make_summary_fig(summaries,
                        palette_ids=PALETTE_IDS,
                        figsize=FIG_SIZE,
                        ylims=Y_LIMS,
-                       alternative_labels=LABELS,
+                       legend_labels=LABELS,
                        vlines=V_LINES,
                        plot_max_lines=PLOT_MAX_LINES,
                        plot_max_line=PLOT_MAX_LINE,

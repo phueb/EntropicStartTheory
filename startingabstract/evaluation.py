@@ -95,7 +95,7 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):
     return metrics
 
 
-def update_dp2_metrics(metrics, model, train_prep, dp_scorer):
+def update_dp_metrics_unigram(metrics, model, train_prep, dp_scorer):
     """
     calculate distance-to-prototype (aka dp):
     all divergences are relative to unigram prototype, including:

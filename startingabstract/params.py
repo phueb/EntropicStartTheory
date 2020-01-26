@@ -3,7 +3,7 @@
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'context_size': [1],  # context-size = 1 is only way to decrease distance-to-prototype over time
+    'context_size': [3, 4, 5, 6, 7],  # context-size = 1 is only way to decrease distance-to-prototype over time
 }
 
 param2debug = {

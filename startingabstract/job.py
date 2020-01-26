@@ -19,7 +19,7 @@ from startingabstract.docs import load_docs
 from startingabstract.evaluation import update_ba_metrics
 from startingabstract.evaluation import update_pp_metrics
 from startingabstract.evaluation import update_dp_metrics
-from startingabstract.evaluation import update_dp2_metrics
+from startingabstract.evaluation import update_dp_metrics_unigram
 from startingabstract.rnn import RNN
 
 
@@ -132,7 +132,7 @@ def main(param2val):
         # eval (metrics must be returned to reuse the same object)
         model.eval()
         # metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        metrics = update_dp2_metrics(metrics, model, train_prep, dp_scorer)
+        metrics = update_dp_metrics_unigram(metrics, model, train_prep, dp_scorer)
         metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 
