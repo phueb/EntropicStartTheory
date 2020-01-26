@@ -14,7 +14,6 @@ with he incorrect, but practically useful (and necessary) assumption that all no
 of each other, and that the observed variation in co-occurrences with y-words is just due to chance.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 from preppy.latest import Prep
@@ -24,11 +23,22 @@ from startingabstract.docs import load_docs
 from startingabstract import config
 
 
+KEEP_PUNCTUATION = True
 CORPUS_NAME = 'childes-20191112'
 PROBES_NAMES = ['singular-nouns-4096', 'all-verbs-4096', 'unconditional']
 
 corpus_path = config.Dirs.corpora / f'{CORPUS_NAME}.txt'
-train_docs, _ = load_docs(corpus_path)
+_train_docs, _ = load_docs(corpus_path)
+
+if not KEEP_PUNCTUATION:
+    print('Removing punctuation')
+    train_docs = []
+    for doc in _train_docs:
+        new_doc = doc.replace(' .', '').replace(' !', '').replace(' ?', '')
+        train_docs.append(new_doc)
+else:
+    train_docs = _train_docs
+
 train_prep = Prep(train_docs,
                   reverse=False,
                   num_types=4096,
@@ -48,21 +58,20 @@ dp_scorer = DPScorer(CORPUS_NAME,
 
 # fig
 fig, ax = plt.subplots(figsize=(6, 4), dpi=config.Figs.dpi)
+plt.title(f'Next-word probability distribution\npunctuation={KEEP_PUNCTUATION}')
 ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
 ax.tick_params(axis='both', which='both', top=False, right=False)
-plt.title('Next-word probability distribution')
 ax.set_xlabel('Next-word ID (frequency-sorted)')
 ax.set_ylabel('Next-word Probability')
 sorted_w_ids = [train_prep.store.w2id[w]
                 for w in sorted(train_prep.store.types,
                                 key=train_prep.store.w2f.get, reverse=True)]
-# plot
+# plot q (the next-word distribution conditioned on some category)
 for probes_name in dp_scorer.probes_names:
-
     q = dp_scorer.name2q[probes_name]
-
-    ax.semilogx([q[w_id] for w_id in sorted_w_ids], label=probes_name)
+    sorted_q = [q[w_id] for w_id in sorted_w_ids]
+    ax.semilogx(sorted_q, label=probes_name)
 
 plt.legend(frameon=False)
 plt.show()
