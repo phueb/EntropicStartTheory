@@ -18,53 +18,51 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from preppy.latest import Prep
+from categoryeval.dp import DPScorer
 
 from startingabstract.docs import load_docs
 from startingabstract import config
 
 
 CORPUS_NAME = 'childes-20191112'
-PROBES_NAME = 'singular-nouns-4096'
+PROBES_NAMES = ['singular-nouns-4096', 'all-verbs-4096', 'unconditional']
 
 corpus_path = config.Dirs.corpora / f'{CORPUS_NAME}.txt'
 train_docs, _ = load_docs(corpus_path)
-prep = Prep(train_docs,
-            reverse=False,
-            num_types=4096,
-            slide_size=3,
-            batch_size=64,
-            context_size=7,
-            num_evaluations=10,
-            )
+train_prep = Prep(train_docs,
+                  reverse=False,
+                  num_types=4096,
+                  slide_size=3,
+                  batch_size=64,
+                  context_size=7,
+                  num_evaluations=10,
+                  )
+
+dp_scorer = DPScorer(CORPUS_NAME,
+                     PROBES_NAMES,
+                     train_prep.store.tokens,
+                     train_prep.store.types,
+                     num_parts=1,
+                     )
 
 
-# load probes
-probes = load_probes(PROBES_NAME)
-for p in probes:
-    assert p in prep.store.types, p
+# fig
+fig, ax = plt.subplots(figsize=(6, 4), dpi=config.Figs.dpi)
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+ax.tick_params(axis='both', which='both', top=False, right=False)
+plt.title('Next-word probability distribution')
+ax.set_xlabel('Next-word ID (frequency-sorted)')
+ax.set_ylabel('Next-word Probability')
+sorted_w_ids = [train_prep.store.w2id[w]
+                for w in sorted(train_prep.store.types,
+                                key=train_prep.store.w2f.get, reverse=True)]
+# plot
+for probes_name in dp_scorer.probes_names:
 
-context_size = 1  # it doesn't make sense to have larger contexts
+    q = dp_scorer.name2q[probes_name]
 
-# count co-occurrences
-ct_mat, x_words, y_words_ = make_context_by_term_matrix(prep.store.tokens, context_size)
-y_words = [tuple2str(yw) for yw in y_words_]  # convert tuple to str
-row_ids = [y_words.index(w) for w in probes]
-assert row_ids
-# extract rows for test_words only - no transposition because we can only evaluate next-word predictions form model.
-sliced_ct_mat = ct_mat.tocsr()[row_ids, :]
-print(f'sliced_ct_mat has shape={sliced_ct_mat.shape}')
-# fit probability distribution over y-words given a test-word
-# assumes there is a single distribution generating all test_words
-total_f = sliced_ct_mat.sum().sum()
-q = [sliced_ct_mat[:, x_words.index(xw)].sum() / total_f for xw in x_words]
-assert np.sum(q).item() == 1.0
+    ax.semilogx([q[w_id] for w_id in sorted_w_ids], label=probes_name)
 
-# print most likely next-word predictions based on prototype
-xw2p = {xw: prob for xw, prob in zip(x_words, q)}
-for xw, prob in sorted(xw2p.items(), key=lambda i: i[1], reverse=True)[:100]:
-    print(f'{xw:<12} prob={prob:.6f}')
-
-fig, ax = plt.subplots()
-plt.title(PROBES_NAME)
-ax.plot(sorted(q))
+plt.legend(frameon=False)
 plt.show()

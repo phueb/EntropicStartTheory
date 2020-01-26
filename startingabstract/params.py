@@ -22,10 +22,10 @@ param2default = {
     'dp_probes': ['singular-nouns-4096', 'all-verbs-4096', 'unconditional'],
     'num_types': 4096,
     'slide_size': 3,  # 3 is equivalent to approximately 20 iterations when batch_size=64
-    'context_size': 7,  # default: 7 (equivalent to number of backprop-through-time steps)
+    'context_size': 7,  # number of backprop-through-time steps
     'batch_size': 64,
-    'flavor': 'srn',  # srn, lstm
-    'hidden_size': 512,  # default: 512
+    'flavor': 'srn',  # simple-recurrent
+    'hidden_size': 512,
     'lr': 0.01,
     'optimizer': 'adagrad',
 }
