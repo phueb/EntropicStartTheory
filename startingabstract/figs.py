@@ -116,3 +116,80 @@ def make_summary_fig(summaries: list,
 
     plt.tight_layout()
     return fig
+
+
+def plot_singular_values(ys: List[np.ndarray],
+                         max_s: int,
+                         fontsize: int = 12,
+                         figsize: Tuple[int] = (5, 5),
+                         markers: bool = False,
+                         label_all_x: bool = False):
+    fig, ax = plt.subplots(1, figsize=figsize, dpi=None)
+    plt.title('SVD of simulated co-occurrence matrix', fontsize=fontsize)
+    ax.set_ylabel('Singular value', fontsize=fontsize)
+    ax.set_xlabel('Singular Dimension', fontsize=fontsize)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.tick_params(axis='both', which='both', top=False, right=False)
+    x = np.arange(max_s) + 1  # num columns
+    if label_all_x:
+        ax.set_xticks(x)
+        ax.set_xticklabels(x)
+    # plot
+    for n, y in enumerate(ys):
+        ax.plot(x, y, label='simulation {}'.format(n + 1), linewidth=2)
+        if markers:
+            ax.scatter(x, y)
+    ax.legend(loc='upper right', frameon=False, fontsize=fontsize)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_heatmap(mat,
+                 x_tick_labels: np.ndarray,
+                 y_tick_labels: np.ndarray,
+                 label_interval: int = 1,
+                 dpi: int = 163 * 1,
+                 num_cols: int = 512,
+                 ):
+    fig, ax = plt.subplots(figsize=(12, 12), dpi=dpi)
+    plt.title('', fontsize=5)
+
+    # plot subset of columns (to speed computation)
+    mat = mat[:, :num_cols]
+
+    # heatmap
+    print('Plotting heatmap...')
+    ax.imshow(mat,
+              # aspect='equal',
+              cmap=plt.get_cmap('Greys'),
+              interpolation='nearest')
+
+    # x ticks
+    x_tick_labels_spaced = []
+    for i, l in enumerate(x_tick_labels):
+        x_tick_labels_spaced.append(l if i % label_interval == 0 else '')
+
+    num_cols = len(mat.T)
+    ax.set_xticks(np.arange(num_cols))
+    ax.xaxis.set_ticklabels(x_tick_labels_spaced, rotation=90, fontsize=2)
+
+    # y ticks
+    y_tick_labels_spaced = []
+    for i, l in enumerate(y_tick_labels):
+        y_tick_labels_spaced.append(l if i % label_interval == 0 else '')
+
+    num_rows = len(mat)
+    ax.set_yticks(np.arange(num_rows))
+    ax.yaxis.set_ticklabels(y_tick_labels_spaced,  # no need to reverse (because no extent is set)
+                            rotation=0, fontsize=2)
+
+    # remove spacing between plot and tick labels
+    ax.tick_params(axis='both', which='both', pad=-2)
+
+    # remove tick lines
+    lines = (ax.xaxis.get_ticklines() +
+             ax.yaxis.get_ticklines())
+    plt.setp(lines, visible=False)
+    plt.show()
+

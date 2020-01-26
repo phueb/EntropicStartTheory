@@ -1,10 +1,10 @@
 from pathlib import Path
 
 
-class LocalDirs:
+class Dirs:
     root = Path(__file__).parent.parent
     src = Path(__file__).parent
-    runs = root / 'runs'
+    corpora = root / 'corpora'
 
 
 class Global:
@@ -17,15 +17,9 @@ class Symbols:
 
 class Eval:
     num_ts = 500   # number of time points at which to evaluate performance
-    stop_t = 250  # number of time points after which to exit (do not exit prematurely if None)
-    dp_num_parts = 1
+    stop_t = 3  # number of time points after which to exit (do not exit prematurely if None)
+    dp_num_parts = 2
     num_test_docs = 0
-
-
-class Metrics:
-    # ba = balanced-accuracy
-    ba_o = 'ba_ordered'
-    ba_n = 'ba_none'
 
 
 class Figs:

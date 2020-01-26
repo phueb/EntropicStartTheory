@@ -1,9 +1,11 @@
 scikit-learn
 seaborn
-matplotlib==3.1.1
+matplotlib==3.1.2
 pandas==0.25.2
 pyprind==2.11.2
 torch==1.4.0
 numpy==1.18.1
 attrs==19.3.0
 https://github.com/phueb/Ludwig/archive/v2.1.1.tar.gz
+https://github.com/phueb/Preppy/archive/v1.3.1.tar.gz
+https://github.com/phueb/CategoryEval/archive/v2.1.0.tar.gz

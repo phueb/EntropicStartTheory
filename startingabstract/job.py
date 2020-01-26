@@ -5,14 +5,14 @@ import pandas as pd
 import numpy as np
 import torch
 from pathlib import Path
-from itertools import product
 from itertools import islice
+from itertools import product
 from typing import Iterator
 
 from preppy.latest import Prep
 
-from categoryeval.score import BAScorer
-from prototypeeval.score import DPScorer
+from categoryeval.ba import BAScorer
+from categoryeval.dp import DPScorer
 
 from startingabstract import config
 from startingabstract.docs import load_docs
@@ -28,8 +28,8 @@ class Params(object):
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_docs = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
-    ba_names = attr.ib(validator=attr.validators.instance_of(list))
-    dp_names = attr.ib(validator=attr.validators.instance_of(list))
+    ba_probes = attr.ib(validator=attr.validators.instance_of(list))
+    dp_probes = attr.ib(validator=attr.validators.instance_of(list))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
     slide_size = attr.ib(validator=attr.validators.instance_of(int))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
@@ -85,8 +85,16 @@ def main(param2val):
     print(f'Number of total batches={gen_size}')
 
     # classes that perform scoring
-    ba_scorer = BAScorer(params.ba_names)
-    dp_scorer = DPScorer(train_prep.store.tokens, train_prep.store.types, params.dp_names, config.Eval.dp_num_parts)
+    ba_scorer = BAScorer(params.corpus,
+                         params.ba_probes,
+                         train_prep.store.w2id
+                         )
+    dp_scorer = DPScorer(params.corpus,
+                         params.dp_probes,
+                         train_prep.store.tokens,
+                         train_prep.store.types,
+                         config.Eval.dp_num_parts
+                         )
 
     # model
     model = RNN(
@@ -105,17 +113,14 @@ def main(param2val):
         raise AttributeError('Invalid arg to "optimizer"')
 
     # initialize metrics for evaluation
-    metrics = {
-        'train_pp': [],
-        'test_pp': [],
-        config.Metrics.ba_o: [],
-        config.Metrics.ba_n: [],
-    }
-    for dp_name, part in product(params.dp_names, range(config.Eval.dp_num_parts)):
-        metrics[f'dp_{dp_name}_part{part}'] = []
-        metrics[f'dp_{dp_name}_unigram_1'] = []
-        metrics[f'dp_{dp_name}_unigram_2'] = []
-        metrics[f'dp_{dp_name}_unigram_3'] = []
+    metrics = { 'train_pp': [], 'test_pp': []}
+    for probes_name in params.ba_probes:
+        metrics[f'ba_o_{probes_name}'] = []
+        metrics[f'ba_n_{probes_name}'] = []
+    for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
+        metrics[f'dp_{probes_name}_part{part}_unigram_1'] = []
+        metrics[f'dp_{probes_name}_part{part}_unigram_2'] = []
+        metrics[f'dp_{probes_name}_part{part}_unigram_3'] = []
 
     # train and eval
     train_mb = 0

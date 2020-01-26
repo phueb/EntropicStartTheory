@@ -10,7 +10,8 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig
-DP_NAME: str = 'singular-nouns-4096'
+DP_PROBES_NAME: str = 'singular-nouns-4096'
+PART_ID = 0
 
 Y_LABEL = 'KLD ( model-based p(X) || prototype-based p(X) )'
 LABEL_N: bool = True
@@ -44,14 +45,14 @@ for param_path, label in gen_param_paths(project_name,
                                          research_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
     # summary contains: x, mean_y, std_y, label, n
-    summary1 = make_summary(param_path, label, f'dp_{DP_NAME}_unigram_1.csv')
-    summary2 = make_summary(param_path, label, f'dp_{DP_NAME}_unigram_2.csv')
-    summary3 = make_summary(param_path, label, f'dp_{DP_NAME}_unigram_3.csv')
+    summary1 = make_summary(param_path, label, f'dp_{DP_PROBES_NAME}_part{PART_ID}_unigram_1')
+    summary2 = make_summary(param_path, label, f'dp_{DP_PROBES_NAME}_part{PART_ID}_unigram_1')
+    summary3 = make_summary(param_path, label, f'dp_{DP_PROBES_NAME}_part{PART_ID}_unigram_1')
 
     # plot
     fig = make_summary_fig(summaries=[summary1, summary2, summary3],  # mus be in this order to match labels
                            ylabel=Y_LABEL,
-                           title=f'{DP_NAME}\n{label}'if PARAMS_AS_TITLE else '',
+                           title=f'{DP_PROBES_NAME}\n{label}'if PARAMS_AS_TITLE else '',
                            log_x=False,
                            ylims=Y_LIMS,
                            figsize=FIG_SIZE,
@@ -66,7 +67,7 @@ for param_path, label in gen_param_paths(project_name,
 # plot comparison
 fig = make_summary_fig(summaries1,
                        ylabel=Y_LABEL,
-                       title=f'{DP_NAME}',
+                       title=f'{DP_PROBES_NAME}',
                        log_x=True,
                        ylims=Y_LIMS,
                        figsize=FIG_SIZE,
