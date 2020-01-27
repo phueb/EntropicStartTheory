@@ -35,7 +35,7 @@ def make_summary(pp, lb, pattern):
 
 
 # filter jobs
-param2requests['shuffle_sentences'] = [True]
+# param2requests['shuffle_sentences'] = [True]
 
 # collect summaries
 summaries1 = []

@@ -78,10 +78,14 @@ for keep_punctuation in [True, False]:
     x = np.array(name2sorted_q[NOUNS_NAME])
     y = dp_scorer.name2q['unconditional']
     assert x.shape == y.shape
-    print(drv.entropy_conditional(x, y))
+    print(NOUNS_NAME)
+    print(f'xe={drv.entropy_cross_pmf(x, y)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
 
     # how different is verb next-word distribution from unconditional distribution?
     x = np.array(name2sorted_q[VERBS_NAME])
     y = dp_scorer.name2q['unconditional']
     assert x.shape == y.shape
-    print(drv.entropy_conditional(x, y))
+    print(VERBS_NAME)
+    print(f'xe={drv.entropy_cross_pmf(x, y)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')

@@ -54,7 +54,7 @@ def make_summary(param_path, label):
 
 # collect summaries
 summaries = []
-param2requests['shuffle_sentences'] = [True]
+# param2requests['shuffle_sentences'] = [False]
 project_name = __name__
 for p, label in gen_param_paths(project_name,
                                 param2requests,

@@ -73,5 +73,4 @@ def split_into_sentences(tokens: List[str],
 
 def split(l, split_size):
     for i in range(0, len(l), split_size):
-        print(i, i+split_size)
         yield l[i:i + split_size]

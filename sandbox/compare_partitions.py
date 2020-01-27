@@ -43,11 +43,15 @@ for tokens in [prep.store.tokens[:prep.midpoint],
     x = dp_scorer.name2q[NOUNS_NAME]
     y = dp_scorer.name2q['unconditional']
     assert x.shape == y.shape
-    print(f'H(p(X|noun)|p(X))={drv.entropy_conditional(x, y)}')
+    print(NOUNS_NAME)
+    print(f'xe={drv.entropy_cross_pmf(x, y)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
 
     # conditional entropy (how much more information in X when y is known?)
     x = dp_scorer.name2q[VERBS_NAME]
     y = dp_scorer.name2q['unconditional']
     assert x.shape == y.shape
-    print(f'H(p(X|verb)|p(X))={drv.entropy_conditional(x, y)}')
+    print(VERBS_NAME)
+    print(f'xe={drv.entropy_cross_pmf(x, y)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
 
