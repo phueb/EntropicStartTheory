@@ -11,8 +11,8 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local results or None if using results form Ludwig
-BA_TYPE: str = 'ba_n'
-PROBES_NAME: str = 'syn-4096'
+BA_TYPE: str = 'ba_o'
+PROBES_NAME: str = 'sem-4096'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
@@ -54,7 +54,7 @@ def make_summary(param_path, label):
 
 # collect summaries
 summaries = []
-param2requests['dp_probes'] = [['singular-nouns-4096', 'all-verbs-4096', 'unigram']]
+# param2requests['legacy'] = [False]
 project_name = __name__
 for p, label in gen_param_paths(project_name,
                                 param2requests,
