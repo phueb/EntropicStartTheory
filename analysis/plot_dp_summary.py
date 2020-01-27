@@ -11,7 +11,7 @@ from startingabstract.params import param2default, param2requests
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig
 DP_PROBES_NAME: str = 'singular-nouns-4096'
-PART_ID = 1
+PART_ID = 0
 
 Y_LABEL = 'KLD ( model-based p(X) || prototype-based p(X) )'
 LABEL_N: bool = True
@@ -35,7 +35,7 @@ def make_summary(pp, lb, pattern):
 
 
 # filter jobs
-param2requests['context_size'] = [7]
+param2requests['shuffle_sentences'] = [True]
 
 # collect summaries
 summaries1 = []
@@ -79,4 +79,4 @@ fig = make_summary_fig(summaries1,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )
-# fig.show()
+fig.show()

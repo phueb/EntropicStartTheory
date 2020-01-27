@@ -17,11 +17,11 @@ PROBES_NAME: str = 'sem-4096'
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
-PALETTE_IDS: Optional[List[int]] = [0, 1]   # re-assign colors to each line
+PALETTE_IDS: Optional[List[int]] = [1, 0]   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
-LABELS: Optional[List[str]] = ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
+LABELS: Optional[List[str]] = None # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
-Y_LIMS: List[float] = [0.5, 0.7]
+Y_LIMS: List[float] = [0.5, 0.8]
 Y_LABEL: str = 'Balanced Accuracy'
 
 
@@ -54,7 +54,7 @@ def make_summary(param_path, label):
 
 # collect summaries
 summaries = []
-# param2requests['legacy'] = [False]
+param2requests['shuffle_sentences'] = [True]
 project_name = __name__
 for p, label in gen_param_paths(project_name,
                                 param2requests,

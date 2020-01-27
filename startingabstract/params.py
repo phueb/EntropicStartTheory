@@ -4,6 +4,7 @@
 param2requests = {
     'reverse': [True, False],
     'legacy': [True],
+    'shuffle_sentences': [False]
 }
 
 param2debug = {
@@ -16,7 +17,7 @@ param2debug = {
 param2default = {
     'legacy': False,
     'reverse': False,
-    'shuffle_docs': False,   # this is an important control (contents of parts are randomly chosen)
+    'shuffle_sentences': False,
     'corpus': 'childes-20191112',
     'ba_probes': ['syn-4096', 'sem-4096'],
     'dp_probes': ['singular-nouns-4096', 'all-verbs-4096', 'unconditional'],

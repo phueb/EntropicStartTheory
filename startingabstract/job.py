@@ -28,7 +28,7 @@ from startingabstract.rnn import RNN
 class Params(object):
     legacy = attr.ib(validator=attr.validators.instance_of(bool))
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
-    shuffle_docs = attr.ib(validator=attr.validators.instance_of(bool))
+    shuffle_sentences = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
     ba_probes = attr.ib(validator=attr.validators.instance_of(list))
     dp_probes = attr.ib(validator=attr.validators.instance_of(list))
@@ -56,7 +56,7 @@ def main(param2val):
     project_path = Path(param2val['project_path'])
     corpus_path = project_path / 'corpora' / f'{params.corpus}.txt'
     train_docs, test_docs = load_docs(corpus_path,
-                                      params.shuffle_docs,
+                                      shuffle_sentences=params.shuffle_sentences,
                                       num_test_docs=config.Eval.num_test_docs,
                                       )
 

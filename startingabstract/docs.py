@@ -13,6 +13,9 @@ def load_docs(corpus_path: Path,
               ) -> Tuple[List[str], List[str]]:
 
     text_in_file = corpus_path.read_text()
+    docs = text_in_file.split('\n')
+    num_docs = len(docs)
+    print(f'Loaded {num_docs} documents from {corpus_path}')
 
     # shuffle at sentence-level (as opposed to document-level)
     # this remove clustering of same-age utterances within documents
@@ -22,15 +25,12 @@ def load_docs(corpus_path: Path,
         tokens = text_in_file.replace('\n', ' ').split()
         sentences = split_into_sentences(tokens, punctuation={'.', '!', '?'})
         random.shuffle(sentences)
-        tokens_new = [t for sentence in sentences for t in sentence]
-        num_original_docs = len(text_in_file.split('\n'))
-        size = len(tokens_new) // num_original_docs
-        docs = [' '.join(tokens) for tokens in split(tokens_new, size)]  # convert back to strings
-    else:
-        docs = text_in_file.split('\n')
-
-    num_docs = len(docs)
-    print(f'Loaded {num_docs} documents from {corpus_path}')
+        # assign sentences to documents + convert back to strings
+        num_s_in_doc = len(sentences) // num_docs
+        print(f'Found {len(sentences)} sentences')
+        print(f'Assigning {num_s_in_doc} sentences to each new document')
+        docs = [' '.join([w for s in s_chunk for w in s]) for s_chunk in split(sentences, num_s_in_doc)]
+        print(f'After shuffling, number of docs={len(docs)}')
 
     # split train/test
     print('Splitting docs into train and test...')
@@ -64,13 +64,14 @@ def split_into_sentences(tokens: List[str],
     assert isinstance(punctuation, set)
 
     res = [[]]
-    for w in tokens:
+    for n, w in enumerate(tokens):
         res[-1].append(w)
-        if w in punctuation:
+        if w in punctuation and n < len(tokens) - 1:  # prevent appending empty list at end
             res.append([])
     return res
 
 
 def split(l, split_size):
     for i in range(0, len(l), split_size):
+        print(i, i+split_size)
         yield l[i:i + split_size]
