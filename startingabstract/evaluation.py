@@ -83,14 +83,16 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):  # TODO is this st
             logits = model(inputs)['logits'].detach().cpu().numpy()
             predictions_mat = softmax(logits)
 
-            # dp
-            dp = dp_scorer.calc_dp(predictions_mat, probes_name, return_mean=True)
-
             # check predictions
             max_ids = np.argsort(predictions_mat.mean(axis=0))
             print(f'{probes_name} predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
 
-            metrics[f'dp_{probes_name}_part{part}'].append(dp)
+            # dp
+            dp = dp_scorer.calc_dp(predictions_mat, probes_name, metric='js')
+            metrics[f'dp_{probes_name}_part{part}_js'].append(dp)
+
+            dp = dp_scorer.calc_dp(predictions_mat, probes_name, metric='xe')
+            metrics[f'dp_{probes_name}_part{part}_xe'].append(dp)
 
     return metrics
 
@@ -123,7 +125,7 @@ def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
             ct_mat_csr = dp_scorer.ct_mat.tocsr()
             for p in probes:
                 w_id = train_prep.store.w2id[p]
-                fs = np.squeeze(ct_mat_csr[w_id].toarray())
+                fs = np.squeeze(ct_mat_csr[w_id].toarray()) + 10e9
                 probabilities = fs / fs.sum()
                 tmp.append(probabilities)
             qs2 = np.array(tmp)
@@ -172,7 +174,7 @@ def make_probe_reps_n(model, probe_store):
     return probe_reps_n
 
 
-def make_probe_reps_o(model, probe_store, train_prep, verbose=True):
+def make_probe_reps_o(model, probe_store, train_prep, verbose=False):
     """
     make probe representations by averaging over all contextualized representations
     """

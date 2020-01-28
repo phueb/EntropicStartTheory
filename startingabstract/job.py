@@ -66,8 +66,8 @@ def main(param2val):
         print('WARNING: params.legacy=True')
         print('=======================================================')
 
-        num_iterations = 20
-        assert config.Eval.num_ts % num_iterations == 0  # TODO is this really important?
+        num_iterations = 16
+        assert config.Eval.num_total_ts % num_iterations == 0  # TODO is this really important?
         train_prep = TrainPrep(train_docs,
                                params.reverse,
                                params.num_types,
@@ -77,7 +77,7 @@ def main(param2val):
                                num_iterations=[num_iterations, num_iterations],
                                batch_size=params.batch_size,
                                context_size=params.context_size,
-                               num_evaluations=config.Eval.num_ts,
+                               num_evaluations=config.Eval.num_total_ts,
                                shuffle_within_part=False)
         test_prep = TestPrep(test_docs,
                              batch_size=params.batch_size,
@@ -90,19 +90,24 @@ def main(param2val):
                           slide_size=params.slide_size,
                           batch_size=params.batch_size,
                           context_size=params.context_size,
-                          num_evaluations=config.Eval.num_ts)
+                          num_evaluations=config.Eval.num_total_ts)
         test_prep = Prep(test_docs,
                          reverse=params.reverse,
                          num_types=params.num_types,
                          slide_size=params.batch_size,
                          batch_size=params.batch_size,
                          context_size=params.context_size,
-                         num_evaluations=config.Eval.num_ts,
+                         num_evaluations=config.Eval.num_total_ts,
                          vocab=train_prep.store.types)
 
     windows_generator = train_prep.gen_windows()  # has to be created once
     gen_size = len([1 for i in train_prep.gen_windows()])
     print(f'Number of total batches={gen_size}')
+
+    real_eval_mbs = train_prep.eval_mbs[:config.Eval.num_real_ts] + train_prep.eval_mbs[-config.Eval.num_real_ts:]
+    print('Computing performance at mbs:')
+    for mb in real_eval_mbs:
+        print(mb)
 
     # classes that perform scoring
     ba_scorer = BAScorer(params.corpus,
@@ -138,8 +143,9 @@ def main(param2val):
         metrics[f'ba_o_{probes_name}'] = []
         metrics[f'ba_n_{probes_name}'] = []
     for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
-        metrics[f'dp_{probes_name}_part{part}'] = []
-        # js
+        metrics[f'dp_{probes_name}_part{part}_js'] = []
+        metrics[f'dp_{probes_name}_part{part}_xe'] = []
+        # xe
         metrics[f'dp_{probes_name}_part{part}_js_unconditional_1'] = []
         metrics[f'dp_{probes_name}_part{part}_js_unconditional_2'] = []
         metrics[f'dp_{probes_name}_part{part}_js_unconditional_3'] = []
@@ -151,7 +157,6 @@ def main(param2val):
     # train and eval
     train_mb = 0
     start_train = time.time()
-    stop_t = config.Eval.num_ts if config.Eval.stop_t is None else config.Eval.stop_t
     for t, eval_mb in enumerate(train_prep.eval_mbs):
         # train
         if t != 0:
@@ -160,21 +165,27 @@ def main(param2val):
             train_on_corpus(model, optimizer, criterion, train_prep, windows_generator)
             train_mb += train_prep.num_mbs_per_eval
 
-        # eval (metrics must be returned to reuse the same object)
-        model.eval()
-        metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
-        metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
-        metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
+        # dummy-eval (to save compute time)
+        if eval_mb not in real_eval_mbs:
+            print('WARNING: Not evaluating performance')  # don't add nans to metric dictionary
+        # real eval (costly to compute)
+        else:
+            model.eval()
+            metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
+            metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
+            metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
+            metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
+
+            for k, v in metrics.items():
+                if not v:
+                    continue
+                print(f'{k: <12}={v[-1]:.2f}')
+            print(flush=True)
 
         # print progress to console
         minutes_elapsed = int(float(time.time() - start_train) / 60)
-        print(f'completed time-point={t} of {config.Eval.num_ts}')
+        print(f'completed time-point={t} of {config.Eval.num_total_ts}')
         print(f'minutes elapsed={minutes_elapsed}')
-        for k, v in metrics.items():
-            if not v:
-                continue
-            print(f'{k: <12}={v[-1]:.2f}')
         print(flush=True)
 
     # collect performance in list of pandas series
@@ -182,7 +193,7 @@ def main(param2val):
     for k, v in metrics.items():
         if not v:
             continue
-        s = pd.Series(v, index=train_prep.eval_mbs)
+        s = pd.Series(v, index=real_eval_mbs)
         s.name = k
         res.append(s)
 
