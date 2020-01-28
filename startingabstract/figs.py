@@ -15,7 +15,7 @@ def human_format(num, pos):  # pos is required for formatting mpl axis ticklabel
     return '{}{}'.format(num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
 
-def make_summary_fig(summaries: list,
+def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]],
                      ylabel: str,
                      title: str = '',
                      palette_ids: List[int] = None,
