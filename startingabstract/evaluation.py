@@ -132,13 +132,22 @@ def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
             qs3 = dp_scorer.name2p[probes_name][np.newaxis, :]
 
             # dp
-            dp1 = dp_scorer.calc_dp(qs1, 'unconditional', return_mean=True)
-            dp2 = dp_scorer.calc_dp(qs2, 'unconditional', return_mean=True)
-            dp3 = dp_scorer.calc_dp(qs3, 'unconditional', return_mean=True)
+            dp1 = dp_scorer.calc_dp(qs1, 'unconditional', metric='js')
+            dp2 = dp_scorer.calc_dp(qs2, 'unconditional', metric='js')
+            dp3 = dp_scorer.calc_dp(qs3, 'unconditional', metric='js')
 
-            metrics[f'dp_{probes_name}_part{part}_unconditional_1'].append(dp1)
-            metrics[f'dp_{probes_name}_part{part}_unconditional_2'].append(dp2)
-            metrics[f'dp_{probes_name}_part{part}_unconditional_3'].append(dp3)
+            metrics[f'dp_{probes_name}_part{part}_js_unconditional_1'].append(dp1)
+            metrics[f'dp_{probes_name}_part{part}_js_unconditional_2'].append(dp2)
+            metrics[f'dp_{probes_name}_part{part}_js_unconditional_3'].append(dp3)
+
+            # dp
+            dp1 = dp_scorer.calc_dp(qs1, 'unconditional', metric='xe')
+            dp2 = dp_scorer.calc_dp(qs2, 'unconditional', metric='xe')
+            dp3 = dp_scorer.calc_dp(qs3, 'unconditional', metric='xe')
+
+            metrics[f'dp_{probes_name}_part{part}_xe_unconditional_1'].append(dp1)
+            metrics[f'dp_{probes_name}_part{part}_xe_unconditional_2'].append(dp2)
+            metrics[f'dp_{probes_name}_part{part}_xe_unconditional_3'].append(dp3)
 
     return metrics
 

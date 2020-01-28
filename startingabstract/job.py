@@ -139,15 +139,20 @@ def main(param2val):
         metrics[f'ba_n_{probes_name}'] = []
     for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
         metrics[f'dp_{probes_name}_part{part}'] = []
-        metrics[f'dp_{probes_name}_part{part}_unconditional_1'] = []
-        metrics[f'dp_{probes_name}_part{part}_unconditional_2'] = []
-        metrics[f'dp_{probes_name}_part{part}_unconditional_3'] = []
+        # js
+        metrics[f'dp_{probes_name}_part{part}_js_unconditional_1'] = []
+        metrics[f'dp_{probes_name}_part{part}_js_unconditional_2'] = []
+        metrics[f'dp_{probes_name}_part{part}_js_unconditional_3'] = []
+        # xe
+        metrics[f'dp_{probes_name}_part{part}_xe_unconditional_1'] = []
+        metrics[f'dp_{probes_name}_part{part}_xe_unconditional_2'] = []
+        metrics[f'dp_{probes_name}_part{part}_xe_unconditional_3'] = []
 
     # train and eval
     train_mb = 0
     start_train = time.time()
     stop_t = config.Eval.num_ts if config.Eval.stop_t is None else config.Eval.stop_t
-    for t, eval_mb in enumerate(train_prep.eval_mbs[:stop_t]):
+    for t, eval_mb in enumerate(train_prep.eval_mbs):
         # train
         if t != 0:
             model.train()
@@ -158,13 +163,13 @@ def main(param2val):
         # eval (metrics must be returned to reuse the same object)
         model.eval()
         metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        # metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
+        metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
         metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 
         # print progress to console
         minutes_elapsed = int(float(time.time() - start_train) / 60)
-        print(f'completed time-point={t} of {config.Eval.num_ts} but stopping at {stop_t}')
+        print(f'completed time-point={t} of {config.Eval.num_ts}')
         print(f'minutes elapsed={minutes_elapsed}')
         for k, v in metrics.items():
             if not v:
@@ -177,7 +182,7 @@ def main(param2val):
     for k, v in metrics.items():
         if not v:
             continue
-        s = pd.Series(v, index=train_prep.eval_mbs[:stop_t])
+        s = pd.Series(v, index=train_prep.eval_mbs)
         s.name = k
         res.append(s)
 
