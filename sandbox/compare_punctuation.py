@@ -43,7 +43,7 @@ for keep_punctuation in [True, False]:
                       )
 
     dp_scorer = DPScorer(CORPUS_NAME,
-                         probes_names=[NOUNS_NAME, VERBS_NAME, 'unconditional'],
+                         probes_names=(NOUNS_NAME, VERBS_NAME, 'unconditional'),
                          tokens=train_prep.store.tokens,
                          types=train_prep.store.types,
                          num_parts=1,
@@ -64,8 +64,8 @@ for keep_punctuation in [True, False]:
     # plot q (the next-word distribution conditioned on some category)
     name2sorted_q = {}
     for probes_name in dp_scorer.probes_names:
-        q = dp_scorer.name2q[probes_name]
-        sorted_q = [q[w_id] for w_id in sorted_w_ids]
+        _q = dp_scorer.name2p[probes_name]
+        sorted_q = [_q[w_id] for w_id in sorted_w_ids]
         ax.semilogx(sorted_q, label=probes_name)
 
         # collect to compute information theoretic measures
@@ -75,17 +75,19 @@ for keep_punctuation in [True, False]:
     plt.show()
 
     # how different is noun next-word distribution from unconditional distribution?
-    x = np.array(name2sorted_q[NOUNS_NAME])
-    y = dp_scorer.name2q['unconditional']
-    assert x.shape == y.shape
+    p = dp_scorer.name2p['unconditional']
+    q = dp_scorer.name2p[NOUNS_NAME]
+    assert p.shape == q.shape
     print(NOUNS_NAME)
-    print(f'xe={drv.entropy_cross_pmf(x, y)}')
-    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
+    print(f'xe={drv.entropy_cross_pmf(p, q)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
+    print(f'kl={drv.divergence_kullbackleibler_pmf(p, q)}')
 
     # how different is verb next-word distribution from unconditional distribution?
-    x = np.array(name2sorted_q[VERBS_NAME])
-    y = dp_scorer.name2q['unconditional']
-    assert x.shape == y.shape
-    print(VERBS_NAME)
-    print(f'xe={drv.entropy_cross_pmf(x, y)}')
-    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
+    if False:
+        p = dp_scorer.name2p['unconditional']
+        q = dp_scorer.name2p[VERBS_NAME]
+        assert p.shape == q.shape
+        print(VERBS_NAME)
+        print(f'xe={drv.entropy_cross_pmf(p, q)}')
+        print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')

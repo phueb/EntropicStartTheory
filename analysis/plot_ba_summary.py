@@ -24,6 +24,8 @@ FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
 Y_LIMS: List[float] = [0.5, 0.8]
 Y_LABEL: str = 'Balanced Accuracy'
 
+# param2requests['shuffle_sentences'] = [False]
+
 
 def correct_artifacts(y, tolerance=0.00):
     """
@@ -54,7 +56,6 @@ def make_summary(param_path, label):
 
 # collect summaries
 summaries = []
-# param2requests['shuffle_sentences'] = [False]
 project_name = __name__
 for p, label in gen_param_paths(project_name,
                                 param2requests,

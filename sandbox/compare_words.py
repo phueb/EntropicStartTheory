@@ -35,32 +35,31 @@ prep = TrainPrep(train_docs,
                  )
 
 dp_scorer = DPScorer(CORPUS_NAME,
-                     probes_names=[NOUNS_NAME, VERBS_NAME, 'unconditional'],
+                     probes_names=(NOUNS_NAME, VERBS_NAME, 'unconditional'),
                      tokens=prep.store.tokens,
                      types=prep.store.types,
                      num_parts=1,
                      )
 
-# conditional entropy (how much more information in X when y is known?)
-x = np.squeeze(dp_scorer.name2q[NOUNS_NAME])
-y = np.squeeze(dp_scorer.name2q['unconditional'])
-assert x.shape == y.shape
-print(f'jensen-shannon={drv.divergence_jensenshannon_pmf(x, y)}')
-print(f'jensen-shannon={jensenshannon(x, y)}')
+p = dp_scorer.name2p['unconditional']
+q = dp_scorer.name2p[NOUNS_NAME]
+assert p.shape == q.shape
+print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
+print(f'xe={drv.entropy_cross_pmf(p, q)}')
 
-# predictions_mat2
+# get predictions "qs"
 tmp = []
 ct_mat_csr = dp_scorer.ct_mat.tocsr()
 probes = dp_scorer.name2probes[NOUNS_NAME]
-for p in probes:
-    w_id = prep.store.w2id[p]
+for probe in probes:
+    w_id = prep.store.w2id[probe]
     fs = np.squeeze(ct_mat_csr[w_id].toarray())
-    probabilities = np.clip(fs / fs.sum(), 10e-9, 1.0)
+    probabilities = fs / fs.sum()
     tmp.append(probabilities)
-predictions_mat2 = np.array(tmp)
+qs2 = np.array(tmp)
 
-dps = dp_scorer.calc_dp(predictions_mat2, 'unconditional', return_mean=False, metric=METRIC)
-for probe, dp, probs in sorted(zip(probes, dps, predictions_mat2), key=lambda i: i[1], reverse=True):
+dps = dp_scorer.calc_dp(qs2, 'unconditional', return_mean=False, metric=METRIC)
+for probe, dp, probs in sorted(zip(probes, dps, qs2), key=lambda i: i[1], reverse=True):
     next_words = sorted(prep.store.types, key=lambda w: probs[prep.store.w2id[w]].item())[-10:]
     print(f'{probe:<12} {METRIC}={dp:.3f} f={prep.store.w2f[probe]:>9,}', next_words)
 

@@ -13,11 +13,15 @@ RUNS_PATH = None  # config.Dirs.runs if using local results or None if using res
 DP_PROBES_NAME: str = 'singular-nouns-4096'
 PART_ID = 0
 
-Y_LABEL = 'KLD ( model-based p(X) || prototype-based p(X) )'
+Y_LABEL = 'Divergence from Prototype'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
-Y_LIMS: List[float] = [0, 4]
+Y_LIMS: List[float] = [0, 1]
 PARAMS_AS_TITLE: bool = True
+
+PLOT_SINGLE_SUMMARY = True
+
+# param2requests['shuffle_sentences'] = [True]
 
 
 def make_summary(pp, lb, pattern):
@@ -34,8 +38,6 @@ def make_summary(pp, lb, pattern):
     return concatenated_df.index, y_mean, y_std, lb, len(series_list)
 
 
-# filter jobs
-# param2requests['shuffle_sentences'] = [True]
 
 # collect summaries
 summaries1 = []
@@ -61,7 +63,8 @@ for param_path, label in gen_param_paths(project_name,
                            figsize=FIG_SIZE,
                            legend_labels=['model-based word', 'ideal word', 'ideal category']
                            )
-    fig.show()
+    if PLOT_SINGLE_SUMMARY:
+        fig.show()
 
     # collect for comparison figure
     summaries1.append(summary1)

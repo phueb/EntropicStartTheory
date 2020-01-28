@@ -109,16 +109,16 @@ def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
 
         for part in range(config.Eval.dp_num_parts):
 
-            # predictions_mat1
+            # qs1
             probes = dp_scorer.name2part2probes[probes_name][part]
             assert probes
             w_ids = [train_prep.store.w2id[w] for w in probes]
             x = np.expand_dims(np.array(w_ids), axis=1)
             inputs = torch.cuda.LongTensor(x)
             logits = model(inputs)['logits'].detach().cpu().numpy()
-            predictions_mat1 = softmax(logits)
+            qs1 = softmax(logits)
 
-            # predictions_mat2
+            # qs2
             tmp = []
             ct_mat_csr = dp_scorer.ct_mat.tocsr()
             for p in probes:
@@ -126,15 +126,15 @@ def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
                 fs = np.squeeze(ct_mat_csr[w_id].toarray())
                 probabilities = fs / fs.sum()
                 tmp.append(probabilities)
-            predictions_mat2 = np.array(tmp)
+            qs2 = np.array(tmp)
 
-            # predictions_mat3
-            predictions_mat3 = dp_scorer.name2q[probes_name][np.newaxis, :]
+            # qs3
+            qs3 = dp_scorer.name2p[probes_name][np.newaxis, :]
 
             # dp
-            dp1 = dp_scorer.calc_dp(predictions_mat1, 'unconditional', return_mean=True)
-            dp2 = dp_scorer.calc_dp(predictions_mat2, 'unconditional', return_mean=True)
-            dp3 = dp_scorer.calc_dp(predictions_mat3, 'unconditional', return_mean=True)
+            dp1 = dp_scorer.calc_dp(qs1, 'unconditional', return_mean=True)
+            dp2 = dp_scorer.calc_dp(qs2, 'unconditional', return_mean=True)
+            dp3 = dp_scorer.calc_dp(qs3, 'unconditional', return_mean=True)
 
             metrics[f'dp_{probes_name}_part{part}_unconditional_1'].append(dp1)
             metrics[f'dp_{probes_name}_part{part}_unconditional_2'].append(dp2)
@@ -163,7 +163,7 @@ def make_probe_reps_n(model, probe_store):
     return probe_reps_n
 
 
-def make_probe_reps_o(model, probe_store, train_prep, max_rows=1024, verbose=False):
+def make_probe_reps_o(model, probe_store, train_prep, verbose=True):
     """
     make probe representations by averaging over all contextualized representations
     """
@@ -173,8 +173,11 @@ def make_probe_reps_o(model, probe_store, train_prep, max_rows=1024, verbose=Fal
     for n, vocab_id in enumerate(probe_store.vocab_ids):
         bool_idx = np.isin(all_windows[:, -2], vocab_id)
         x = all_windows[bool_idx][:, :-1]
-        if len(x) > max_rows:
-            x = x[np.random.choice(len(x), size=max_rows)]
+
+        # TODO does this matter?
+        # if len(x) > config.Eval.max_num_exemplars:
+        #     x = x[np.random.choice(len(x), size=config.Eval.max_num_exemplars)]
+
         inputs = torch.cuda.LongTensor(x)
         num_exemplars, dim1 = inputs.shape
         assert dim1 == train_prep.context_size

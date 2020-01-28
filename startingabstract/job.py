@@ -30,8 +30,8 @@ class Params(object):
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_sentences = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
-    ba_probes = attr.ib(validator=attr.validators.instance_of(list))
-    dp_probes = attr.ib(validator=attr.validators.instance_of(list))
+    ba_probes = attr.ib(validator=attr.validators.instance_of(tuple))
+    dp_probes = attr.ib(validator=attr.validators.instance_of(tuple))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
     slide_size = attr.ib(validator=attr.validators.instance_of(int))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
@@ -65,11 +65,16 @@ def main(param2val):
         print('=======================================================')
         print('WARNING: params.legacy=True')
         print('=======================================================')
+
+        num_iterations = 20
+        assert config.Eval.num_ts % num_iterations == 0  # TODO is this really important?
         train_prep = TrainPrep(train_docs,
                                params.reverse,
                                params.num_types,
-                               num_parts=2,
-                               num_iterations=[20, 20],
+
+                               num_parts=128,  # TODO test different num_parts
+
+                               num_iterations=[num_iterations, num_iterations],
                                batch_size=params.batch_size,
                                context_size=params.context_size,
                                num_evaluations=config.Eval.num_ts,
@@ -133,6 +138,7 @@ def main(param2val):
         metrics[f'ba_o_{probes_name}'] = []
         metrics[f'ba_n_{probes_name}'] = []
     for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
+        metrics[f'dp_{probes_name}_part{part}'] = []
         metrics[f'dp_{probes_name}_part{part}_unconditional_1'] = []
         metrics[f'dp_{probes_name}_part{part}_unconditional_2'] = []
         metrics[f'dp_{probes_name}_part{part}_unconditional_3'] = []
@@ -151,8 +157,8 @@ def main(param2val):
 
         # eval (metrics must be returned to reuse the same object)
         model.eval()
-        # metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
-        metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
+        metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
+        # metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
         metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
         metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
 

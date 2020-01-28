@@ -13,10 +13,14 @@ class Global:
 
 
 class Eval:
-    num_ts = 500   # number of time points at which to evaluate performance
-    stop_t = 50  # number of time points after which to exit (do not exit prematurely if None)
+
+    # Careful: make num_ts divisible by num_iterations
+
+    num_ts = 20   # number of time points at which to evaluate performance
+    stop_t = 20  # number of time points after which to exit (do not exit prematurely if None)
     dp_num_parts = 1
     num_test_docs = 0
+    max_num_exemplars = 4096  # TODO this may need to be set higher for semantic categories
 
 
 class Figs:

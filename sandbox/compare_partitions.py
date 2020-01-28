@@ -33,25 +33,23 @@ prep = TrainPrep(train_docs,
 for tokens in [prep.store.tokens[:prep.midpoint],
                prep.store.tokens[-prep.midpoint:]]:
     dp_scorer = DPScorer(CORPUS_NAME,
-                         probes_names=[NOUNS_NAME, VERBS_NAME, 'unconditional'],
+                         probes_names=(NOUNS_NAME, VERBS_NAME, 'unconditional'),
                          tokens=tokens,
                          types=prep.store.types,
                          num_parts=1,
                          )
 
-    # conditional entropy (how much more information in X when y is known?)
-    x = dp_scorer.name2q[NOUNS_NAME]
-    y = dp_scorer.name2q['unconditional']
-    assert x.shape == y.shape
+    p = dp_scorer.name2p['unconditional']
+    q = dp_scorer.name2p[NOUNS_NAME]
+    assert p.shape == q.shape
     print(NOUNS_NAME)
-    print(f'xe={drv.entropy_cross_pmf(x, y)}')
-    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
+    print(f'xe={drv.entropy_cross_pmf(p, q)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
 
-    # conditional entropy (how much more information in X when y is known?)
-    x = dp_scorer.name2q[VERBS_NAME]
-    y = dp_scorer.name2q['unconditional']
-    assert x.shape == y.shape
+    p = dp_scorer.name2p['unconditional']
+    q = dp_scorer.name2p[VERBS_NAME]
+    assert p.shape == q.shape
     print(VERBS_NAME)
-    print(f'xe={drv.entropy_cross_pmf(x, y)}')
-    print(f'js={drv.divergence_jensenshannon_pmf(x, y)}')
+    print(f'xe={drv.entropy_cross_pmf(p, q)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
 
