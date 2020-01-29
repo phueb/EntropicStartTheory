@@ -16,11 +16,13 @@ class Eval:
 
     # Careful: make num_ts divisible by num_iterations
 
-    num_total_ts = 512   # number of time points at which to evaluate performance
-    num_real_ts = 16
+    num_total_ticks = 128   # number of time points at which to evaluate performance
+    num_start_ticks = 16
+    tick_step = 8  # skip this number of ticks until performance evaluation when not at start of training
+
     dp_num_parts = 1
     num_test_docs = 0
-    max_num_exemplars = 4096  # TODO this may need to be set higher for semantic categories
+    # max_num_exemplars = 4096  # TODO this may affect age-order effect but is needed for syn probes
 
 
 class Figs:

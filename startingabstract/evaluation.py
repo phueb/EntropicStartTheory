@@ -66,7 +66,7 @@ def update_ba_metrics(metrics, model, train_prep, ba_scorer):
     return metrics
 
 
-def update_dp_metrics(metrics, model, train_prep, dp_scorer):  # TODO is this still useful?
+def update_dp_metrics_conditional(metrics, model, train_prep, dp_scorer):  # TODO is this still useful?
     """
     calculate distance-to-prototype (aka dp):
     all divergences are relative to the prototype that best characterizes members belonging to probes_name
@@ -100,10 +100,7 @@ def update_dp_metrics(metrics, model, train_prep, dp_scorer):  # TODO is this st
 def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
     """
     calculate distance-to-prototype (aka dp):
-    all divergences are relative to unconditional prototype, including:
-    1. model-based next-word distribution given word
-    2. ideal next-word distribution given word
-    3. ideal next-word distribution given category of a word
+    divergence is relative to unconditional prototype
     """
     for probes_name in dp_scorer.probes_names:
         if probes_name == 'unconditional':
@@ -111,45 +108,21 @@ def update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer):
 
         for part in range(config.Eval.dp_num_parts):
 
-            # qs1
+            # qs
             probes = dp_scorer.name2part2probes[probes_name][part]
             assert probes
             w_ids = [train_prep.store.w2id[w] for w in probes]
             x = np.expand_dims(np.array(w_ids), axis=1)
             inputs = torch.cuda.LongTensor(x)
             logits = model(inputs)['logits'].detach().cpu().numpy()
-            qs1 = softmax(logits)
-
-            # qs2
-            tmp = []
-            ct_mat_csr = dp_scorer.ct_mat.tocsr()
-            for p in probes:
-                w_id = train_prep.store.w2id[p]
-                fs = np.squeeze(ct_mat_csr[w_id].toarray()) + 10e9
-                probabilities = fs / fs.sum()
-                tmp.append(probabilities)
-            qs2 = np.array(tmp)
-
-            # qs3
-            qs3 = dp_scorer.name2p[probes_name][np.newaxis, :]
+            qs = softmax(logits)
 
             # dp
-            dp1 = dp_scorer.calc_dp(qs1, 'unconditional', metric='js')
-            dp2 = dp_scorer.calc_dp(qs2, 'unconditional', metric='js')
-            dp3 = dp_scorer.calc_dp(qs3, 'unconditional', metric='js')
+            dp = dp_scorer.calc_dp(qs, 'unconditional', metric='js')
+            metrics[f'dp_{probes_name}_part{part}_js_unconditional'].append(dp)
 
-            metrics[f'dp_{probes_name}_part{part}_js_unconditional_1'].append(dp1)
-            metrics[f'dp_{probes_name}_part{part}_js_unconditional_2'].append(dp2)
-            metrics[f'dp_{probes_name}_part{part}_js_unconditional_3'].append(dp3)
-
-            # dp
-            dp1 = dp_scorer.calc_dp(qs1, 'unconditional', metric='xe')
-            dp2 = dp_scorer.calc_dp(qs2, 'unconditional', metric='xe')
-            dp3 = dp_scorer.calc_dp(qs3, 'unconditional', metric='xe')
-
-            metrics[f'dp_{probes_name}_part{part}_xe_unconditional_1'].append(dp1)
-            metrics[f'dp_{probes_name}_part{part}_xe_unconditional_2'].append(dp2)
-            metrics[f'dp_{probes_name}_part{part}_xe_unconditional_3'].append(dp3)
+            dp = dp_scorer.calc_dp(qs, 'unconditional', metric='xe')
+            metrics[f'dp_{probes_name}_part{part}_xe_unconditional'].append(dp)
 
     return metrics
 

@@ -19,7 +19,7 @@ from startingabstract import config
 from startingabstract.docs import load_docs
 from startingabstract.evaluation import update_ba_metrics
 from startingabstract.evaluation import update_pp_metrics
-from startingabstract.evaluation import update_dp_metrics
+from startingabstract.evaluation import update_dp_metrics_conditional
 from startingabstract.evaluation import update_dp_metrics_unconditional
 from startingabstract.rnn import RNN
 
@@ -67,7 +67,7 @@ def main(param2val):
         print('=======================================================')
 
         num_iterations = 16
-        assert config.Eval.num_total_ts % num_iterations == 0  # TODO is this really important?
+        assert config.Eval.num_total_ticks % num_iterations == 0  # TODO is this really important?
         train_prep = TrainPrep(train_docs,
                                params.reverse,
                                params.num_types,
@@ -77,7 +77,7 @@ def main(param2val):
                                num_iterations=[num_iterations, num_iterations],
                                batch_size=params.batch_size,
                                context_size=params.context_size,
-                               num_evaluations=config.Eval.num_total_ts,
+                               num_evaluations=config.Eval.num_total_ticks,
                                shuffle_within_part=False)
         test_prep = TestPrep(test_docs,
                              batch_size=params.batch_size,
@@ -90,24 +90,17 @@ def main(param2val):
                           slide_size=params.slide_size,
                           batch_size=params.batch_size,
                           context_size=params.context_size,
-                          num_evaluations=config.Eval.num_total_ts)
+                          num_evaluations=config.Eval.num_total_ticks)
         test_prep = Prep(test_docs,
                          reverse=params.reverse,
                          num_types=params.num_types,
                          slide_size=params.batch_size,
                          batch_size=params.batch_size,
                          context_size=params.context_size,
-                         num_evaluations=config.Eval.num_total_ts,
+                         num_evaluations=config.Eval.num_total_ticks,
                          vocab=train_prep.store.types)
 
     windows_generator = train_prep.gen_windows()  # has to be created once
-    gen_size = len([1 for i in train_prep.gen_windows()])
-    print(f'Number of total batches={gen_size}')
-
-    real_eval_mbs = train_prep.eval_mbs[:config.Eval.num_real_ts] + train_prep.eval_mbs[-config.Eval.num_real_ts:]
-    print('Computing performance at mbs:')
-    for mb in real_eval_mbs:
-        print(mb)
 
     # classes that perform scoring
     ba_scorer = BAScorer(params.corpus,
@@ -138,40 +131,32 @@ def main(param2val):
         raise AttributeError('Invalid arg to "optimizer"')
 
     # initialize metrics for evaluation
-    metrics = { 'train_pp': [], 'test_pp': []}
+    metrics = {'train_pp': [], 'test_pp': []}
     for probes_name in params.ba_probes:
         metrics[f'ba_o_{probes_name}'] = []
         metrics[f'ba_n_{probes_name}'] = []
     for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
         metrics[f'dp_{probes_name}_part{part}_js'] = []
         metrics[f'dp_{probes_name}_part{part}_xe'] = []
-        # xe
-        metrics[f'dp_{probes_name}_part{part}_js_unconditional_1'] = []
-        metrics[f'dp_{probes_name}_part{part}_js_unconditional_2'] = []
-        metrics[f'dp_{probes_name}_part{part}_js_unconditional_3'] = []
-        # xe
-        metrics[f'dp_{probes_name}_part{part}_xe_unconditional_1'] = []
-        metrics[f'dp_{probes_name}_part{part}_xe_unconditional_2'] = []
-        metrics[f'dp_{probes_name}_part{part}_xe_unconditional_3'] = []
+        metrics[f'dp_{probes_name}_part{part}_js_unconditional'] = []
+        metrics[f'dp_{probes_name}_part{part}_xe_unconditional'] = []
 
     # train and eval
     train_mb = 0
+    performance_mbs = []  # to keep track when performance is evaluated
     start_train = time.time()
-    for t, eval_mb in enumerate(train_prep.eval_mbs):
+    for tick, eval_mb in enumerate(train_prep.eval_mbs):
         # train
-        if t != 0:
+        if tick != 0:
             model.train()
             print(f'Training on items from mb {train_mb:,} to mb {eval_mb:,}...')
             train_on_corpus(model, optimizer, criterion, train_prep, windows_generator)
             train_mb += train_prep.num_mbs_per_eval
 
-        # dummy-eval (to save compute time)
-        if eval_mb not in real_eval_mbs:
-            print('WARNING: Not evaluating performance')  # don't add nans to metric dictionary
-        # real eval (costly to compute)
-        else:
+        # evaluate performance more frequently at start of training
+        if tick < config.Eval.num_start_ticks or tick % config.Eval.tick_step == 0:
             model.eval()
-            metrics = update_dp_metrics(metrics, model, train_prep, dp_scorer)
+            metrics = update_dp_metrics_conditional(metrics, model, train_prep, dp_scorer)
             metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
             metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
             metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
@@ -184,7 +169,7 @@ def main(param2val):
 
         # print progress to console
         minutes_elapsed = int(float(time.time() - start_train) / 60)
-        print(f'completed time-point={t} of {config.Eval.num_total_ts}')
+        print(f'completed time-point={tick} of {config.Eval.num_total_ticks}')
         print(f'minutes elapsed={minutes_elapsed}')
         print(flush=True)
 
@@ -193,7 +178,7 @@ def main(param2val):
     for k, v in metrics.items():
         if not v:
             continue
-        s = pd.Series(v, index=real_eval_mbs)
+        s = pd.Series(v, index=performance_mbs)
         s.name = k
         res.append(s)
 

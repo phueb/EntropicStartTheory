@@ -24,7 +24,7 @@ FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
 Y_LIMS: List[float] = [0.5, 0.8]
 Y_LABEL: str = 'Balanced Accuracy'
 
-# param2requests['shuffle_sentences'] = [False]
+param2requests['legacy'] = [True]
 
 
 def correct_artifacts(y, tolerance=0.00):
@@ -92,5 +92,6 @@ fig = make_summary_fig(summaries,
                        vlines=V_LINES,
                        plot_max_lines=PLOT_MAX_LINES,
                        plot_max_line=PLOT_MAX_LINE,
+                       legend_loc='best',
                        )
 fig.show()

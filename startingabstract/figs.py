@@ -21,8 +21,9 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      palette_ids: List[int] = None,
                      figsize: Tuple[int, int] = None,
                      ylims: List[float] = None,
+                     xlims: List[float] = None,
                      log_x: bool = False,
-                     start_x_at_zero: bool = True,
+                     start_x_at_zero: bool = False,
                      y_grid: bool = False,
                      plot_max_line: bool = False,
                      plot_max_lines: bool = False,
@@ -48,6 +49,8 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         ax.set_xscale('log')
     elif start_x_at_zero:
         ax.set_xlim(xmin=0, xmax=summaries[0][0][-1])
+    if xlims is not None:
+        ax.set_xlim(xlims)
 
     # palette
     num_summaries = len(summaries)
