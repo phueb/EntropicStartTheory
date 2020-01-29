@@ -14,13 +14,14 @@ from preppy.legacy import TrainPrep, TestPrep
 
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
+from categoryeval.ni import NIScorer
 
 from startingabstract import config
 from startingabstract.docs import load_docs
-from startingabstract.evaluation import update_ba_metrics
-from startingabstract.evaluation import update_pp_metrics
-from startingabstract.evaluation import update_dp_metrics_conditional
-from startingabstract.evaluation import update_dp_metrics_unconditional
+from startingabstract.evaluation import update_ba_performance
+from startingabstract.evaluation import update_pp_performance
+from startingabstract.evaluation import update_dp_performance
+from startingabstract.evaluation import update_ni_performance
 from startingabstract.rnn import RNN
 
 
@@ -30,8 +31,6 @@ class Params(object):
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_sentences = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
-    ba_probes = attr.ib(validator=attr.validators.instance_of(tuple))
-    dp_probes = attr.ib(validator=attr.validators.instance_of(tuple))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
     slide_size = attr.ib(validator=attr.validators.instance_of(int))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
@@ -104,14 +103,18 @@ def main(param2val):
 
     # classes that perform scoring
     ba_scorer = BAScorer(params.corpus,
-                         params.ba_probes,
+                         config.Eval.ba_probes,
                          train_prep.store.w2id
                          )
     dp_scorer = DPScorer(params.corpus,
-                         params.dp_probes,
+                         config.Eval.dp_probes,
                          train_prep.store.tokens,
                          train_prep.store.types,
                          config.Eval.dp_num_parts
+                         )
+    ni_scorer = NIScorer(params.corpus,
+                         config.Eval.ni_probes,
+                         train_prep.store.tokens,
                          )
 
     # model
@@ -130,16 +133,8 @@ def main(param2val):
     else:
         raise AttributeError('Invalid arg to "optimizer"')
 
-    # initialize metrics for evaluation
-    metrics = {'train_pp': [], 'test_pp': []}
-    for probes_name in params.ba_probes:
-        metrics[f'ba_o_{probes_name}'] = []
-        metrics[f'ba_n_{probes_name}'] = []
-    for probes_name, part in product(params.dp_probes, range(config.Eval.dp_num_parts)):
-        metrics[f'dp_{probes_name}_part{part}_js'] = []
-        metrics[f'dp_{probes_name}_part{part}_xe'] = []
-        metrics[f'dp_{probes_name}_part{part}_js_unconditional'] = []
-        metrics[f'dp_{probes_name}_part{part}_xe_unconditional'] = []
+    # initialize dictionary for collecting performance data
+    performance = {'train_pp': [], 'test_pp': []}
 
     # train and eval
     train_mb = 0
@@ -155,13 +150,14 @@ def main(param2val):
 
         # evaluate performance more frequently at start of training
         if tick < config.Eval.num_start_ticks or tick % config.Eval.tick_step == 0:
+            performance_mbs.append(eval_mb)
             model.eval()
-            metrics = update_dp_metrics_conditional(metrics, model, train_prep, dp_scorer)
-            metrics = update_dp_metrics_unconditional(metrics, model, train_prep, dp_scorer)
-            metrics = update_pp_metrics(metrics, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
-            metrics = update_ba_metrics(metrics, model, train_prep, ba_scorer)
+            performance = update_ni_performance(performance, model, train_prep, ni_scorer)
+            performance = update_dp_performance(performance, model, train_prep, dp_scorer)
+            performance = update_pp_performance(performance, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
+            performance = update_ba_performance(performance, model, train_prep, ba_scorer)
 
-            for k, v in metrics.items():
+            for k, v in performance.items():
                 if not v:
                     continue
                 print(f'{k: <12}={v[-1]:.2f}')
@@ -175,7 +171,7 @@ def main(param2val):
 
     # collect performance in list of pandas series
     res = []
-    for k, v in metrics.items():
+    for k, v in performance.items():
         if not v:
             continue
         s = pd.Series(v, index=performance_mbs)

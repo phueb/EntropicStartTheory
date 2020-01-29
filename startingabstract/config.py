@@ -13,8 +13,9 @@ class Global:
 
 
 class Eval:
-
-    # Careful: make num_ts divisible by num_iterations
+    ba_probes = ('sem-4096',)
+    ni_probes = ('syn-nva',)
+    dp_probes = ('singular-nouns-4096',)
 
     num_total_ticks = 128   # number of time points at which to evaluate performance
     num_start_ticks = 16
