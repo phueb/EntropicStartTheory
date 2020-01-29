@@ -3,7 +3,7 @@
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'legacy': [False],
+    'legacy': [True],
 }
 
 param2debug = {

@@ -55,9 +55,9 @@ for param_path, label in gen_param_paths(project_name,
                                          research_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
     # summary contains: x, mean_y, std_y, label, n
-    summary1 = make_summary(param_path, label, f'ni_{PROBES_NAME}_NOUN_ADJ_js.csv')
-    summary2 = make_summary(param_path, label, f'ni_{PROBES_NAME}_NOUN_NOUN_js.csv')
-    summary3 = make_summary(param_path, label, f'ni_{PROBES_NAME}_NOUN_VERB_js.csv')
+    summary1 = make_summary(param_path, label, f'*_{PROBES_NAME}_NOUN_ADJ_js.csv')
+    summary2 = make_summary(param_path, label, f'*_{PROBES_NAME}_NOUN_NOUN_js.csv')
+    summary3 = make_summary(param_path, label, f'*_{PROBES_NAME}_NOUN_VERB_js.csv')
 
     # plot
     fig = make_summary_fig(summaries=[summary1, summary2, summary3],  # mus be in this order to match labels
@@ -91,7 +91,7 @@ fig = make_summary_fig(summaries1,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )
-fig.show()
+# fig.show()
 
 fig = make_summary_fig(summaries2,
                        ylabel=Y_LABEL,
@@ -117,4 +117,4 @@ fig = make_summary_fig(summaries3,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )
-fig.show()
+# fig.show()

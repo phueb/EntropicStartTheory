@@ -32,7 +32,7 @@ train_docs, _ = load_docs(corpus_path)
 prep = TrainPrep(train_docs,
                  reverse=False,
                  num_types=4096,  # TODO
-                 num_parts=2,  # TODO
+                 num_parts=8,  # TODO
                  num_iterations=[20, 20],
                  batch_size=64,
                  context_size=7,
@@ -98,7 +98,7 @@ ax.spines['top'].set_visible(False)
 ax.tick_params(axis='both', which='both', top=False, right=False)
 # plot
 ax.plot(y_1_2, linewidth=2, label='context<-noun')
-ax.plot(y_2_3, linewidth=2, label='noun<-next-word')
+# ax.plot(y_2_3, linewidth=2, label='noun<-next-word')
 plt.legend()
 plt.tight_layout()
 plt.show()
