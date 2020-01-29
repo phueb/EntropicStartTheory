@@ -3,8 +3,7 @@
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'legacy': [True],
-    'shuffle_sentences': [False],
+    'legacy': [False],
 }
 
 param2debug = {

@@ -91,17 +91,16 @@ def update_dp_performance(performance, model, train_prep, dp_scorer):  # TODO is
     return performance
 
 
-def update_ni_performance(performance, model, train_prep, ni_scorer):  # TODO test
+def update_cs_performance(performance, model, train_prep, cs_scorer):  # TODO test
     """
-    compute neighbor-interference between different categories
+    compute category-spread
     """
-    for name in ni_scorer.probes_names:
-        for cat1, cat2 in product(['NOUN'], ni_scorer.name2store[name].cats):
-            ps = make_output_representation(model, ni_scorer.name2store[name].cat2probes[cat1], train_prep)
-            qs = make_output_representation(model, ni_scorer.name2store[name].cat2probes[cat2], train_prep)
+    for name in cs_scorer.probes_names:
+        for cat1, cat2 in product(['NOUN'], cs_scorer.name2store[name].cats):
+            ps = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat1], train_prep)
+            qs = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat2], train_prep)
 
-            # ni
-            performance.setdefault(f'ni_{name}_{cat1}_{cat2}_js', []).append(ni_scorer.calc_ni(ps, qs, metric='js'))
+            performance.setdefault(f'cs_{name}_{cat1}_{cat2}_js', []).append(cs_scorer.calc_cs(ps, qs, metric='js'))
             print('Done')
 
     return performance

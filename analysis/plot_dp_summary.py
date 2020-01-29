@@ -2,6 +2,7 @@ import pandas as pd
 from typing import Optional, List, Tuple
 from pathlib import Path
 import numpy as np
+from scipy.stats import t, sem
 
 from ludwig.results import gen_param_paths
 
@@ -15,12 +16,14 @@ DP_PROBES_NAME: str = 'singular-nouns-4096'
 METRIC = 'js'
 PART_ID = 0
 
-Y_LABEL = 'Divergence from Prototype (Conditional)'
+Y_LABEL = 'Divergence from Prototype (Conditional)\n +/- 95%-CI'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
 Y_LIMS: List[float] = [0, 1]
+X_LIMS: Optional[List[int]] = None  # [0, 100_000]
 PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
+CONFIDENCE = 0.95
 
 param2requests['legacy'] = [True]
 
@@ -31,13 +34,15 @@ def make_summary(pp, lb) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:
     """
     pattern = f'dp_{DP_PROBES_NAME}_part{PART_ID}_{METRIC}.csv'
     series_list = [pd.read_csv(p, index_col=0, squeeze=True) for p in pp.rglob(pattern)]
+    n = len(series_list)
     if not series_list:
         raise RuntimeError(f'Did not find any csv files matching pattern="{pattern}"')
     concatenated_df = pd.concat(series_list, axis=1)
-    grouped = concatenated_df.groupby(by=concatenated_df.columns, axis=1)
-    y_mean = grouped.mean().values.flatten()
-    y_std = grouped.std().values.flatten()
-    return concatenated_df.index.values, y_mean, y_std, lb, len(series_list)
+    y_mean = concatenated_df.mean(axis=1).values.flatten()
+    y_sem = sem(concatenated_df.values, axis=1)
+    h = y_sem * t.ppf((1 + CONFIDENCE) / 2, n - 1)  # margin of error
+
+    return concatenated_df.index.values, y_mean, h, lb, n
 
 
 # collect summaries
@@ -59,9 +64,10 @@ fig = make_summary_fig(summaries,
                        title=f'{DP_PROBES_NAME}\npartition={PART_ID}',
                        log_x=LOG_X,
                        ylims=Y_LIMS,
-                       # xlims=[0, 50_000],
+                       xlims=X_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
+                       vline=100_000,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )

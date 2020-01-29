@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, List, Tuple
 from pathlib import Path
+from scipy.stats import t, sem
 
 from ludwig.results import gen_param_paths
 
@@ -22,7 +23,8 @@ V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time
 LABELS: Optional[List[str]] = None # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
 Y_LIMS: List[float] = [0.5, 0.8]
-Y_LABEL: str = 'Balanced Accuracy'
+Y_LABEL: str = 'Balanced Accuracy\n +/- 95%-CI'
+CONFIDENCE: float = 0.95
 
 param2requests['legacy'] = [True]
 
@@ -41,17 +43,21 @@ def correct_artifacts(y, tolerance=0.00):
     return res.tolist()
 
 
-def make_summary(param_path, label):
+def make_summary(pp: Path, lb: str):
     """
     load all csv files matching FILENAME and return mean and std across their contents
     """
-    file_name = f'{BA_TYPE}_{PROBES_NAME}.csv'
-    series_list = [pd.read_csv(p, index_col=0, squeeze=True) for p in param_path.rglob(file_name)]
+    pattern = f'{BA_TYPE}_{PROBES_NAME}.csv'
+    series_list = [pd.read_csv(p, index_col=0, squeeze=True) for p in pp.rglob(pattern)]
+    n = len(series_list)
+    if not series_list:
+        raise RuntimeError(f'Did not find any csv files matching pattern="{pattern}"')
     concatenated_df = pd.concat(series_list, axis=1)
-    grouped = concatenated_df.groupby(by=concatenated_df.columns, axis=1)
-    y_mean = grouped.mean().values.flatten()
-    y_std = grouped.std().values.flatten()
-    return concatenated_df.index, y_mean, y_std, label, len(series_list)
+    y_mean = concatenated_df.mean(axis=1).values.flatten()
+    y_sem = sem(concatenated_df.values, axis=1)
+    h = y_sem * t.ppf((1 + CONFIDENCE) / 2, n - 1)  # margin of error
+
+    return concatenated_df.index.values, y_mean, h, lb, n
 
 
 # collect summaries

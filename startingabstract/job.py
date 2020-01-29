@@ -6,7 +6,6 @@ import numpy as np
 import torch
 from pathlib import Path
 from itertools import islice
-from itertools import product
 from typing import Iterator
 
 from preppy.latest import Prep
@@ -14,14 +13,14 @@ from preppy.legacy import TrainPrep, TestPrep
 
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
-from categoryeval.ni import NIScorer
+from categoryeval.cs import CSScorer
 
 from startingabstract import config
 from startingabstract.docs import load_docs
 from startingabstract.evaluation import update_ba_performance
 from startingabstract.evaluation import update_pp_performance
 from startingabstract.evaluation import update_dp_performance
-from startingabstract.evaluation import update_ni_performance
+from startingabstract.evaluation import update_cs_performance
 from startingabstract.rnn import RNN
 
 
@@ -112,8 +111,8 @@ def main(param2val):
                          train_prep.store.types,
                          config.Eval.dp_num_parts
                          )
-    ni_scorer = NIScorer(params.corpus,
-                         config.Eval.ni_probes,
+    cs_scorer = CSScorer(params.corpus,
+                         config.Eval.cs_probes,
                          train_prep.store.tokens,
                          )
 
@@ -152,7 +151,7 @@ def main(param2val):
         if tick < config.Eval.num_start_ticks or tick % config.Eval.tick_step == 0:
             performance_mbs.append(eval_mb)
             model.eval()
-            performance = update_ni_performance(performance, model, train_prep, ni_scorer)
+            performance = update_cs_performance(performance, model, train_prep, cs_scorer)
             performance = update_dp_performance(performance, model, train_prep, dp_scorer)
             performance = update_pp_performance(performance, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
             performance = update_ba_performance(performance, model, train_prep, ba_scorer)

@@ -29,6 +29,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      plot_max_lines: bool = False,
                      legend_labels: Union[None, list] = None,
                      vlines: List[int] = None,
+                     vline: int = None,
                      legend_loc: str = 'lower right',
                      verbose: bool = False,
                      ):
@@ -36,7 +37,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     fig, ax = plt.subplots(figsize=figsize, dpi=config.Figs.dpi)
     plt.title(title)
     ax.set_xlabel('Training step (mini batch)', fontsize=config.Figs.axlabel_fs)
-    ax.set_ylabel(ylabel + '\n+/- Std Dev', fontsize=config.Figs.axlabel_fs)
+    ax.set_ylabel(ylabel, fontsize=config.Figs.axlabel_fs)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.tick_params(axis='both', which='both', top=False, right=False)
@@ -65,7 +66,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
 
     # plot summary
     max_ys = []
-    for x, y_mean, y_std, label, n in summaries:
+    for x, y_mean, h, label, n in summaries:
         max_ys.append(max(y_mean))
 
         if log_x:
@@ -83,12 +84,12 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             raise ValueError('Not enough values in PALETTE_IDS')
 
         if verbose:
-            for mean_i, std_i in zip(y_mean, y_std):
-                print(f'mean={mean_i:>6.2f} std={std_i:>6.2f}')
+            for mean_i, std_i in zip(y_mean, h):
+                print(f'mean={mean_i:>6.2f} h={std_i:>6.2f}')
 
         ax.plot(x, y_mean, '-', linewidth=config.Figs.lw, color=color,
                 label=label, zorder=3 if n == 8 else 2)
-        ax.fill_between(x, y_mean + y_std, y_mean - y_std, alpha=0.5, color='grey')
+        ax.fill_between(x, y_mean + h, y_mean - h, alpha=0.5, color='grey')
 
     # legend
     if title:
@@ -116,7 +117,8 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                 continue
             print(x[-1], vline / len(vlines))
             ax.axvline(x=x[-1] * (vline / len(vlines)), color='grey', linestyle=':', zorder=1)
-
+    if vline:
+        ax.axvline(x=vline, color='grey', linestyle=':', zorder=1)
     plt.tight_layout()
     return fig
 
