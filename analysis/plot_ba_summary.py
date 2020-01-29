@@ -27,6 +27,7 @@ Y_LABEL: str = 'Balanced Accuracy\n +/- 95%-CI'
 CONFIDENCE: float = 0.95
 
 param2requests['legacy'] = [True]
+del param2requests['shuffle_sentences']
 
 
 def correct_artifacts(y, tolerance=0.00):

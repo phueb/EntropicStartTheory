@@ -25,7 +25,8 @@ PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
 CONFIDENCE = 0.95
 
-param2requests['legacy'] = [True]
+param2requests['legacy'] = [False]
+del param2requests['shuffle_sentences']
 
 
 def make_summary(pp, lb) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:

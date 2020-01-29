@@ -70,7 +70,7 @@ def update_ba_performance(performance, model, train_prep, ba_scorer):
     return performance
 
 
-def update_dp_performance(performance, model, train_prep, dp_scorer):  # TODO is this still useful?
+def update_dp_performance(performance, model, train_prep, dp_scorer):
     """
     calculate distance-to-prototype (aka dp):
     all divergences are relative to the prototype that best characterizes members belonging to name
@@ -91,7 +91,7 @@ def update_dp_performance(performance, model, train_prep, dp_scorer):  # TODO is
     return performance
 
 
-def update_cs_performance(performance, model, train_prep, cs_scorer):  # TODO test
+def update_cs_performance(performance, model, train_prep, cs_scorer):
     """
     compute category-spread
     """
