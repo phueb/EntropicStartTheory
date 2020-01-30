@@ -12,19 +12,22 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local results or None if using results form Ludwig
-BA_TYPE: str = 'ba_o'
+BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-4096'
+
+assert BA_TYPE == 'ba_n'  # in paper, I say I evaluate input weight representations
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
 PALETTE_IDS: Optional[List[int]] = [1, 0]   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
-LABELS: Optional[List[str]] = None # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
-FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
-Y_LIMS: List[float] = [0.5, 0.8]
-Y_LABEL: str = 'Balanced Accuracy\n +/- 95%-CI'
+LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
+FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
+Y_LIMS: List[float] = [0.50, 0.70]
+Y_LABEL: str = f'Balanced Accuracy\n{"Semantic Probes" if "sem" in PROBES_NAME else "Syntactic Probes"} \n +/- 95%-CI'
 CONFIDENCE: float = 0.95
+TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
 
 param2requests['legacy'] = [True]
 # del param2requests['shuffle_sentences']
@@ -91,7 +94,7 @@ for s in summaries:
 # plot
 fig = make_summary_fig(summaries,
                        Y_LABEL,
-                       title=f'{BA_TYPE}_{PROBES_NAME}.csv',
+                       title=TITLE,
                        palette_ids=PALETTE_IDS,
                        figsize=FIG_SIZE,
                        ylims=Y_LIMS,

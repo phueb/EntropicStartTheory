@@ -70,7 +70,7 @@ def main(param2val):
                                params.reverse,
                                params.num_types,
 
-                               num_parts=256,  # TODO test different num_parts
+                               num_parts=256,  # TODO combine preps and put num_params into params
 
                                num_iterations=[num_iterations, num_iterations],
                                batch_size=params.batch_size,
@@ -107,9 +107,8 @@ def main(param2val):
                          )
     dp_scorer = DPScorer(params.corpus,
                          config.Eval.dp_probes,
+                         train_prep.store.w2id,
                          train_prep.store.tokens,
-                         train_prep.store.types,
-                         config.Eval.dp_num_parts
                          )
     cs_scorer = CSScorer(params.corpus,
                          config.Eval.cs_probes,

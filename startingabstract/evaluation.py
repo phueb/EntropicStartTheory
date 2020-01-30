@@ -39,7 +39,7 @@ def calc_perplexity(model, criterion, prep):
 
 
 def update_pp_performance(performance, model, criterion, train_prep, test_prep):
-    if not config.Global.train_pp:
+    if not config.Eval.train_pp:
         if config.Eval.num_test_docs > 0:
             test_pp = calc_perplexity(model, criterion, test_prep)
             performance['test_pp'].append(test_pp)
@@ -64,8 +64,10 @@ def update_ba_performance(performance, model, train_prep, ba_scorer):
         probe_sims_o = cosine_similarity(probe_reps_o)
         probe_sims_n = cosine_similarity(probe_reps_n)
 
-        performance.setdefault(f'ba_o_{name}', []).append(ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
-        performance.setdefault(f'ba_n_{name}', []).append(ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+        if config.Eval.ba_o:
+            performance.setdefault(f'ba_o_{name}', []).append(ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+        if config.Eval.ba_n:
+            performance.setdefault(f'ba_n_{name}', []).append(ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
 
     return performance
 
@@ -77,16 +79,15 @@ def update_dp_performance(performance, model, train_prep, dp_scorer):
     """
     for name in dp_scorer.probes_names:
         # collect dp for probes who tend to occur most frequently in some part of corpus
-        for part in range(config.Eval.dp_num_parts):
-            probes = dp_scorer.name2part2probes[name][part]
-            qs = make_output_representation(model, probes, train_prep)
+        probes = dp_scorer.name2store[name].types
+        qs = make_output_representation(model, probes, train_prep)
 
-            # check predictions
-            max_ids = np.argsort(qs.mean(axis=0))
-            print(f'{name} predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
+        # check predictions
+        max_ids = np.argsort(qs.mean(axis=0))
+        print(f'{name} predict:', [train_prep.store.types[i] for i in max_ids[-10:]])
 
-            # dp
-            performance.setdefault(f'dp_{name}_part{part}_js', []).append(dp_scorer.calc_dp(qs, name, metric='js'))
+        # dp
+        performance.setdefault(f'dp_{name}_js', []).append(dp_scorer.calc_dp(qs, name, metric='js'))
 
     return performance
 
@@ -95,13 +96,21 @@ def update_cs_performance(performance, model, train_prep, cs_scorer):
     """
     compute category-spread
     """
+    dps = []
     for name in cs_scorer.probes_names:
-        for cat1, cat2 in product(['NOUN'], cs_scorer.name2store[name].cats):
+        for cat1, cat2 in product(cs_scorer.name2store[name].cats, cs_scorer.name2store[name].cats):
             ps = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat1], train_prep)
             qs = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat2], train_prep)
 
-            performance.setdefault(f'cs_{name}_{cat1}_{cat2}_js', []).append(cs_scorer.calc_cs(ps, qs, metric='js'))
-            print('Done')
+            print(f'{cat1:>12} {ps.shape}')
+            print(f'{cat2:>12} {qs.shape}')
+
+            dp = cs_scorer.calc_cs(ps, qs, metric='js', max_rows=config.Eval.cs_max_rows)  # TODO multiprocessing
+            performance.setdefault(f'cs_{name}_{cat1}_{cat2}_js', []).append(dp)
+
+            dps.append(dp)
+
+        performance.setdefault(f'cs_{name}_js', []).append(np.mean(dps))
 
     return performance
 

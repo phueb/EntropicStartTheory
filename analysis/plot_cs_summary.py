@@ -14,10 +14,10 @@ RUNS_PATH = None  # config.Dirs.runs if using local results or None if using res
 PROBES_NAME: str = 'syn-nva'
 PART_ID = 0
 
-Y_LABEL = 'Category-Separation\n+/- 95%-CI'
+Y_LABEL = 'Category Spread\n+/- 95%-CI'
 LABEL_N: bool = True
-FIG_SIZE: Tuple[int, int] = (8, 6)  # in inches
-Y_LIMS: List[float] = [0, 1]
+FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
+Y_LIMS: List[float] = [0, 0.7]
 PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
 CONFIDENCE: float = 0.95
@@ -87,20 +87,20 @@ fig = make_summary_fig(summaries1,
                        ylims=Y_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
-                       vline=100_000,
+                       vline=200_000,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )
 # fig.show()
 
 fig = make_summary_fig(summaries2,
-                       ylabel=Y_LABEL,
-                       title='NOUN_NOUN',
+                       ylabel='Noun ' + Y_LABEL,
+                       title='',
                        log_x=LOG_X,
                        ylims=Y_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
-                       vline=100_000,
+                       vline=200_000,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )
@@ -113,7 +113,7 @@ fig = make_summary_fig(summaries3,
                        ylims=Y_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
-                       vline=100_000,
+                       vline=200_000,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )

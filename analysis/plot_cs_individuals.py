@@ -11,23 +11,17 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig
-DP_PROBES_NAME: str = 'singular-nouns-4096'
-METRIC = 'js'
+PROBES_NAME: str = 'syn-nva'
 PART_ID = 0
 
-Y_LABEL = 'Divergence from Prototype\n +/- 95%-CI'
+Y_LABEL = 'Category Spread\n+/- 95%-CI'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.5, 0.8]
-X_LIMS: Optional[List[int]] = None  # [0, 100_000]
+Y_LIMS: List[float] = [0.2, 0.7]
+PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
-CONFIDENCE = 0.95
-TITLE = ''  # f'{DP_PROBES_NAME}\npartition={PART_ID}'
-
-param2requests['legacy'] = [True]
 
 
-# collect summaries
 summaries = []
 project_name = __name__
 for param_path, label in gen_param_paths(project_name,
@@ -36,8 +30,8 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          research_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
-
-    pattern = f'dp_{DP_PROBES_NAME}_part{PART_ID}_{METRIC}.csv'
+    # summary contains: x, mean_y, std_y, label, n
+    pattern = f'*_{PROBES_NAME}_NOUN_NOUN_js.csv'
     for p in param_path.rglob(pattern):
         s = pd.read_csv(p, index_col=0, squeeze=True)
         n = 1
@@ -48,17 +42,13 @@ for param_path, label in gen_param_paths(project_name,
         summary = (s.index.values, y_mean, h, label, n)
         summaries.append(summary)
 
-# plot comparison
 fig = make_summary_fig(summaries,
-                       ylabel=Y_LABEL,
-                       title=TITLE,
+                       ylabel='Noun ' + Y_LABEL,
+                       title='',
                        log_x=LOG_X,
                        ylims=Y_LIMS,
-                       xlims=X_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
                        vline=200_000,
-                       # legend_labels=['reverse age-ordered', 'age-ordered'],
-                       # palette_ids=[0, 1],  # re-assign colors to each line
                        )
 fig.show()
