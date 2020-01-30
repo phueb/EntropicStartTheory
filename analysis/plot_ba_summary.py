@@ -25,7 +25,7 @@ V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = [0.50, 0.70]
-Y_LABEL: str = f'Balanced Accuracy\n{"Semantic Probes" if "sem" in PROBES_NAME else "Syntactic Probes"} \n +/- 95%-CI'
+Y_LABEL: str = f'Balanced Accuracy\n +/- 95%-CI'
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
 

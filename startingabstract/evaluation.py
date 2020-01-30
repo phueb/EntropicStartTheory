@@ -96,21 +96,17 @@ def update_cs_performance(performance, model, train_prep, cs_scorer):
     """
     compute category-spread
     """
-    dps = []
+    cat_prototypes = []
     for name in cs_scorer.probes_names:
-        for cat1, cat2 in product(cs_scorer.name2store[name].cats, cs_scorer.name2store[name].cats):
-            ps = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat1], train_prep)
-            qs = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat2], train_prep)
+        # collect category prototypes
+        for cat in cs_scorer.name2store[name].cats:
+            exemplars = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat], train_prep)
+            cat_prototypes.append(exemplars.mean(axis=0))
+        ps = np.vstack(cat_prototypes)
 
-            print(f'{cat1:>12} {ps.shape}')
-            print(f'{cat2:>12} {qs.shape}')
-
-            dp = cs_scorer.calc_cs(ps, qs, metric='js', max_rows=config.Eval.cs_max_rows)  # TODO multiprocessing
-            performance.setdefault(f'cs_{name}_{cat1}_{cat2}_js', []).append(dp)
-
-            dps.append(dp)
-
-        performance.setdefault(f'cs_{name}_js', []).append(np.mean(dps))
+        # compute divergences between category prototypes
+        dp = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=config.Eval.cs_max_rows)
+        performance.setdefault(f'cs_{name}_js', []).append(dp)
 
     return performance
 
