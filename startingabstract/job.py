@@ -70,7 +70,7 @@ def main(param2val):
                                params.reverse,
                                params.num_types,
 
-                               num_parts=8,  # TODO test different num_parts
+                               num_parts=256,  # TODO test different num_parts
 
                                num_iterations=[num_iterations, num_iterations],
                                batch_size=params.batch_size,

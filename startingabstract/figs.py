@@ -64,6 +64,9 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     if legend_labels is not None:
         legend_labels = iter(legend_labels)
 
+    first_r = True
+    first_c = True
+
     # plot summary
     max_ys = []
     for x, y_mean, h, label, n in summaries:
@@ -87,6 +90,22 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             for mean_i, std_i in zip(y_mean, h):
                 print(f'mean={mean_i:>6.2f} h={std_i:>6.2f}')
 
+        # if passing multiple summaries, do not label all
+        if 'reverse=True' in label:
+            color = 'C1'
+            if not first_r:
+                label = '__nolegend__'
+            else:
+                label = 'reverse age-ordered'
+                first_r = False
+        else:
+            color = 'C0'
+            if not first_c:
+                label = '__nolegend__'
+            else:
+                label = 'age-ordered'
+                first_c = False
+
         ax.plot(x, y_mean, '-', linewidth=config.Figs.lw, color=color,
                 label=label, zorder=3 if n == 8 else 2)
         ax.fill_between(x, y_mean + h, y_mean - h, alpha=0.5, color='grey')
@@ -95,11 +114,11 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     if title:
         plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc=legend_loc, ncol=1)
     else:
-        plt.legend(bbox_to_anchor=(1.0, 1.0),
+        plt.legend(bbox_to_anchor=(0.5, 1.0),
                    borderaxespad=1.0,
                    fontsize=config.Figs.leg_fs,
                    frameon=False,
-                   loc='lower right',
+                   loc='lower center',
                    ncol=3,
                    )
 

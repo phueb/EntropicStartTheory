@@ -43,13 +43,21 @@ for tokens in [prep.store.tokens[:prep.midpoint],
     q = dp_scorer.name2p[NOUNS_NAME]
     assert p.shape == q.shape
     print(NOUNS_NAME)
-    print(f'xe={drv.entropy_cross_pmf(p, q)}')
+    # print(f'xe={drv.entropy_cross_pmf(p, q)}')
     print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
 
     p = dp_scorer.name2p['unconditional']
     q = dp_scorer.name2p[VERBS_NAME]
     assert p.shape == q.shape
     print(VERBS_NAME)
-    print(f'xe={drv.entropy_cross_pmf(p, q)}')
+    # print(f'xe={drv.entropy_cross_pmf(p, q)}')
     print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
 
+    p = dp_scorer.name2p[VERBS_NAME]
+    q = dp_scorer.name2p[NOUNS_NAME]
+    assert p.shape == q.shape
+    print(NOUNS_NAME, 'vs', VERBS_NAME)
+    # print(f'xe={drv.entropy_cross_pmf(p, q)}')
+    print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
+
+    print()
