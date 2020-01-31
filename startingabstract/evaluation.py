@@ -96,15 +96,15 @@ def update_cs_performance(performance, model, train_prep, cs_scorer):
     """
     compute category-spread
     """
-    cat_prototypes = []
+    exemplars_list = []
     for name in cs_scorer.probes_names:
-        # collect category prototypes
+        # collect exemplars
         for cat in cs_scorer.name2store[name].cats:
             exemplars = make_output_representation(model, cs_scorer.name2store[name].cat2probes[cat], train_prep)
-            cat_prototypes.append(exemplars.mean(axis=0))
-        ps = np.vstack(cat_prototypes)
+            exemplars_list.append(exemplars)
+        ps = np.vstack(exemplars_list)
 
-        # compute divergences between category prototypes
+        # compute divergences between exemplars within a category (not prototypes - produces noisy results)
         dp = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=config.Eval.cs_max_rows)
         performance.setdefault(f'cs_{name}_js', []).append(dp)
 

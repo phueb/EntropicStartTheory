@@ -13,7 +13,7 @@ from startingabstract.params import param2default, param2requests
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local results or None if using results form Ludwig
 BA_TYPE: str = 'ba_n'
-PROBES_NAME: str = 'sem-4096'
+PROBES_NAME: str = 'syn-4096'
 
 assert BA_TYPE == 'ba_n'  # in paper, I say I evaluate input weight representations
 
@@ -30,7 +30,6 @@ CONFIDENCE: float = 0.95
 TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
 
 param2requests['legacy'] = [True]
-# del param2requests['shuffle_sentences']
 
 
 def correct_artifacts(y, tolerance=0.00):

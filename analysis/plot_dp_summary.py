@@ -12,14 +12,14 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig
-DP_PROBES_NAME: str = 'singular-nouns-4096'
+DP_PROBES_NAME: str = 'sem-4096'
 METRIC = 'js'
 PART_ID = 0
 
 Y_LABEL = 'Divergence from Prototype\n +/- 95%-CI'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.5, 0.8]
+Y_LIMS: List[float] = [0.0, 0.8]
 X_LIMS: Optional[List[int]] = None  # [0, 100_000]
 LOG_X: bool = False
 CONFIDENCE = 0.95
@@ -32,7 +32,7 @@ def make_summary(pp, lb) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:
     """
     load all csv files for dp-unconditional analysis
     """
-    pattern = f'dp_{DP_PROBES_NAME}_part{PART_ID}_{METRIC}.csv'
+    pattern = f'dp_{DP_PROBES_NAME}_{METRIC}.csv'
     series_list = [pd.read_csv(p, index_col=0, squeeze=True) for p in pp.rglob(pattern)]
     n = len(series_list)
     if not series_list:
