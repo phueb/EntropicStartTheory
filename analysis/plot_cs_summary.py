@@ -22,7 +22,6 @@ PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
 CONFIDENCE: float = 0.95
 
-PLOT_SINGLE_SUMMARY = False
 
 param2requests['legacy'] = [True]
 
@@ -43,10 +42,7 @@ def make_summary(pp: Path, lb: str, pattern: str):
     return concatenated_df.index.values, y_mean, h, lb, n
 
 
-# collect summaries
-summaries1 = []
-summaries2 = []
-summaries3 = []
+summaries = []
 project_name = __name__
 for param_path, label in gen_param_paths(project_name,
                                          param2requests,
@@ -54,11 +50,10 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          research_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
-    summary2 = make_summary(param_path, label, f'*_{PROBES_NAME}_js.csv')
-    summaries2.append(summary2)
+    summary = make_summary(param_path, label, f'*_{PROBES_NAME}_js.csv')
+    summaries.append(summary)
 
-
-fig = make_summary_fig(summaries2,
+fig = make_summary_fig(summaries,
                        ylabel='Noun ' + Y_LABEL,
                        title='',
                        log_x=LOG_X,
@@ -66,7 +61,6 @@ fig = make_summary_fig(summaries2,
                        figsize=FIG_SIZE,
                        legend_loc='best',
                        vline=200_000,
-                       # legend_labels=['reverse age-ordered', 'age-ordered'],
                        palette_ids=[0, 1],  # re-assign colors to each line
                        )
 fig.show()

@@ -11,13 +11,13 @@ from startingabstract.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig
-PROBES_NAME: str = 'syn-nva'
+PROBES_NAME: str = 'sem-4096'
 PART_ID = 0
 
 Y_LABEL = 'Category Spread\n+/- 95%-CI'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.2, 0.7]
+Y_LIMS: List[float] = [0, 0.7]
 PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
 
@@ -30,8 +30,7 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          research_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
-    # summary contains: x, mean_y, std_y, label, n
-    pattern = f'*_{PROBES_NAME}_NOUN_NOUN_js.csv'
+    pattern = f'*_{PROBES_NAME}_js.csv'
     for p in param_path.rglob(pattern):
         s = pd.read_csv(p, index_col=0, squeeze=True)
         n = 1

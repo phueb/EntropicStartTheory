@@ -18,7 +18,7 @@ class Eval:
     num_start_ticks = 16
     tick_step = 8  # skip this number of ticks until performance evaluation when not at start of training
 
-    cs_max_rows = 64
+    cs_max_rows = 128
 
     ba_o = False
     ba_n = True
