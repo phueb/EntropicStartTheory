@@ -14,10 +14,10 @@ RUNS_PATH = None  # config.Dirs.runs if using local results or None if using res
 PROBES_NAME: str = 'sem-4096'
 PART_ID = 0
 
-Y_LABEL = 'Category Spread\n+/- 95%-CI'
+Y_LABEL = 'Jensen-Shannon Divergence\nNoun vs. Noun'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0, 0.7]
+Y_LIMS: List[float] = [0, 1.0]
 PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
 
@@ -30,7 +30,7 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          research_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
-    pattern = f'*_{PROBES_NAME}_js.csv'
+    pattern = f'cs_{PROBES_NAME}_js.csv'
     for p in param_path.rglob(pattern):
         s = pd.read_csv(p, index_col=0, squeeze=True)
         n = 1
@@ -39,10 +39,11 @@ for param_path, label in gen_param_paths(project_name,
 
         # collect for comparison figure
         summary = (s.index.values, y_mean, h, label, n)
+
         summaries.append(summary)
 
 fig = make_summary_fig(summaries,
-                       ylabel='Noun ' + Y_LABEL,
+                       ylabel=Y_LABEL,
                        title='',
                        log_x=LOG_X,
                        ylims=Y_LIMS,

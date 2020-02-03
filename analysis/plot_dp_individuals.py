@@ -15,7 +15,7 @@ DP_PROBES_NAME: str = 'sem-4096'
 METRIC = 'js'
 PART_ID = 0
 
-Y_LABEL = 'Divergence from Prototype\n +/- 95%-CI'
+Y_LABEL = 'Jensen-Shannon Divergence\nNoun vs. Noun-Prototype'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = [0.0, 1.0]
