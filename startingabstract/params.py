@@ -3,23 +3,23 @@
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'legacy': [True],
+    'sliding': [False],
 }
 
 param2debug = {
     'context_size': 1,
-    'slide_size': 64,
-    'batch_size': 64,
+    'num_iterations': (1, 1),
 }
 
 # default params
 param2default = {
-    'legacy': False,
+    'sliding': False,
     'reverse': False,
     'shuffle_sentences': False,
     'corpus': 'childes-20191112',
     'num_types': 4096,
-    'slide_size': 3,  # 3 is equivalent to approximately 20 iterations when batch_size=64
+    'num_parts': 256,
+    'num_iterations': (16, 16),
     'context_size': 7,  # number of backprop-through-time steps
     'batch_size': 64,
     'flavor': 'srn',  # simple-recurrent

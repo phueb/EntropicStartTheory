@@ -10,9 +10,9 @@ class Dirs:
 class Eval:
     train_pp = False
 
-    ba_probes = ('sem-4096', 'syn-4096')
-    cs_probes = ('sem-4096',)
-    dp_probes = ('sem-4096',)
+    ba_probes = ('sem-4096',)
+    cs_probes = ()
+    dp_probes = ()
 
     num_total_ticks = 128   # number of time points at which to evaluate performance
     num_start_ticks = 16
@@ -23,8 +23,8 @@ class Eval:
     ba_o = False
     ba_n = True
 
-    num_test_docs = 0
-    max_num_exemplars = 8192  # TODO this may affect age-order effect but is needed for syn probes
+    num_test_docs = 100
+    max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 
 
 class Figs:

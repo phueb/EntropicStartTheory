@@ -31,7 +31,7 @@ def make_representations_with_context(model, word_ids, train_prep, verbose=False
 
         inputs = torch.cuda.LongTensor(x)
         num_exemplars, dim1 = inputs.shape
-        assert dim1 == train_prep.context_size
+        assert dim1 == train_prep.context_size, (inputs.shape, x.shape, train_prep.context_size)
         if verbose:
             print(f'Made {num_exemplars:>6} representations for {train_prep.store.types[vocab_id]:<12}')
         probe_exemplar_reps = model(inputs)['last_encodings'].detach().cpu().numpy()  # [num exemplars, hidden_size]

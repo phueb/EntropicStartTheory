@@ -17,7 +17,7 @@ PART_ID = 0
 Y_LABEL = 'Jensen-Shannon Divergence\nNoun vs. Noun'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0, 1.0]
+Y_LIMS: List[float] = [0, 0.7]
 PARAMS_AS_TITLE: bool = True
 LOG_X: bool = False
 

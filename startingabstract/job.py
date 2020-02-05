@@ -6,17 +6,16 @@ import numpy as np
 import torch
 from pathlib import Path
 from itertools import islice
-from typing import Iterator
+from typing import Iterator, Union
 
-from preppy.latest import Prep
-from preppy.legacy import TrainPrep, TestPrep
+from preppy import FlexiblePrep, SlidingPrep
+from preppy.docs import load_docs
 
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
 
 from startingabstract import config
-from startingabstract.docs import load_docs
 from startingabstract.evaluation import update_ba_performance
 from startingabstract.evaluation import update_pp_performance
 from startingabstract.evaluation import update_dp_performance
@@ -26,12 +25,13 @@ from startingabstract.rnn import RNN
 
 @attr.s
 class Params(object):
-    legacy = attr.ib(validator=attr.validators.instance_of(bool))
+    sliding = attr.ib(validator=attr.validators.instance_of(bool))
     reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_sentences = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
-    slide_size = attr.ib(validator=attr.validators.instance_of(int))
+    num_parts = attr.ib(validator=attr.validators.instance_of(int))
+    num_iterations = attr.ib(validator=attr.validators.instance_of(tuple))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
     batch_size = attr.ib(validator=attr.validators.instance_of(int))
     flavor = attr.ib(validator=attr.validators.instance_of(str))
@@ -59,46 +59,27 @@ def main(param2val):
                                       )
 
     # prepare input
-    if params.legacy:
-        print('=======================================================')
-        print('WARNING: params.legacy=True')
-        print('=======================================================')
+    train_prep = FlexiblePrep(train_docs,
+                              params.reverse,
+                              params.sliding,
+                              params.num_types,
+                              num_parts=params.num_parts,
+                              num_iterations=params.num_iterations,
+                              batch_size=params.batch_size,
+                              context_size=params.context_size,
+                              num_evaluations=config.Eval.num_total_ticks,
+                              shuffle_within_part=False)
 
-        num_iterations = 16
-        assert config.Eval.num_total_ticks % num_iterations == 0  # TODO is this really important?
-        train_prep = TrainPrep(train_docs,
-                               params.reverse,
-                               params.num_types,
+    test_prep = SlidingPrep(test_docs,
+                            reverse=False,
+                            num_types=params.num_types,
+                            slide_size=params.batch_size,
+                            batch_size=params.batch_size,
+                            context_size=params.context_size,
+                            num_evaluations=config.Eval.num_total_ticks,
+                            vocab=train_prep.store.types)
 
-                               num_parts=256,  # TODO combine preps and put num_params into params
-
-                               num_iterations=[num_iterations, num_iterations],
-                               batch_size=params.batch_size,
-                               context_size=params.context_size,
-                               num_evaluations=config.Eval.num_total_ticks,
-                               shuffle_within_part=False)
-        test_prep = TestPrep(test_docs,
-                             batch_size=params.batch_size,
-                             context_size=params.context_size,
-                             vocab=train_prep.store.types)
-    else:
-        train_prep = Prep(train_docs,
-                          reverse=params.reverse,
-                          num_types=params.num_types,
-                          slide_size=params.slide_size,
-                          batch_size=params.batch_size,
-                          context_size=params.context_size,
-                          num_evaluations=config.Eval.num_total_ticks)
-        test_prep = Prep(test_docs,
-                         reverse=params.reverse,
-                         num_types=params.num_types,
-                         slide_size=params.batch_size,
-                         batch_size=params.batch_size,
-                         context_size=params.context_size,
-                         num_evaluations=config.Eval.num_total_ticks,
-                         vocab=train_prep.store.types)
-
-    windows_generator = train_prep.gen_windows()  # has to be created once
+    windows_generator = train_prep.generate_batches()  # has to be created once
 
     # classes that perform scoring
     ba_scorer = BAScorer(params.corpus,
@@ -182,7 +163,7 @@ def main(param2val):
 def train_on_corpus(model: RNN,
                     optimizer: torch.optim.Optimizer,
                     criterion: torch.nn.CrossEntropyLoss,
-                    prep: Prep,
+                    prep: Union[SlidingPrep, FlexiblePrep],
                     windows_generator: Iterator[np.ndarray],
                     ) -> None:
     pbar = pyprind.ProgBar(prep.num_mbs_per_eval, stream=1)
