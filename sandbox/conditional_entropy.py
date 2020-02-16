@@ -98,15 +98,14 @@ y2 = collect_data(windows, reverse=True)
 
 fig, ax = plt.subplots(1, figsize=(6, 4), dpi=None)
 fontsize = 14
-x_tick_labels = np.arange(len(num_windows_list)) * num_windows_list[0]
 plt.title('', fontsize=fontsize)
 ax.set_ylabel(f'Conditional Entropy({CAT}|next word)', fontsize=fontsize)
 ax.set_xlabel('AO-CHILDES Cumulative Number of Tokens', fontsize=fontsize)
 ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
 ax.tick_params(axis='both', which='both', top=False, right=False)
-ax.plot(x_tick_labels, y1, '-', linewidth=2, color='C0', label='age-ordered')
-ax.plot(x_tick_labels, y2, '-', linewidth=2, color='C1', label='reverse age-ordered')
+ax.plot(num_windows_list, y1, '-', linewidth=2, color='C0', label='age-ordered')
+ax.plot(num_windows_list, y2, '-', linewidth=2, color='C1', label='reverse age-ordered')
 plt.legend(frameon=False, fontsize=fontsize, loc='lower right')
 plt.tight_layout()
 plt.show()
