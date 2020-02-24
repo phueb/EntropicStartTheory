@@ -3,8 +3,10 @@ import numpy as np
 from startingabstract.figs import plot_singular_values
 
 PARTITION_SIZE = 100  # size of imagined corpus partition
-MAX_S = 30  # arbitrary value that is used to make singular value vectors the same length across simulations
+MAX_S = 20  # arbitrary value that is used to make singular value vectors the same length across simulations
 PERFECT_STRUCTURE = True  # else use random variation to simulate an empirical corpus
+SUBTRACT_MEAN = False  # if True, removes first singular dimension, coding for frequency
+REMOVE_HALF_COLUMNS = False
 
 d = np.array([[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
               [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
@@ -19,8 +21,8 @@ d = np.array([[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
               [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
               [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]])
 
-o = np.ones( (10, 10))
-z = np.zeros((10, 10))
+o = np.ones( (6, 6))
+z = np.zeros((6, 6))
 
 a = np.block(
     [
@@ -61,7 +63,10 @@ def simulate_context_by_term_mat(mat):
 
 
 s_list = []
-for legals_mat in [a[:-1], a[:-3], a[:-5], a[:-7], a[:-10]]:  # each mat represents a legals_mat
+for legals_mat in [a, np.ones_like(a)]:  # each mat represents a legals_mat
+
+    if REMOVE_HALF_COLUMNS:
+        legals_mat = legals_mat[:, :6]
 
     print(legals_mat)
 
@@ -71,16 +76,20 @@ for legals_mat in [a[:-1], a[:-3], a[:-5], a[:-7], a[:-10]]:  # each mat represe
     else:  # simulate random variation in co-occurrences
         ct_mat = simulate_context_by_term_mat(legals_mat)
 
+    if SUBTRACT_MEAN:
+        ct_mat = ct_mat - ct_mat.mean().mean()
+
     # SVD
-    s = np.linalg.svd(ct_mat, compute_uv=False)
-    print('svls', ' '.join(['{:>6.2f}'.format(si) for si in s]))
-    print(np.sum(s))
+    u, s, v = np.linalg.svd(ct_mat, compute_uv=True)
+    print('singular values:', ' '.join(['{:>6.2f}'.format(si) for si in s]))
+    print('u')
+    print(u.round(1))
+    print('v')
+    print(v.round(1))
     print()
 
     trailing = [np.nan] * (MAX_S - len(s))
     s_constant_length = np.hstack((s, trailing))
     s_list.append(s_constant_length)
-    print(len(trailing))
-    print(len(s_constant_length))
 
 plot_singular_values(s_list, max_s=MAX_S)
