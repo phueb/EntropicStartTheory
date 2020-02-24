@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from startingabstract import config
+from startingcompact import config
 
 
 def make_representations_without_context(model, word_ids):

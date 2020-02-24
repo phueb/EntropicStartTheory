@@ -5,9 +5,9 @@ from scipy.stats import t, sem
 
 from ludwig.results import gen_param_paths
 
-from startingabstract import __name__
-from startingabstract.figs import make_summary_fig
-from startingabstract.params import param2default, param2requests
+from startingcompact import __name__
+from startingcompact.figs import make_summary_fig
+from startingcompact.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig

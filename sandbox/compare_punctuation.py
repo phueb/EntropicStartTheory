@@ -12,8 +12,8 @@ from pyitlib import discrete_random_variable as drv
 from preppy.latest import Prep
 from categoryeval.dp import DPScorer
 
-from startingabstract.docs import load_docs
-from startingabstract import config
+from startingcompact.docs import load_docs
+from startingcompact import config
 
 
 CORPUS_NAME = 'childes-20191112'

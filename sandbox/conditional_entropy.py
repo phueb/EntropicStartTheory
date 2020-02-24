@@ -1,7 +1,7 @@
 """
 Research question:
 is the connection between a nouns-next word P less lexically specific (higher conditional entropy) in p1 vs p2?
-if so, this would support the idea that nouns are learned more abstractly/flexibly in p1.
+if so, this would support the idea that nouns are learned more compactly/flexibly in p1.
 
 conditional entropy (x, y) = how much moe information I need to figure out what X is when Y is known.
 
@@ -19,7 +19,7 @@ from categoryeval.ba import BAScorer
 from preppy import PartitionedPrep
 
 from preppy.docs import load_docs
-from startingabstract import config
+from startingcompact import config
 
 
 CORPUS_NAME = 'childes-20191112'

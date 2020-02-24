@@ -11,8 +11,8 @@ from scipy.spatial.distance import jensenshannon
 from preppy.legacy import TrainPrep
 from categoryeval.dp import DPScorer
 
-from startingabstract.docs import load_docs
-from startingabstract import config
+from startingcompact.docs import load_docs
+from startingcompact import config
 
 
 CORPUS_NAME = 'childes-20191112'

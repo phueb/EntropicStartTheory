@@ -1,6 +1,6 @@
 import numpy as np
 
-from startingabstract.figs import plot_singular_values
+from startingcompact.figs import plot_singular_values
 
 PARTITION_SIZE = 100  # size of imagined corpus partition
 MAX_S = 20  # arbitrary value that is used to make singular value vectors the same length across simulations

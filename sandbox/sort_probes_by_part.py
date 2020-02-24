@@ -1,7 +1,7 @@
 import numpy as np
 from collections import Counter
 
-from startingabstract.docs import split
+from startingcompact.docs import split
 
 NUM_PARTS = 2
 

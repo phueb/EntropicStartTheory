@@ -4,7 +4,7 @@ import seaborn as sns
 import numpy as np
 from typing import List, Tuple, Union
 
-from startingabstract import config
+from startingcompact import config
 
 
 def human_format(num, pos):  # pos is required for formatting mpl axis ticklabels

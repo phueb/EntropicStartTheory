@@ -5,10 +5,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 from itertools import product
 
 
-from startingabstract import config
-from startingabstract.representation import make_representations_without_context
-from startingabstract.representation import make_representations_with_context
-from startingabstract.representation import make_output_representation
+from startingcompact import config
+from startingcompact.representation import make_representations_without_context
+from startingcompact.representation import make_representations_with_context
+from startingcompact.representation import make_output_representation
 
 
 def calc_perplexity(model, criterion, prep):

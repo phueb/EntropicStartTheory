@@ -15,12 +15,12 @@ from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
 
-from startingabstract import config
-from startingabstract.evaluation import update_ba_performance
-from startingabstract.evaluation import update_pp_performance
-from startingabstract.evaluation import update_dp_performance
-from startingabstract.evaluation import update_cs_performance
-from startingabstract.rnn import RNN
+from startingcompact import config
+from startingcompact.evaluation import update_ba_performance
+from startingcompact.evaluation import update_pp_performance
+from startingcompact.evaluation import update_dp_performance
+from startingcompact.evaluation import update_cs_performance
+from startingcompact.rnn import RNN
 
 
 @attr.s
