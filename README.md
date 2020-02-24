@@ -1,4 +1,4 @@
-# Starting-Abstract
+# Starting Compact
 
 Research code. Under active development.
 
@@ -20,6 +20,8 @@ It was created using [CreateCHILDESCorpus](https://github.com/UIUCLearningLangua
 
 
 ### Wikipedia
+
+Coming Soon
 
 ## Installation
 
