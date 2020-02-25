@@ -2,9 +2,9 @@
 
 Research code. Under active development.
 
-## Motivation & Results
+## Background
 
-The research paper associated with this repsitory can be found [here](https://osf.io/j943u/).
+The research paper associated with this repository can be found [here](https://osf.io/j943u/).
 
 ## Training Data
 
@@ -25,7 +25,7 @@ Coming Soon
 
 ## Installation
 
-First, create a new virtual environment for Python 3.6. Then:
+First, create a new virtual environment for Python 3.7. Then:
 
 ```
 pip install git+https://github.com/UIUCLearningLanguageLab/StartingSmall
@@ -74,4 +74,4 @@ ludwig --local
 
 ## Compatibility
 
-Developed on Ubuntu 16.04 with Python 3.6
+Developed on Ubuntu 16.04 with Python 3.7
