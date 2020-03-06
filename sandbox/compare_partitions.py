@@ -9,8 +9,8 @@ from pyitlib import discrete_random_variable as drv
 from preppy.legacy import TrainPrep
 from categoryeval.dp import DPScorer
 
-from startingcompact.docs import load_docs
-from startingcompact import config
+from provident.docs import load_docs
+from provident import config
 
 
 CORPUS_NAME = 'childes-20191112'

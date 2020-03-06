@@ -2,13 +2,12 @@ import pyprind
 import torch
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from itertools import product
 
 
-from startingcompact import config
-from startingcompact.representation import make_representations_without_context
-from startingcompact.representation import make_representations_with_context
-from startingcompact.representation import make_output_representation
+from provident import config
+from provident.representation import make_representations_without_context
+from provident.representation import make_representations_with_context
+from provident.representation import make_output_representation
 
 
 def calc_perplexity(model, criterion, prep):

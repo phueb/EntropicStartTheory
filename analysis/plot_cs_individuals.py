@@ -5,9 +5,9 @@ import numpy as np
 
 from ludwig.results import gen_param_paths
 
-from startingcompact import __name__
-from startingcompact.figs import make_summary_fig
-from startingcompact.params import param2default, param2requests
+from provident import __name__
+from provident.figs import make_summary_fig
+from provident.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
 RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig

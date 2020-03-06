@@ -19,7 +19,7 @@ from categoryeval.ba import BAScorer
 from preppy import PartitionedPrep
 
 from preppy.docs import load_docs
-from startingcompact import config
+from provident import config
 
 
 CORPUS_NAME = 'childes-20191112'
