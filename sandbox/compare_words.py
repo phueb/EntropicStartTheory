@@ -12,7 +12,7 @@ from preppy.legacy import TrainPrep
 from categoryeval.dp import DPScorer
 
 from provident.docs import load_docs
-from provident import config
+from provident import configs
 
 
 CORPUS_NAME = 'childes-20191112'
@@ -21,7 +21,7 @@ VERBS_NAME = 'all-verbs-4096'
 
 METRIC = 'js'
 
-corpus_path = config.Dirs.corpora / f'{CORPUS_NAME}.txt'
+corpus_path = configs.Dirs.corpora / f'{CORPUS_NAME}.txt'
 train_docs, _ = load_docs(corpus_path)
 
 prep = TrainPrep(train_docs,

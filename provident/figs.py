@@ -4,7 +4,7 @@ import seaborn as sns
 import numpy as np
 from typing import List, Tuple, Union
 
-from provident import config
+from provident import configs
 
 
 def human_format(num, pos):  # pos is required for formatting mpl axis ticklabels
@@ -34,10 +34,10 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      verbose: bool = False,
                      ):
     # fig
-    fig, ax = plt.subplots(figsize=figsize, dpi=config.Figs.dpi)
+    fig, ax = plt.subplots(figsize=figsize, dpi=configs.Figs.dpi)
     plt.title(title)
-    ax.set_xlabel('Training step (mini batch)', fontsize=config.Figs.axlabel_fs)
-    ax.set_ylabel(ylabel, fontsize=config.Figs.axlabel_fs)
+    ax.set_xlabel('Training step (mini batch)', fontsize=configs.Figs.axlabel_fs)
+    ax.set_ylabel(ylabel, fontsize=configs.Figs.axlabel_fs)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.tick_params(axis='both', which='both', top=False, right=False)
@@ -106,17 +106,17 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                 label = 'age-ordered'
                 first_c = False
 
-        ax.plot(x, y_mean, '-', linewidth=config.Figs.lw, color=color,
+        ax.plot(x, y_mean, '-', linewidth=configs.Figs.lw, color=color,
                 label=label, zorder=3 if n == 8 else 2)
         ax.fill_between(x, y_mean + h, y_mean - h, alpha=0.5, color='grey')
 
     # legend
     if title:
-        plt.legend(fontsize=config.Figs.leg_fs, frameon=False, loc=legend_loc, ncol=1)
+        plt.legend(fontsize=configs.Figs.leg_fs, frameon=False, loc=legend_loc, ncol=1)
     else:
         plt.legend(bbox_to_anchor=(0.5, 1.0),
                    borderaxespad=1.0,
-                   fontsize=config.Figs.leg_fs,
+                   fontsize=configs.Figs.leg_fs,
                    frameon=False,
                    loc='lower center',
                    ncol=3,

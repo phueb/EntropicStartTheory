@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from provident import config
+from provident import configs
 
 
 def make_representations_without_context(model, word_ids):
@@ -26,8 +26,8 @@ def make_representations_with_context(model, word_ids, train_prep, verbose=False
         x = all_windows[bool_idx][:, :-1]
 
         # TODO does this matter?
-        if len(x) > config.Eval.max_num_exemplars:
-            x = x[np.random.choice(len(x), size=config.Eval.max_num_exemplars)]
+        if len(x) > configs.Eval.max_num_exemplars:
+            x = x[np.random.choice(len(x), size=configs.Eval.max_num_exemplars)]
 
         inputs = torch.cuda.LongTensor(x)
         num_exemplars, dim1 = inputs.shape

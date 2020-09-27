@@ -19,7 +19,7 @@ from categoryeval.ba import BAScorer
 from preppy import PartitionedPrep
 
 from preppy.docs import load_docs
-from provident import config
+from provident import configs
 
 
 CORPUS_NAME = 'childes-20191112'
@@ -28,7 +28,7 @@ CAT = 'NOUN'
 
 NUM_TICKS = 4
 
-corpus_path = config.Dirs.corpora / f'{CORPUS_NAME}.txt'
+corpus_path = configs.Dirs.corpora / f'{CORPUS_NAME}.txt'
 train_docs, _ = load_docs(corpus_path)
 
 prep = PartitionedPrep(train_docs,

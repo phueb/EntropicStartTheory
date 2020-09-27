@@ -15,7 +15,7 @@ from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
 
-from provident import config
+from provident import configs
 from provident.evaluation import update_ba_performance
 from provident.evaluation import update_pp_performance
 from provident.evaluation import update_dp_performance
@@ -55,7 +55,7 @@ def main(param2val):
     corpus_path = project_path / 'corpora' / f'{params.corpus}.txt'
     train_docs, test_docs = load_docs(corpus_path,
                                       shuffle_sentences=params.shuffle_sentences,
-                                      num_test_docs=config.Eval.num_test_docs,
+                                      num_test_docs=configs.Eval.num_test_docs,
                                       )
 
     # prepare input
@@ -67,7 +67,7 @@ def main(param2val):
                               num_iterations=params.num_iterations,
                               batch_size=params.batch_size,
                               context_size=params.context_size,
-                              num_evaluations=config.Eval.num_total_ticks,
+                              num_evaluations=configs.Eval.num_total_ticks,
                               shuffle_within_part=False)
 
     test_prep = SlidingPrep(test_docs,
@@ -76,23 +76,23 @@ def main(param2val):
                             slide_size=params.batch_size,
                             batch_size=params.batch_size,
                             context_size=params.context_size,
-                            num_evaluations=config.Eval.num_total_ticks,
+                            num_evaluations=configs.Eval.num_total_ticks,
                             vocab=train_prep.store.types)
 
     windows_generator = train_prep.generate_batches()  # has to be created once
 
     # classes that perform scoring
     ba_scorer = BAScorer(params.corpus,
-                         config.Eval.ba_probes,
+                         configs.Eval.ba_probes,
                          train_prep.store.w2id
                          )
     dp_scorer = DPScorer(params.corpus,
-                         config.Eval.dp_probes,
+                         configs.Eval.dp_probes,
                          train_prep.store.w2id,
                          train_prep.store.tokens,
                          )
     cs_scorer = CSScorer(params.corpus,
-                         config.Eval.cs_probes,
+                         configs.Eval.cs_probes,
                          train_prep.store.tokens,
                          )
 
@@ -128,7 +128,7 @@ def main(param2val):
             train_mb += train_prep.num_mbs_per_eval
 
         # evaluate performance more frequently at start of training
-        if tick < config.Eval.num_start_ticks or tick % config.Eval.tick_step == 0:
+        if tick < configs.Eval.num_start_ticks or tick % configs.Eval.tick_step == 0:
             performance_mbs.append(eval_mb)
             model.eval()
             performance = update_cs_performance(performance, model, train_prep, cs_scorer)
@@ -144,7 +144,7 @@ def main(param2val):
 
         # print progress to console
         minutes_elapsed = int(float(time.time() - start_train) / 60)
-        print(f'completed time-point={tick} of {config.Eval.num_total_ticks}')
+        print(f'completed time-point={tick} of {configs.Eval.num_total_ticks}')
         print(f'minutes elapsed={minutes_elapsed}')
         print(flush=True)
 

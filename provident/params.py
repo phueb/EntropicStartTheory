@@ -3,7 +3,7 @@
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'sliding': [False],
+    'corpus': 'newsela_concatenated',
 }
 
 param2debug = {

@@ -13,14 +13,14 @@ from preppy.latest import Prep
 from categoryeval.dp import DPScorer
 
 from provident.docs import load_docs
-from provident import config
+from provident import configs
 
 
 CORPUS_NAME = 'childes-20191112'
 NOUNS_NAME = 'singular-nouns-4096'
 VERBS_NAME = 'all-verbs-4096'
 
-corpus_path = config.Dirs.corpora / f'{CORPUS_NAME}.txt'
+corpus_path = configs.Dirs.corpora / f'{CORPUS_NAME}.txt'
 _train_docs, _ = load_docs(corpus_path)
 
 for keep_punctuation in [True, False]:
@@ -50,7 +50,7 @@ for keep_punctuation in [True, False]:
                          )
 
     # fig
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=config.Figs.dpi)
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=configs.Figs.dpi)
     plt.title(f'Next-word probability distribution\npunctuation={keep_punctuation}')
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
