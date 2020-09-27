@@ -2,8 +2,8 @@
 
 # specify params to submit here
 param2requests = {
-    'reverse': [True, False],
-    'corpus': 'newsela',  # TODO try newer childes corpus 20191206
+    'reverse': [True, False],  # TODO add shuffle
+    'corpus': ['newsela'],  # TODO try newer childes corpus 20191206
 }
 
 param2debug = {

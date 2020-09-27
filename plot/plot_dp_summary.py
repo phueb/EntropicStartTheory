@@ -25,7 +25,6 @@ LOG_X: bool = False
 CONFIDENCE = 0.95
 TITLE = ''  # f'{DP_PROBES_NAME}\npartition={PART_ID}'
 
-param2requests['legacy'] = [True]
 
 
 def make_summary(pp, lb) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:

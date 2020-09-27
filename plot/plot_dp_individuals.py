@@ -24,8 +24,6 @@ LOG_X: bool = False
 CONFIDENCE = 0.95
 TITLE = ''  # f'{DP_PROBES_NAME}\npartition={PART_ID}'
 
-param2requests['legacy'] = [True]
-
 
 # collect summaries
 summaries = []

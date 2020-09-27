@@ -23,8 +23,6 @@ LOG_X: bool = False
 CONFIDENCE: float = 0.95
 
 
-param2requests['legacy'] = [True]
-
 
 def make_summary(pp: Path, lb: str, pattern: str):
     """
