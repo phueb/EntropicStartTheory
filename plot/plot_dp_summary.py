@@ -11,7 +11,7 @@ from provident.figs import make_summary_fig
 from provident.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
-RUNS_PATH = None  # config.Dirs.runs if using local results or None if using results form Ludwig
+RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 DP_PROBES_NAME: str = 'sem-4096'
 METRIC = 'js'
 PART_ID = 0
@@ -30,7 +30,7 @@ param2requests['legacy'] = [True]
 
 def make_summary(pp, lb) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:
     """
-    load all csv files for dp-unconditional results
+    load all csv files for dp-unconditional plot
     """
     pattern = f'dp_{DP_PROBES_NAME}_{METRIC}.csv'
     series_list = [pd.read_csv(p, index_col=0, squeeze=True) for p in pp.rglob(pattern)]

@@ -103,7 +103,7 @@ def update_cs_performance(performance, model, train_prep, cs_scorer):
             exemplars_list.append(exemplars)
         ps = np.vstack(exemplars_list)
 
-        # compute divergences between exemplars within a category (not prototypes - produces noisy results)
+        # compute divergences between exemplars within a category (not prototypes - produces noisy plot)
         dp = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
         performance.setdefault(f'cs_{name}_js', []).append(dp)
 

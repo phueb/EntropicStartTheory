@@ -13,8 +13,10 @@ from categoryeval.dp import DPScorer
 from provident import configs
 
 
-CORPUS_NAME = 'childes-20191112'
+CORPUS_NAME = 'newsela'  # 'childes-20191112'
 NOUNS_NAME = 'sem-4096'
+NUM_TYPES = 4096 * 8 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
+EXCLUDED_PROBES = ['tapioca', 'weener', 'acorn']
 
 corpus_path = configs.Dirs.corpora / f'{CORPUS_NAME}.txt'
 train_docs, _ = load_docs(corpus_path, num_test_docs=0)
@@ -22,7 +24,7 @@ train_docs, _ = load_docs(corpus_path, num_test_docs=0)
 prep = FlexiblePrep(train_docs,
                     reverse=False,
                     sliding=False,
-                    num_types=4096,
+                    num_types=NUM_TYPES,
                     num_parts=2,
                     num_iterations=(20, 20),
                     batch_size=64,
@@ -36,7 +38,8 @@ for tokens in [prep.store.tokens[:prep.midpoint],
                          probes_names=(NOUNS_NAME, 'unconditional'),
                          w2id=prep.store.w2id,
                          tokens=tokens,
-                         excluded_probes=['tapioca', 'weener']  # probes that do not occur in all partitions
+                         excluded_probes=EXCLUDED_PROBES,  # probes that do not occur in all partitions
+                         warn=False,
                          )
 
     p = dp_scorer.name2p['unconditional']
@@ -45,3 +48,5 @@ for tokens in [prep.store.tokens[:prep.midpoint],
     print(NOUNS_NAME)
     print(f'xe={drv.entropy_cross_pmf(p, q)}')
     print(f'js={drv.divergence_jensenshannon_pmf(p, q)}')
+    print(f'kl={drv.divergence_kullbackleibler_pmf(p, q)}')
+    print()

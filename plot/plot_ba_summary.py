@@ -11,7 +11,7 @@ from provident.figs import make_summary_fig
 from provident.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
-RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local results or None if using results form Ludwig
+RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-4096'
 

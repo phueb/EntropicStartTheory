@@ -3,7 +3,7 @@
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'corpus': 'newsela_concatenated',
+    'corpus': 'newsela',  # TODO try newer childes corpus 20191206
 }
 
 param2debug = {
