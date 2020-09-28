@@ -16,7 +16,7 @@ from provident import configs
 
 CORPUS_NAME = 'newsela'  # 'childes-20191112'
 PROBES_NAME = 'sem-4096'
-NUM_TYPES = 4096 * 8 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
+NUM_TYPES = 4096 * 4 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
 
 corpus_path = configs.Dirs.corpora / f'{CORPUS_NAME}.txt'
 _train_docs, _ = load_docs(corpus_path, num_test_docs=0)

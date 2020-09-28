@@ -23,7 +23,7 @@ from provident import configs
 
 
 CORPUS_NAME = 'newsela'  # 'childes-20191112'
-NUM_TYPES = 4096 * 8 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
+NUM_TYPES = 4096 * 4 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
 PROBES_NAME = 'sem-4096'
 
 NUM_TICKS = 4

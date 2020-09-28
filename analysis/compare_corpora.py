@@ -18,7 +18,7 @@ probe2c2f = {}
 cat2c2f = {}
 
 for corpus_name in CORPUS_NAMES:
-    num_types = 4096 * 8 if corpus_name == 'newsela' else 4096  # x8 is suitable for newsela
+    num_types = 4096 * 4 if corpus_name == 'newsela' else 4096  # x4 is suitable for newsela
 
     corpus_path = configs.Dirs.corpora / f'{corpus_name}.txt'
     train_docs, _ = load_docs(corpus_path, num_test_docs=0)
