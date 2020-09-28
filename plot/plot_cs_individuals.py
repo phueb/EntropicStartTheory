@@ -19,7 +19,7 @@ LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = [0, 0.7]
 PARAMS_AS_TITLE: bool = True
-LOG_X: bool = False
+LOG_Y: bool = False
 
 
 summaries = []
@@ -45,7 +45,7 @@ for param_path, label in gen_param_paths(project_name,
 fig = make_summary_fig(summaries,
                        ylabel=Y_LABEL,
                        title='',
-                       log_x=LOG_X,
+                       log_y=LOG_Y,
                        ylims=Y_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',

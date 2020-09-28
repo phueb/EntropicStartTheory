@@ -4,6 +4,7 @@
 param2requests = {
     'reverse': [True, False],  # TODO add shuffle
     'corpus': ['newsela'],  # TODO try newer childes corpus 20191206
+    'num_types': [4096 * 8],
 }
 
 param2debug = {

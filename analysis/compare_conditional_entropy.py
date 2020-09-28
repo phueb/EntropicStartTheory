@@ -22,7 +22,8 @@ from preppy.docs import load_docs
 from provident import configs
 
 
-CORPUS_NAME = 'childes-20191112'
+CORPUS_NAME = 'newsela'  # 'childes-20191112'
+NUM_TYPES = 4096 * 8 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
 PROBES_NAME = 'sem-4096'
 
 NUM_TICKS = 4
@@ -34,7 +35,7 @@ train_docs, _ = load_docs(corpus_path)
 prep = FlexiblePrep(train_docs,
                     reverse=False,
                     sliding=False,
-                    num_types=4096,
+                    num_types=NUM_TYPES,
                     num_parts=2,
                     num_iterations=(20, 20),
                     batch_size=64,

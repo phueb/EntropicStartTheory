@@ -22,7 +22,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      figsize: Tuple[int, int] = None,
                      ylims: List[float] = None,
                      xlims: List[float] = None,
-                     log_x: bool = False,
+                     log_y: bool = False,
                      start_x_at_zero: bool = False,
                      y_grid: bool = False,
                      plot_max_line: bool = False,
@@ -46,9 +46,9 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         ax.yaxis.grid(True)
     if ylims is not None:
         ax.set_ylim(ylims)
-    if log_x:
-        ax.set_xscale('log')
-    elif start_x_at_zero:
+    if log_y:
+        ax.set_yscale('log')
+    if start_x_at_zero:
         ax.set_xlim(xmin=0, xmax=summaries[0][0][-1])
     if xlims is not None:
         ax.set_xlim(xlims)
@@ -72,9 +72,6 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     for x, y_mean, h, label, n in summaries:
         max_ys.append(max(y_mean))
 
-        if log_x:
-            x += 1  # can't set x-lim to 0 when using log x-axis, so use 1 instead
-
         if legend_labels is not None:
             try:
                 label = next(legend_labels)
@@ -96,14 +93,14 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             if not first_r:
                 label = '__nolegend__'
             else:
-                label = 'complex first'
+                label = label.replace('reverse=True', 'complex first')
                 first_r = False
-        else:
+        elif 'reverse=False' in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
             else:
-                label = 'simple first'
+                label = label.replace('reverse=False', 'simple first')
                 first_c = False
 
         ax.plot(x, y_mean, '-', linewidth=configs.Figs.lw, color=color,
@@ -142,80 +139,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     return fig
 
 
-def plot_singular_values(ys: List[np.ndarray],
-                         max_s: int,
-                         fontsize: int = 12,
-                         figsize: Tuple[int] = (5, 5),
-                         markers: bool = False,
-                         label_all_x: bool = True,
-                         ):
-    fig, ax = plt.subplots(1, figsize=figsize, dpi=None)
-    plt.title('SVD of simulated co-occurrence matrix', fontsize=fontsize)
-    ax.set_ylabel('Singular value', fontsize=fontsize)
-    ax.set_xlabel('Singular Dimension', fontsize=fontsize)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.tick_params(axis='both', which='both', top=False, right=False)
-    x = np.arange(max_s) + 1  # num columns
-    ax.xaxis.grid(True)
-    if label_all_x:
-        ax.set_xticks(x)
-        ax.set_xticklabels(x)
-    # plot
-    for n, y in enumerate(ys):
-        ax.plot(x, y, label='simulation {}'.format(n + 1), linewidth=2)
-        if markers:
-            ax.scatter(x, y)
-    ax.legend(loc='upper right', frameon=False, fontsize=fontsize)
-    plt.tight_layout()
-    plt.show()
 
 
-def plot_heatmap(mat,
-                 x_tick_labels: np.ndarray,
-                 y_tick_labels: np.ndarray,
-                 label_interval: int = 1,
-                 dpi: int = 163 * 1,
-                 num_cols: int = 512,
-                 ):
-    fig, ax = plt.subplots(figsize=(12, 12), dpi=dpi)
-    plt.title('', fontsize=5)
 
-    # plot subset of columns (to speed computation)
-    mat = mat[:, :num_cols]
-
-    # heatmap
-    print('Plotting heatmap...')
-    ax.imshow(mat,
-              # aspect='equal',
-              cmap=plt.get_cmap('Greys'),
-              interpolation='nearest')
-
-    # x ticks
-    x_tick_labels_spaced = []
-    for i, l in enumerate(x_tick_labels):
-        x_tick_labels_spaced.append(l if i % label_interval == 0 else '')
-
-    num_cols = len(mat.T)
-    ax.set_xticks(np.arange(num_cols))
-    ax.xaxis.set_ticklabels(x_tick_labels_spaced, rotation=90, fontsize=2)
-
-    # y ticks
-    y_tick_labels_spaced = []
-    for i, l in enumerate(y_tick_labels):
-        y_tick_labels_spaced.append(l if i % label_interval == 0 else '')
-
-    num_rows = len(mat)
-    ax.set_yticks(np.arange(num_rows))
-    ax.yaxis.set_ticklabels(y_tick_labels_spaced,  # no need to reverse (because no extent is set)
-                            rotation=0, fontsize=2)
-
-    # remove spacing between plot and tick labels
-    ax.tick_params(axis='both', which='both', pad=-2)
-
-    # remove tick lines
-    lines = (ax.xaxis.get_ticklines() +
-             ax.yaxis.get_ticklines())
-    plt.setp(lines, visible=False)
-    plt.show()
 

@@ -21,7 +21,7 @@ LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = [0.0, 0.8]
 X_LIMS: Optional[List[int]] = None  # [0, 100_000]
-LOG_X: bool = False
+LOG_Y: bool = False
 CONFIDENCE = 0.95
 TITLE = ''  # f'{DP_PROBES_NAME}\npartition={PART_ID}'
 
@@ -61,7 +61,7 @@ for param_path, label in gen_param_paths(project_name,
 fig = make_summary_fig(summaries,
                        ylabel=Y_LABEL,
                        title=TITLE,
-                       log_x=LOG_X,
+                       log_y=LOG_Y,
                        ylims=Y_LIMS,
                        xlims=X_LIMS,
                        figsize=FIG_SIZE,
