@@ -93,14 +93,12 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             if not first_r:
                 label = '__nolegend__'
             else:
-                label = label.replace('reverse=True', 'complex first')
                 first_r = False
         elif 'reverse=False' in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
             else:
-                label = label.replace('reverse=False', 'simple first')
                 first_c = False
 
         ax.plot(x, y_mean, '-', linewidth=configs.Figs.lw, color=color,

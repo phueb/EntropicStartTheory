@@ -25,19 +25,23 @@ from provident.rnn import RNN
 
 @attr.s
 class Params(object):
-    sliding = attr.ib(validator=attr.validators.instance_of(bool))
-    reverse = attr.ib(validator=attr.validators.instance_of(bool))
     shuffle_sentences = attr.ib(validator=attr.validators.instance_of(bool))
     corpus = attr.ib(validator=attr.validators.instance_of(str))
     num_types = attr.ib(validator=attr.validators.instance_of(int))
     num_parts = attr.ib(validator=attr.validators.instance_of(int))
-    num_iterations = attr.ib(validator=attr.validators.instance_of(tuple))
     context_size = attr.ib(validator=attr.validators.instance_of(int))
-    batch_size = attr.ib(validator=attr.validators.instance_of(int))
+
     flavor = attr.ib(validator=attr.validators.instance_of(str))
     hidden_size = attr.ib(validator=attr.validators.instance_of(int))
+
+    reverse = attr.ib(validator=attr.validators.instance_of(bool))
+    sliding = attr.ib(validator=attr.validators.instance_of(bool))
+    num_iterations = attr.ib(validator=attr.validators.instance_of(tuple))
+    batch_size = attr.ib(validator=attr.validators.instance_of(int))
     lr = attr.ib(validator=attr.validators.instance_of(float))
     optimizer = attr.ib(validator=attr.validators.instance_of(str))
+
+    exclude_number_words = attr.ib(validator=attr.validators.instance_of(bool))
 
     @classmethod
     def from_param2val(cls, param2val):
@@ -52,7 +56,7 @@ def main(param2val):
     print(params)
 
     project_path = Path(param2val['project_path'])
-    corpus_path = project_path / 'corpora' / f'{params.corpus}.txt'
+    corpus_path = project_path / 'data' / 'corpora' / f'{params.corpus}.txt'
     train_docs, test_docs = load_docs(corpus_path,
                                       shuffle_sentences=params.shuffle_sentences,
                                       num_test_docs=configs.Eval.num_test_docs,
@@ -81,10 +85,16 @@ def main(param2val):
 
     windows_generator = train_prep.generate_batches()  # has to be created once
 
+    if params.exclude_number_words:
+        excluded_probes = (project_path / 'data' / 'words' / 'number-words.txt').open().read().split("\n")
+    else:
+        excluded_probes = None
+
     # classes that perform scoring
     ba_scorer = BAScorer(params.corpus,
                          configs.Eval.ba_probes,
-                         train_prep.store.w2id
+                         train_prep.store.w2id,
+                         excluded_probes,
                          )
     dp_scorer = DPScorer(params.corpus,
                          configs.Eval.dp_probes,
@@ -181,6 +191,7 @@ def train_on_corpus(model: RNN,
         optimizer.zero_grad()  # sets all gradients to zero
         loss = criterion(logits, targets)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
 
         pbar.update()
