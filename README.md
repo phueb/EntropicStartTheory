@@ -8,8 +8,6 @@ The research paper associated with this repository can be found [here](https://o
 
 ## Training Data
 
-### CHILDES
-
 The training input consists of transcribed child-directed speech from the CHILDES database.
 The text used to train the RNN in my thesis is available in `data/childes-20180319.txt`. 
 It was created using [CreateCHILDESCorpus](https://github.com/UIUCLearningLanguageLab/CreateCHILDESCorpus), which performs:
@@ -18,10 +16,12 @@ It was created using [CreateCHILDESCorpus](https://github.com/UIUCLearningLangua
 2) lowercasing
 3) ordering of transcripts by the age of the target child
 
+## Research Findings
 
-### Wikipedia
+The order in which the training data is presented to the RNN facilitates 
+learning semantic category distinctions between common nouns.
 
-Coming Soon
+<img src="images/ao-effect.png" width="400">
 
 ## Installation
 

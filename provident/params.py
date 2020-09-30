@@ -2,10 +2,9 @@
 
 # specify params to submit here
 param2requests = {
-    'exclude_number_words': [True],
     'reverse': [True, False],  # TODO add shuffle
-    'corpus': ['newsela'],  # TODO try newer childes corpus 20191206
-    'num_types': [4096 * 4],
+    # 'corpus': ['newsela'],  # TODO try newer childes corpus 20191206
+    # 'num_types': [4096 * 4],
 }
 
 param2debug = {
@@ -31,5 +30,5 @@ param2default = {
     'lr': 0.01,
     'optimizer': 'adagrad',
 
-    'exclude_number_words': False,
+    'exclude_number_words': True,
 }

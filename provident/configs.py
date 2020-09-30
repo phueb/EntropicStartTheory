@@ -14,7 +14,7 @@ class Eval:
     cs_probes = ()
     dp_probes = ()
 
-    num_total_ticks = 128   # number of time points at which to evaluate performance
+    num_total_ticks = 64   # number of time points at which to evaluate performance
     num_start_ticks = 16
     tick_step = 8  # skip this number of ticks until performance evaluation when not at start of training
 
@@ -29,6 +29,6 @@ class Eval:
 
 class Figs:
     lw = 2
-    axlabel_fs = 14
-    leg_fs = 12
+    axlabel_fs = 12
+    leg_fs = 8
     dpi = 163
