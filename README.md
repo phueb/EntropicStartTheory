@@ -9,7 +9,7 @@ The research paper associated with this repository can be found [here](https://o
 ## Training Data
 
 The training input consists of transcribed child-directed speech from the CHILDES database.
-The text used to train the RNN in my thesis is available in `data/childes-20180319.txt`. 
+The text used to train the RNN is available in `data/childes-20191112.txt`. 
 It was created using [CreateCHILDESCorpus](https://github.com/UIUCLearningLanguageLab/CreateCHILDESCorpus), which performs:
 
 1) tokenization using the default tokenizer in `spacy`
