@@ -1,4 +1,4 @@
-# Provident
+# ChildesRNNLM
 
 Research code. Under active development.
 
@@ -28,7 +28,7 @@ learning semantic category distinctions between common nouns.
 First, create a new virtual environment for Python 3.7. Then:
 
 ```
-pip install git+https://github.com/phueb/Provident
+pip install git+https://github.com/phueb/ChildesRNNLM
 ```
 
 ## Dependencies
@@ -74,4 +74,4 @@ ludwig --local
 
 ## Compatibility
 
-Developed on Ubuntu 16.04 with Python 3.7
+Developed on Ubuntu 18.04 with Python 3.7
