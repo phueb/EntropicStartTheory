@@ -9,7 +9,7 @@ from provident.figs import make_summary_fig
 from provident.params import param2default, param2requests
 from provident.summary import make_summary
 
-RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
+RESEARCH_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 WHICH_PP = 'test'
 
@@ -32,7 +32,7 @@ for p, label in gen_param_paths(project_name,
                                 param2requests,
                                 param2default,
                                 runs_path=RUNS_PATH,
-                                research_data_path=RESEARCH_DATA_PATH,
+                                ludwig_data_path=RESEARCH_DATA_PATH,
                                 label_n=LABEL_N):
     pattern = f'{WHICH_PP}_pp'
     summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, n

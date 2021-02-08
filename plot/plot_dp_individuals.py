@@ -9,7 +9,7 @@ from provident import __name__
 from provident.figs import make_summary_fig
 from provident.params import param2default, param2requests
 
-RESEARCH_DATA_PATH: Optional[Path] = Path('/media/research_data')
+RESEARCH_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 DP_PROBES_NAME: str = 'sem-4096'
 METRIC = 'js'
@@ -32,7 +32,7 @@ for param_path, label in gen_param_paths(project_name,
                                          param2requests,
                                          param2default,
                                          runs_path=RUNS_PATH,
-                                         research_data_path=RESEARCH_DATA_PATH,
+                                         ludwig_data_path=RESEARCH_DATA_PATH,
                                          label_n=LABEL_N):
 
     pattern = f'dp_{DP_PROBES_NAME}_{METRIC}.csv'
