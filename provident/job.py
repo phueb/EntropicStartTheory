@@ -91,6 +91,8 @@ def main(param2val):
         excluded_probes = None
 
     # classes that perform scoring
+    for suffix in ['-ce', '-g4', '-g8']:
+        params.corpus = params.corpus.replace(suffix, '')
     ba_scorer = BAScorer(params.corpus,
                          configs.Eval.ba_probes,
                          train_prep.store.w2id,

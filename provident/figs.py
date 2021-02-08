@@ -88,13 +88,13 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                 print(f'mean={mean_i:>6.2f} h={std_i:>6.2f}')
 
         # if passing multiple summaries, do not label all
-        if 'reverse=True' in label:
+        if 'reverse=True' in label and 'shuffle_sentences=True' not in label:
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'
             else:
                 first_r = False
-        elif 'reverse=False' in label:
+        elif 'reverse=False' in label and 'shuffle_sentences=True' not in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
@@ -103,7 +103,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
 
         ax.plot(x, y_mean, '-', linewidth=configs.Figs.lw, color=color,
                 label=label, zorder=3 if n == 8 else 2)
-        ax.fill_between(x, y_mean + h, y_mean - h, alpha=0.5, color='grey')
+        ax.fill_between(x, y_mean + h, y_mean - h, alpha=0.2, color=color)
 
     # legend
     if title:
@@ -122,7 +122,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         ax.axhline(y=max(max_ys), color='grey', linestyle=':', zorder=1)
     if plot_max_lines:
         for max_y in max_ys:
-            ax.axhline(y=max_y, color='grey', linestyle=':', zorder=1)
+            ax.axhline(y=max_y, color='grey', lw=1, linestyle='-', zorder=1)
             print('y max={}'.format(max_y))
     # vertical lines
     if vlines:

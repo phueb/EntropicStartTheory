@@ -22,12 +22,15 @@ from preppy.docs import load_docs
 from provident import configs
 
 
-CORPUS_NAME = 'newsela'  # 'childes-20191112'
-NUM_TYPES = 4096 * 4 if CORPUS_NAME == 'newsela' else 4096  # x8 is suitable for newsela
+# CORPUS_NAME = 'newsela'
+# CORPUS_NAME = 'childes-20191112'
+CORPUS_NAME = 'childes-20191112-ce-g4'
+NUM_TYPES = 4096 * 4 if CORPUS_NAME == 'newsela' else 4096  # x4 is suitable for newsela
 PROBES_NAME = 'sem-4096'
 
 NUM_TICKS = 4
 AX_FONT_SIZE = 14
+Y_LIMS = [5, 7]
 
 corpus_path = configs.Dirs.corpora / f'{CORPUS_NAME}.txt'
 train_docs, _ = load_docs(corpus_path)
@@ -42,15 +45,13 @@ prep = FlexiblePrep(train_docs,
                     context_size=7,
                     num_evaluations=20,
                     )
-
-ba_scorer = BAScorer(CORPUS_NAME,
+corpus_name_no_suffix = CORPUS_NAME
+for suffix in ['-ce', '-g4']:
+    corpus_name_no_suffix = corpus_name_no_suffix.replace(suffix, '')
+ba_scorer = BAScorer(corpus_name_no_suffix,
                      probes_names=[PROBES_NAME],
                      w2id=prep.store.w2id)
-
-if PROBES_NAME == 'sem-4096':
-    probes = ba_scorer.name2store[PROBES_NAME].types
-else:
-    probes = ba_scorer.name2store[PROBES_NAME].cat2probes[PROBES_NAME]
+probes = ba_scorer.name2store[PROBES_NAME].types
 print(f'num probes={len(probes)}')
 
 
@@ -97,11 +98,13 @@ y1 = collect_data(windows, reverse=False)
 y2 = collect_data(windows, reverse=True)
 
 fig, ax = plt.subplots(1, figsize=(6, 4), dpi=None)
-plt.title('', fontsize=AX_FONT_SIZE)
+plt.title(CORPUS_NAME, fontsize=AX_FONT_SIZE)
 ax.set_ylabel(f'H({PROBES_NAME}|next word)', fontsize=AX_FONT_SIZE)
-ax.set_xlabel(f'{CORPUS_NAME.title()} Cumulative Number of Tokens', fontsize=AX_FONT_SIZE)
+ax.set_xlabel('Number of Tokens', fontsize=AX_FONT_SIZE)
 ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
+if Y_LIMS:
+    ax.set_ylim(Y_LIMS)
 ax.tick_params(axis='both', which='both', top=False, right=False)
 ax.plot(num_windows_list, y1, '-', linewidth=2, color='C0', label='simple first')
 ax.plot(num_windows_list, y2, '-', linewidth=2, color='C1', label='complex first')

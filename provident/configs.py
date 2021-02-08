@@ -4,7 +4,7 @@ from pathlib import Path
 class Dirs:
     root = Path(__file__).parent.parent
     src = Path(__file__).parent
-    corpora = root / 'corpora'
+    corpora = root / 'data' / 'corpora'
 
 
 class Eval:
@@ -28,7 +28,7 @@ class Eval:
 
 
 class Figs:
-    lw = 2
+    lw = 1
     axlabel_fs = 12
-    leg_fs = 8
+    leg_fs = 6
     dpi = 163

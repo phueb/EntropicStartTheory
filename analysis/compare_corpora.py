@@ -10,7 +10,7 @@ from categoryeval.probestore import ProbeStore
 from provident import configs
 
 
-CORPUS_NAMES = ['newsela', 'childes-20191112']
+CORPUS_NAMES = ['childes-20191112', 'childes-20191112-ce-g4']
 PROBES_NAME = 'sem-4096'
 
 
@@ -27,14 +27,20 @@ for corpus_name in CORPUS_NAMES:
                         reverse=False,
                         sliding=False,
                         num_types=num_types,
-                        num_parts=2,
+                        num_parts=256,
                         num_iterations=(20, 20),
                         batch_size=64,
                         context_size=7,
                         num_evaluations=20,
                         )
-
-    probestore = ProbeStore(corpus_name, PROBES_NAME, prep.store.w2id, set(), warn=False)
+    corpus_name_no_suffix = corpus_name
+    for suffix in ['-ce', '-g4']:
+        corpus_name_no_suffix = corpus_name_no_suffix.replace(suffix, '')
+    probestore = ProbeStore(corpus_name_no_suffix,
+                            PROBES_NAME,
+                            prep.store.w2id,
+                            set(),
+                            warn=False)
 
     # count total probe occurrences in corpus
     num_total = 0

@@ -2,8 +2,9 @@
 
 # specify params to submit here
 param2requests = {
-    'reverse': [True, False],  # TODO add shuffle
-    # 'corpus': ['newsela'],  # TODO try newer childes corpus 20191206
+    'reverse': [True, False],
+    'shuffle_sentences': [False, True],
+    'corpus': ['childes-20191112-ce-g8'],
     # 'num_types': [4096 * 4],
 }
 
