@@ -7,7 +7,7 @@ from preppy import FlexiblePrep
 from preppy.docs import load_docs
 from categoryeval.probestore import ProbeStore
 
-from provident import configs
+from childesrnnlm import configs
 
 
 CORPUS_NAMES = ['childes-20191112', 'childes-20191112-ce-g4']

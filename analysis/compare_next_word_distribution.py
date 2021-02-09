@@ -10,7 +10,7 @@ from preppy import FlexiblePrep
 from preppy.docs import load_docs
 from categoryeval.dp import DPScorer
 
-from provident import configs
+from childesrnnlm import configs
 
 
 CORPUS_NAME = 'newsela'  # 'childes-20191112'

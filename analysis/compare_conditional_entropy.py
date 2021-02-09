@@ -19,7 +19,7 @@ from categoryeval.ba import BAScorer
 from preppy import FlexiblePrep
 from preppy.docs import load_docs
 
-from provident import configs
+from childesrnnlm import configs
 
 
 # CORPUS_NAME = 'newsela'

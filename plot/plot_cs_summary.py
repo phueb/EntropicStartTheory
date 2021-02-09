@@ -5,9 +5,9 @@ from scipy.stats import t, sem
 
 from ludwig.results import gen_param_paths
 
-from provident import __name__
-from provident.figs import make_summary_fig
-from provident.params import param2default, param2requests
+from childesrnnlm import __name__
+from childesrnnlm.figs import make_summary_fig
+from childesrnnlm.params import param2default, param2requests
 
 RESEARCH_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
