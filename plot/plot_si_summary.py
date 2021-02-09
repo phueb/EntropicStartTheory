@@ -20,7 +20,7 @@ PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [-0.2, 0.2]
+Y_LIMS: List[float] = [-0.06, 0.0]
 Y_LABEL: str = f'Silhouette Score\n +/- 95%-CI'
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{SI_NAME}_{PROBES_NAME}.csv'
@@ -35,6 +35,7 @@ for p, label in gen_param_paths(project_name,
                                 runs_path=RUNS_PATH,
                                 ludwig_data_path=RESEARCH_DATA_PATH,
                                 label_n=LABEL_N):
+    label = label[14:]
     pattern = f'{SI_NAME}_{PROBES_NAME}'
     summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, n
     summaries.append(summary)

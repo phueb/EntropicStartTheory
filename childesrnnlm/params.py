@@ -4,6 +4,7 @@
 param2requests = {
     'reverse': [True, False],
     # 'shuffle_sentences': [False, True],
+    # 'num_types': [4096 * 2]
 }
 
 param2debug = {

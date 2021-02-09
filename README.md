@@ -23,6 +23,8 @@ learning semantic category distinctions between common nouns.
 
 <img src="images/ao-effect.png" width="400">
 
+<img src="images/silhouette_score.png" width="400">
+
 ## Installation
 
 First, create a new virtual environment for Python 3.7. Then:
