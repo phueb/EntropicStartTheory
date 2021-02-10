@@ -14,6 +14,7 @@ class Eval:
     cs_probes = []
     dp_probes = []
     si_probes = ['sem-4096']
+    sd_probes = ['sem-4096']
 
     num_total_ticks = 64   # number of time points at which to evaluate performance
     num_start_ticks = 16
@@ -23,6 +24,10 @@ class Eval:
 
     ba_o = True
     ba_n = True
+    si_o = True
+    si_n = True
+    sd_o = True
+    sd_n = True
 
     num_test_docs = 100
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect

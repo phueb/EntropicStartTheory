@@ -10,7 +10,7 @@ from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
 from categoryeval.si import SIScorer
-from categoryeval.probestore import ProbeStore
+from categoryeval.sd import SDScorer
 
 from preppy import FlexiblePrep, SlidingPrep
 
@@ -23,7 +23,7 @@ from childesrnnlm.representation import make_output_representation
 
 def calc_perplexity(model: RNN,
                     criterion: CrossEntropyLoss,
-                    prep):
+                    prep: Union[FlexiblePrep, SlidingPrep]):
     print(f'Calculating perplexity...')
 
     pp_sum = 0
@@ -62,7 +62,7 @@ def update_pp_performance(performance,
             performance['test_pp'].append(test_pp)
     else:
         if configs.Eval.num_test_docs > 0:
-            train_pp = calc_perplexity(model, criterion, train_prep)  # TODO cuda error
+            train_pp = calc_perplexity(model, criterion, train_prep)
             test_pp = calc_perplexity(model, criterion, test_prep)
             performance['train_pp'].append(train_pp)
             performance['test_pp'].append(test_pp)
@@ -86,9 +86,11 @@ def update_ba_performance(performance,
         probe_sims_n = cosine_similarity(probe_reps_n)
 
         if configs.Eval.ba_o:
-            performance.setdefault(f'ba_o_{name}', []).append(ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+            performance.setdefault(f'ba_o_{name}', []).append(
+                ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
         if configs.Eval.ba_n:
-            performance.setdefault(f'ba_n_{name}', []).append(ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+            performance.setdefault(f'ba_n_{name}', []).append(
+                ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
 
     return performance
 
@@ -156,11 +158,43 @@ def update_si_performance(performance,
         probe_store = si_scorer.name2store[name]
 
         probe_reps_n = make_representations_without_context(model, probe_store.vocab_ids)
+        probe_reps_o = make_representations_with_context(model, probe_store.vocab_ids, train_prep)
+        cat_ids = [probe_store.cat2id[probe_store.probe2cat[p]] for p in probe_store.types]
 
         # compute silhouette score
+        if configs.Eval.si_n:
+            performance.setdefault(f'si_n_{name}', []).append(
+                si_scorer.calc_si(probe_reps_n, cat_ids))
+        if configs.Eval.si_o:
+            performance.setdefault(f'si_o_{name}', []).append(
+                si_scorer.calc_si(probe_reps_o, cat_ids))
+
+    return performance
+
+
+def update_sd_performance(performance,
+                          model: RNN,
+                          train_prep: FlexiblePrep,
+                          sd_scorer: SDScorer
+                          ):
+    """
+    compute S-Dbw score.
+    how well do probe representations cluster with representations of probes in the same class?
+    """
+    for name in sd_scorer.probes_names:
+        probe_store = sd_scorer.name2store[name]
+
+        probe_reps_n = make_representations_without_context(model, probe_store.vocab_ids)
+        probe_reps_o = make_representations_with_context(model, probe_store.vocab_ids, train_prep)
         cat_ids = [probe_store.cat2id[probe_store.probe2cat[p]] for p in probe_store.types]
-        si = si_scorer.calc_si(probe_reps_n, cat_ids)
-        performance.setdefault(f'si_{name}', []).append(si)
+
+        # compute score
+        if configs.Eval.sd_n:
+            performance.setdefault(f'sd_n_{name}', []).append(
+                sd_scorer.calc_sd(probe_reps_n, cat_ids))
+        if configs.Eval.sd_o:
+            performance.setdefault(f'sd_o_{name}', []).append(
+                sd_scorer.calc_sd(probe_reps_o, cat_ids))
 
     return performance
 

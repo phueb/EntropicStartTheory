@@ -15,6 +15,7 @@ from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
 from categoryeval.si import SIScorer
+from categoryeval.sd import SDScorer
 
 from childesrnnlm import configs
 from childesrnnlm.evaluation import update_ba_performance
@@ -22,6 +23,7 @@ from childesrnnlm.evaluation import update_pp_performance
 from childesrnnlm.evaluation import update_dp_performance
 from childesrnnlm.evaluation import update_cs_performance
 from childesrnnlm.evaluation import update_si_performance
+from childesrnnlm.evaluation import update_sd_performance
 from childesrnnlm.rnn import RNN
 
 
@@ -114,6 +116,10 @@ def main(param2val):
                          configs.Eval.si_probes,
                          train_prep.store.w2id,
                          )
+    sd_scorer = SDScorer(params.corpus,
+                         configs.Eval.sd_probes,
+                         train_prep.store.w2id,
+                         )
 
     # model
     model = RNN(
@@ -152,9 +158,10 @@ def main(param2val):
             model.eval()
             performance = update_cs_performance(performance, model, train_prep, cs_scorer)
             performance = update_dp_performance(performance, model, train_prep, dp_scorer)
-            performance = update_pp_performance(performance, model, criterion, train_prep, test_prep)  # TODO causing CUDA error?
+            performance = update_pp_performance(performance, model, criterion, train_prep, test_prep)
             performance = update_ba_performance(performance, model, train_prep, ba_scorer)
             performance = update_si_performance(performance, model, train_prep, si_scorer)
+            performance = update_sd_performance(performance, model, train_prep, sd_scorer)
 
             for k, v in performance.items():
                 if not v:
