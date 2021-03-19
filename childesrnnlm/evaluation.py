@@ -85,12 +85,12 @@ def update_ba_performance(performance,
         probe_sims_o = cosine_similarity(probe_reps_o)
         probe_sims_n = cosine_similarity(probe_reps_n)
 
-        if configs.Eval.ba_o:
-            performance.setdefault(f'ba_o_{name}', []).append(
-                ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
         if configs.Eval.ba_n:
             performance.setdefault(f'ba_n_{name}', []).append(
                 ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+        if configs.Eval.ba_o:
+            performance.setdefault(f'ba_o_{name}', []).append(
+                ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
 
     return performance
 

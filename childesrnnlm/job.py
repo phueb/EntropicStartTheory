@@ -8,8 +8,10 @@ from pathlib import Path
 from itertools import islice
 from typing import Iterator, Union
 
+from childes.dataset import ChildesDataSet
+
 from preppy import FlexiblePrep, SlidingPrep
-from preppy.docs import load_docs
+
 
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
@@ -60,14 +62,14 @@ def main(param2val):
     print(params)
 
     project_path = Path(param2val['project_path'])
-    corpus_path = project_path / 'data' / 'corpora' / f'{params.corpus}.txt'
-    train_docs, test_docs = load_docs(corpus_path,
-                                      shuffle_sentences=params.shuffle_sentences,
-                                      num_test_docs=configs.Eval.num_test_docs,
-                                      lowercase=True,
-                                      )
 
-    # prepare input
+    # load childes data
+    dataset = ChildesDataSet()
+    train_docs, test_docs = dataset.load_docs(shuffle_sentences=params.shuffle_sentences,
+                                              num_test_docs=configs.Eval.num_test_docs,
+                                              )
+
+    # TODO remove preppy dependency - move preppy logic here
     train_prep = FlexiblePrep(train_docs,
                               params.reverse,
                               params.sliding,

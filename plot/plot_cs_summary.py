@@ -9,7 +9,7 @@ from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
 from childesrnnlm.params import param2default, param2requests
 
-RESEARCH_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
+LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 PROBES_NAME: str = 'sem-4096'
 PART_ID = 0
@@ -46,7 +46,7 @@ for param_path, label in gen_param_paths(project_name,
                                          param2requests,
                                          param2default,
                                          runs_path=RUNS_PATH,
-                                         ludwig_data_path=RESEARCH_DATA_PATH,
+                                         ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
     summary = make_summary(param_path, label, f'*_{PROBES_NAME}_js.csv')
     summaries.append(summary)

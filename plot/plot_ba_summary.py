@@ -8,7 +8,7 @@ from childesrnnlm.figs import make_summary_fig
 from childesrnnlm.summary import make_summary
 from childesrnnlm.params import param2default, param2requests
 
-RESEARCH_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
+LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-4096'
@@ -33,7 +33,7 @@ for p, label in gen_param_paths(project_name,
                                 param2requests,
                                 param2default,
                                 runs_path=RUNS_PATH,
-                                ludwig_data_path=RESEARCH_DATA_PATH,
+                                ludwig_data_path=LUDWIG_DATA_PATH,
                                 label_n=LABEL_N):
     pattern = f'{BA_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, n
