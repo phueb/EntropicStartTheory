@@ -1,6 +1,5 @@
 import time
 import pyprind
-import attr
 import pandas as pd
 import numpy as np
 import torch
@@ -8,7 +7,7 @@ from pathlib import Path
 from itertools import islice
 from typing import Iterator, Union
 
-from childes.dataset import ChildesDataSet
+from aochildes.dataset import ChildesDataSet
 
 from preppy import FlexiblePrep, SlidingPrep
 
@@ -26,34 +25,8 @@ from childesrnnlm.evaluation import update_dp_performance
 from childesrnnlm.evaluation import update_cs_performance
 from childesrnnlm.evaluation import update_si_performance
 from childesrnnlm.evaluation import update_sd_performance
+from childesrnnlm.params import Params
 from childesrnnlm.rnn import RNN
-
-
-@attr.s
-class Params(object):
-    shuffle_sentences = attr.ib(validator=attr.validators.instance_of(bool))
-    corpus = attr.ib(validator=attr.validators.instance_of(str))
-    num_types = attr.ib(validator=attr.validators.instance_of(int))
-    num_parts = attr.ib(validator=attr.validators.instance_of(int))
-    context_size = attr.ib(validator=attr.validators.instance_of(int))
-
-    flavor = attr.ib(validator=attr.validators.instance_of(str))
-    hidden_size = attr.ib(validator=attr.validators.instance_of(int))
-
-    reverse = attr.ib(validator=attr.validators.instance_of(bool))
-    sliding = attr.ib(validator=attr.validators.instance_of(bool))
-    num_iterations = attr.ib(validator=attr.validators.instance_of(tuple))
-    batch_size = attr.ib(validator=attr.validators.instance_of(int))
-    lr = attr.ib(validator=attr.validators.instance_of(float))
-    optimizer = attr.ib(validator=attr.validators.instance_of(str))
-
-    exclude_number_words = attr.ib(validator=attr.validators.instance_of(bool))
-
-    @classmethod
-    def from_param2val(cls, param2val):
-        kwargs = {k: v for k, v in param2val.items()
-                  if k not in ['job_name', 'param_name', 'save_path', 'project_path']}
-        return cls(**kwargs)
 
 
 def main(param2val):
@@ -64,12 +37,17 @@ def main(param2val):
     project_path = Path(param2val['project_path'])
 
     # load childes data
-    dataset = ChildesDataSet()
-    train_docs, test_docs = dataset.load_docs(shuffle_sentences=params.shuffle_sentences,
-                                              num_test_docs=configs.Eval.num_test_docs,
-                                              )
+    if params.corpus == 'aochildes':
+        dataset = ChildesDataSet()
+        train_docs, test_docs = dataset.load_docs(shuffle_sentences=params.shuffle_sentences,
+                                                  num_test_docs=configs.Eval.num_test_docs,
+                                                  )
+    elif params.corpus == 'newsela':
+        raise NotImplementedError
+    else:
+        raise AttributeError('Invalid corpus')
 
-    # TODO remove preppy dependency - move preppy logic here
+    # prepare data for training
     train_prep = FlexiblePrep(train_docs,
                               params.reverse,
                               params.sliding,

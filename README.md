@@ -41,6 +41,11 @@ To install all the dependencies, execute the following in your virtual environme
 pip install -r requirements.txt
 ```
 
+### AOCHILDES
+
+Used to retrieve chil-directed speech text data.
+It is available [here](https://github.com/UIUCLearningLanguageLab/AOCHILDES).
+
 ### Preppy
 
 The text files are prepared for training using a custom Python package `Preppy`.
@@ -62,10 +67,10 @@ This is recommended if multiple replications need to be run, or if no access to 
 ## Usage
 
 The code is designed to run on multiple machines, at the UIUC Learning & Language Lab using a custom job submission system called [Ludwig](https://github.com/phueb/Ludwig).
-If you have access to the lab's file server, you can submit jobs with `Ludwig`:
+If you have access to the lab's file server, and cloning all dependencies, you can submit jobs with `Ludwig`:
 
 ```bash
-ludwig -e PATH-TO-PREPPY PATH-TO-CATEGORYEVAL
+ludwig -e ../AOCHILDES/aochildes ../AOCHILDES/original_transcripts/ ../Preppy ../CategoryEval
 ```
 
 Alternatively, the experiment can be run locally:
