@@ -12,7 +12,7 @@ from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-DP_PROBES_NAME: str = 'sem-4096'
+DP_PROBES_NAME: str = 'sem-2020'
 METRIC = 'js'
 PART_ID = 0
 

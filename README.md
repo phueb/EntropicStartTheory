@@ -9,12 +9,12 @@ The research paper associated with this repository can be found [here](https://o
 ## Training Data
 
 The training input consists of transcribed child-directed speech from the CHILDES database.
-The text used to train the RNN is available in `data/childes-20191112.txt`. 
-It was created using [CreateCHILDESCorpus](https://github.com/UIUCLearningLanguageLab/CreateCHILDESCorpus), which performs:
+The text used to train the RNN is loaded, in memory, using the custom-builtPython package [AOCHILDES](https://github.com/UIUCLearningLanguageLab/AOCHILDES).
+After the minimally processed raw text is loaded, ordered by the age of the target child,
+a ByteLevel BPE tokenizer (introduced with GPT-2) is used to build the training vocabulary and for tokenization.
 
-1) tokenization using the default tokenizer in `spacy`
-2) lowercasing
-3) ordering of transcripts by the age of the target child
+Note: The age-order effect occurs independent of tokenization choice,
+ as it has been found to occur with whitespace tokenization, `spacy` tokenization, and ByteLevel BPE tokenization.
 
 ## Research Findings
 

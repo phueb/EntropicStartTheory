@@ -1,11 +1,11 @@
 pyitlib
-scikit-learn
+scikit-learn==0.21.3
 seaborn
 matplotlib
 pandas
 pyprind
 torch==1.6
-numpy==1.18
+numpy==1.18.1
 https://github.com/phueb/Ludwig/archive/v4.0.1.tar.gz
 https://github.com/phueb/Preppy/archive/v2.0.0.tar.gz
-https://github.com/phueb/CategoryEval/archive/v3.2.0.tar.gz
+https://github.com/phueb/CategoryEval/archive/v4.0.0.tar.gz

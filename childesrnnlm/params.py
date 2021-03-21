@@ -17,7 +17,7 @@ param2debug = {
 param2default = {
     'shuffle_sentences': False,
     'corpus': 'aochildes',  # or newsela
-    'num_types': 4096,
+    'num_types': 8000,
     'num_parts': 256,
     'context_size': 7,  # number of backprop-through-time steps
 
@@ -31,7 +31,6 @@ param2default = {
     'lr': 0.01,
     'optimizer': 'adagrad',
 
-    'exclude_number_words': True,
 }
 
 
@@ -56,8 +55,6 @@ class Params:
     batch_size: int
     lr: float
     optimizer: str
-
-    exclude_number_words: bool
 
     @classmethod
     def from_param2val(cls, param2val):
