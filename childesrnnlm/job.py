@@ -72,7 +72,7 @@ def main(param2val):
     # make sure each probe is actually in the training data (may not be if isolated in test data)
     structure2probe2cat = defaultdict(dict)
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(structure, params.corpus)
+        probe2cat = load_probe2cat(project_path, structure, params.corpus)
         for probe, cat in probe2cat.items():
             if probe not in probes_in_data:
                 continue
