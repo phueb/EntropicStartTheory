@@ -4,8 +4,7 @@ from typing import Tuple, Union
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'context_size': [8],
-    'hidden_size': [512],
+    'context_size': [8],  # TODO vary systematically
 
     # TODO lstm
 }
