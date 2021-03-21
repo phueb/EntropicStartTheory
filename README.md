@@ -67,10 +67,12 @@ This is recommended if multiple replications need to be run, or if no access to 
 ## Usage
 
 The code is designed to run on multiple machines, at the UIUC Learning & Language Lab using a custom job submission system called [Ludwig](https://github.com/phueb/Ludwig).
-If you have access to the lab's file server, and cloning all dependencies, you can submit jobs with `Ludwig`:
+First, obtain access to the lab's file server.
+Next, clone all dependencies into the same directory in which `ChildesRNNLM` is located.
+Then, you can submit jobs with `Ludwig`:
 
 ```bash
-ludwig -e ../AOCHILDES/aochildes ../AOCHILDES/original_transcripts/ ../Preppy ../CategoryEval
+ludwig -e ../AOCHILDES/aochildes ../AOCHILDES/original_transcripts/ ../Preppy/preppy ../CategoryEval/categoryeval
 ```
 
 Alternatively, the experiment can be run locally:

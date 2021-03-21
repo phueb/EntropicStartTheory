@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import torch
 from collections import defaultdict
+from pathlib import Path
 
 from aochildes.dataset import ChildesDataSet
 
@@ -26,6 +27,8 @@ def main(param2val):
     params = Params.from_param2val(param2val)
     print(params)
 
+    project_path = Path(param2val['project_path'])
+
     # load childes data
     if params.corpus == 'aochildes':
         sentences = ChildesDataSet().load_sentences()[:params.num_sentences]
@@ -41,7 +44,7 @@ def main(param2val):
     num_total = 0
     types_in_sentences = set(' '.join(sentences).split())
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(structure, params.corpus)
+        probe2cat = load_probe2cat(project_path, structure, params.corpus)
         num_total += len(probe2cat)
         for probe in probe2cat.keys():
             if probe in types_in_sentences:
