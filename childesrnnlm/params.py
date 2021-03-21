@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Union
 
 # specify params to submit here
 param2requests = {
@@ -9,8 +9,9 @@ param2requests = {
 }
 
 param2debug = {
-    'context_size': 1,
+    'context_size': 2,
     'num_iterations': (1, 1),
+    'num_sentences': 100_000,
 }
 
 # default params
@@ -20,6 +21,7 @@ param2default = {
     'num_types': 8000,
     'num_parts': 256,
     'context_size': 7,  # number of backprop-through-time steps
+    'num_sentences': None,  # all sentences if None
 
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,
@@ -45,6 +47,7 @@ class Params:
     num_types: int
     num_parts: int
     context_size: int
+    num_sentences: Union[None, int]
 
     flavor: str
     hidden_size: int

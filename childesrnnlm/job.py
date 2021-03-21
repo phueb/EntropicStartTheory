@@ -3,8 +3,6 @@ import pyprind
 import pandas as pd
 import numpy as np
 import torch
-from pathlib import Path
-
 
 from aochildes.dataset import ChildesDataSet
 
@@ -27,13 +25,9 @@ def main(param2val):
     params = Params.from_param2val(param2val)
     print(params)
 
-    project_path = Path(param2val['project_path'])
-
     # load childes data
     if params.corpus == 'aochildes':
-        dataset = ChildesDataSet()
-        sentences = dataset.load_sentences()
-        tokens = dataset.load_tokens()
+        sentences = ChildesDataSet().load_sentences()[:params.num_sentences]
     elif params.corpus == 'newsela':
         raise NotImplementedError
     else:
@@ -42,23 +36,24 @@ def main(param2val):
     # TODO add option to reorder corpus based on entropy - import ordermatters
 
     # collect all probes, they should be treated as whole words by tokenizer
-    added_tokens = set()
+    special_tokens = set()
     num_total = 0
+    types_in_sentences = set(' '.join(sentences).split())
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(structure, params.corpus, excluded=[])
+        probe2cat = load_probe2cat(structure, params.corpus)
         num_total += len(probe2cat)
         for probe in probe2cat.keys():
-            if probe in tokens:
-                added_tokens.add(probe)
+            if probe in types_in_sentences:
+                special_tokens.add(probe)
             else:
                 print(f'"{probe:<24}" not in raw data. Excluded.')
-        print(f'structure={structure:<24} | {len(added_tokens)} of {num_total} total probes occur in raw data')
+        print(f'structure={structure:<24} | {len(special_tokens)} of {num_total} total probes occur in raw data')
 
     # tokenize + vectorize text
     prep = FlexiblePrep(sentences,
-                        params.reverse,
-                        params.sliding,
-                        params.num_types,
+                        reverse=params.reverse,
+                        sliding=params.sliding,
+                        num_types=params.num_types,
                         num_parts=params.num_parts,
                         num_iterations=params.num_iterations,
                         batch_size=params.batch_size,
@@ -66,7 +61,7 @@ def main(param2val):
                         shuffle_within_part=False,
                         shuffle_sentences=params.shuffle_sentences,
                         min_num_test_tokens=configs.Eval.min_num_test_tokens,
-                        added_tokens=list(added_tokens),
+                        special_tokens=list(special_tokens),
                         )
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
@@ -74,12 +69,17 @@ def main(param2val):
     structure2probe2cat = {}
     probe_not_in_tokens_train = set()
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(structure, params.corpus, excluded=[])
+        probe2cat = load_probe2cat(structure, params.corpus)
         for probe in probe2cat:
-            if probe not in prep.tokens:
+            if probe not in special_tokens:
+                continue
+
+            num_in_train = prep.tokens_train.count(probe)
+            num_in_valid = prep.tokens_valid.count(probe)
+            if num_in_train == 0:
                 probe_not_in_tokens_train.add(probe)
-                num_in_test = len([token for token in prep.tokens_test if token == probe])
-                print(f'"{probe:<24}" not in training data. Excluded. Occurs {num_in_test} times in test data')
+                if num_in_valid == 0:
+                    raise RuntimeError(f'"{probe:<24}" not in train or test data after tokenization.')
 
         structure2probe2cat[structure] = {p: c for p, c in probe2cat.items() if p not in probe_not_in_tokens_train}
 

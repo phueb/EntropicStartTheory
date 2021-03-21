@@ -171,12 +171,11 @@ def update_si_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         si_scorer = SIScorer(probe2cat)
 
-        probe_store = si_scorer.probe_store
-        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
-
+        probe_token_ids = [prep.token2id[token] for token in si_scorer.probe_store.types]
         probe_reps_n = make_representations_without_context(model, probe_token_ids)
         probe_reps_o = make_representations_with_context(model, probe_token_ids, prep)
-        cat_ids = [probe_store.cat2id[probe_store.probe2cat[p]] for p in probe_store.types]
+        cat_ids = [si_scorer.probe_store.cat2id[si_scorer.probe_store.probe2cat[p]]
+                   for p in si_scorer.probe_store.types]
 
         # compute silhouette score
         if configs.Eval.si_n:
@@ -202,12 +201,12 @@ def update_sd_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         sd_scorer = SDScorer(probe2cat)
 
-        probe_store = sd_scorer.probe_store
-        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
+        probe_token_ids = [prep.token2id[token] for token in sd_scorer.probe_store.types]
 
         probe_reps_n = make_representations_without_context(model, probe_token_ids)
         probe_reps_o = make_representations_with_context(model, probe_token_ids, prep)
-        cat_ids = [probe_store.cat2id[probe_store.probe2cat[p]] for p in probe_store.types]
+        cat_ids = [sd_scorer.probe_store.cat2id[sd_scorer.probe_store.probe2cat[p]]
+                   for p in sd_scorer.probe_store.types]
 
         # compute score
         if configs.Eval.sd_n:

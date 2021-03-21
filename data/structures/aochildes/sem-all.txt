@@ -139,8 +139,7 @@ jacket CLOTHING
 mitten CLOTHING
 nightgown CLOTHING
 outfit CLOTHING
-pj CLOTHING
-pajama CLOTHING
+pajamas CLOTHING
 pant CLOTHING
 purse CLOTHING
 robe CLOTHING
