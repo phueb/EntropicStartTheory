@@ -4,8 +4,10 @@ from typing import Tuple, Union
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    # 'shuffle_sentences': [False, True],
-    # 'num_types': [4096 * 2]
+    'context_size': [8],
+    'hidden_size': [512],
+
+    # TODO lstm
 }
 
 param2debug = {

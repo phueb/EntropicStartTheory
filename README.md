@@ -35,15 +35,17 @@ pip install git+https://github.com/phueb/ChildesRNNLM
 
 ## Dependencies
 
-To install all the dependencies, execute the following in your virtual environment: 
+To install  the dependencies, execute the following in your virtual environment: 
 
 ```bash
 pip install -r requirements.txt
 ```
 
+This will install custom-built packages, from Github, see below.
+
 ### AOCHILDES
 
-Used to retrieve chil-directed speech text data.
+Used to retrieve child-directed speech text data.
 It is available [here](https://github.com/UIUCLearningLanguageLab/AOCHILDES).
 
 ### Preppy
@@ -61,24 +63,30 @@ By default, it returns the balanced accuracy, but F1 and Cohen's Kappa can be co
 
 ### Ludwig
 
-If you are a member of the UIUC Learning & Language lab, you can run the jobs in parallel on multiple machines.
+The code is designed to run on multiple machines,
+ at the UIUC Learning & Language Lab using a custom job submission system called [Ludwig](https://github.com/phueb/Ludwig).
+If you are a member of the UIUC Learning & Language lab, you can use `ludwig` to run jobs in parallel on multiple machines.
 This is recommended if multiple replications need to be run, or if no access to GPUs is otherwise available.
 
 ## Usage
 
-The code is designed to run on multiple machines, at the UIUC Learning & Language Lab using a custom job submission system called [Ludwig](https://github.com/phueb/Ludwig).
 First, obtain access to the lab's file server.
-Next, clone all dependencies into the same directory in which `ChildesRNNLM` is located.
-Then, you can submit jobs with `Ludwig`:
+Next, find the locations to the source code folders for the custom dependencies.
+Assuming new packages are installed into a virtual environment at, `venv/lib/pyton3.7/site-packages/`, 
+you can submit jobs with `ludwig`:
 
 ```bash
-ludwig -e ../AOCHILDES/aochildes ../AOCHILDES/original_transcripts/ ../Preppy/preppy ../CategoryEval/categoryeval
+ludwig -e data/ \
+    venv/lib/pyton3.7/site-packages/AOCHILDES/aochildes \
+    venv/lib/pyton3.7/site-packages/AOCHILDES/original_transcripts/ \
+    venv/lib/pyton3.7/site-packages/Preppy/preppy \
+    venv/lib/pyton3.7/site-packages/CategoryEval/categoryeval
 ```
 
-Alternatively, the experiment can be run locally:
+Alternatively, the experiment can be run without access to the lab's file server:
 
 ```bash
-ludwig --local
+ludwig --isolated
 ```
 
 ## Compatibility
