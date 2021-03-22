@@ -5,7 +5,7 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
-    'num_iterations': [(16, 16), (20, 20), (24, 24)],
+    'num_iterations': [(4, 4), (8, 8), (12, 12)],
 
     # TODO lstm
 }
@@ -30,7 +30,7 @@ param2default = {
 
     'sliding': False,
     'reverse': False,
-    'num_iterations': (16, 16),
+    'num_iterations': (16, 16),  # more than 16 is worse
     'batch_size': 64,
     'lr': 0.01,
     'optimizer': 'adagrad',

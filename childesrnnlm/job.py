@@ -31,11 +31,14 @@ def main(param2val):
 
     # load childes data
     if params.corpus == 'aochildes':
-        sentences = ChildesDataSet().load_sentences()[:params.num_sentences]
+        sentences = ChildesDataSet().load_sentences()
     elif params.corpus == 'newsela':
         raise NotImplementedError
     else:
         raise AttributeError('Invalid corpus')
+
+    if params.num_sentences:
+        sentences = sentences[:params.num_sentences]
 
     # TODO add option to reorder corpus based on entropy - import ordermatters
 

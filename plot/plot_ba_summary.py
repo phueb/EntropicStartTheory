@@ -28,8 +28,10 @@ if BA_TYPE == 'ba_n':
     Y_LABEL: str = f'Balanced Accuracy at Input\n +/- 95%-CI'
 elif BA_TYPE == 'ba_o':
     Y_LABEL: str = f'Balanced Accuracy at Hidden\n +/- 95%-CI'
+else:
+    raise AttributeError('Invalid BA_TYPE')
 
-param2requests['context_size'] = [12]
+param2requests['num_iterations'] = [(24, 24)]
 
 # collect summaries
 summaries = []
