@@ -31,7 +31,7 @@ elif BA_TYPE == 'ba_o':
 else:
     raise AttributeError('Invalid BA_TYPE')
 
-param2requests['num_iterations'] = [(24, 24)]
+param2requests['num_iterations'] = [(12, 12)]
 
 # collect summaries
 summaries = []
