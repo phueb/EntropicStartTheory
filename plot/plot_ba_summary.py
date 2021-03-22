@@ -11,7 +11,7 @@ from childesrnnlm.params import param2default, param2requests
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 BA_TYPE: str = 'ba_n'
-PROBES_NAME: str = 'sem-2020'
+PROBES_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
@@ -28,6 +28,8 @@ if BA_TYPE == 'ba_n':
     Y_LABEL: str = f'Balanced Accuracy at Input\n +/- 95%-CI'
 elif BA_TYPE == 'ba_o':
     Y_LABEL: str = f'Balanced Accuracy at Hidden\n +/- 95%-CI'
+
+param2requests['context_size'] = [12]
 
 # collect summaries
 summaries = []

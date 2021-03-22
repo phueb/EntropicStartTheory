@@ -12,7 +12,7 @@ from categoryeval.cs import CSScorer
 from categoryeval.si import SIScorer
 from categoryeval.sd import SDScorer
 
-from preppy import FlexiblePrep
+from preppy import Prep
 
 from childesrnnlm import configs
 from childesrnnlm.rnn import RNN
@@ -24,7 +24,7 @@ from childesrnnlm.io import load_probe2cat
 
 def calc_perplexity(model: RNN,
                     criterion: CrossEntropyLoss,
-                    prep: FlexiblePrep,
+                    prep: Prep,
                     is_test: bool,
                     ):
     print(f'Calculating perplexity...')
@@ -56,7 +56,7 @@ def calc_perplexity(model: RNN,
 def update_pp_performance(performance,
                           model: RNN,
                           criterion: CrossEntropyLoss,
-                          prep: FlexiblePrep,
+                          prep: Prep,
                           ):
     if not configs.Eval.train_pp:
         if configs.Eval.min_num_test_tokens > 0:
@@ -73,7 +73,7 @@ def update_pp_performance(performance,
 
 def update_ba_performance(performance,
                           model: RNN,
-                          prep: FlexiblePrep,
+                          prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     for structure_name in configs.Eval.structures:
@@ -104,7 +104,7 @@ def update_ba_performance(performance,
 
 def update_dp_performance(performance,
                           model: RNN,
-                          prep: FlexiblePrep,
+                          prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """
@@ -133,7 +133,7 @@ def update_dp_performance(performance,
 
 def update_cs_performance(performance,
                           model: RNN,
-                          prep: FlexiblePrep,
+                          prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """
@@ -160,7 +160,7 @@ def update_cs_performance(performance,
 
 def update_si_performance(performance,
                           model: RNN,
-                          prep: FlexiblePrep,
+                          prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """
@@ -190,7 +190,7 @@ def update_si_performance(performance,
 
 def update_sd_performance(performance,
                           model: RNN,
-                          prep: FlexiblePrep,
+                          prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """

@@ -10,7 +10,7 @@ class Dirs:
 
 class Eval:
     train_pp = False
-    structures = ['sem-2020']
+    structures = ['sem-2021']
     num_steps_to_eval = 50_000
     min_num_test_tokens = 0
     cs_max_rows = 128

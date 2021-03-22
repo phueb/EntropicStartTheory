@@ -8,7 +8,7 @@ from pathlib import Path
 
 from aochildes.dataset import ChildesDataSet
 
-from preppy import FlexiblePrep
+from preppy import Prep
 
 from childesrnnlm import configs
 from childesrnnlm.io import load_probe2cat
@@ -54,7 +54,7 @@ def main(param2val):
         print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in raw data')
 
     # tokenize + vectorize text
-    prep = FlexiblePrep(sentences,
+    prep = Prep(sentences,
                         reverse=params.reverse,
                         sliding=params.sliding,
                         num_types=params.num_types,

@@ -4,7 +4,8 @@ from typing import Tuple, Union
 # specify params to submit here
 param2requests = {
     'reverse': [True, False],
-    'context_size': [8],  # TODO vary systematically
+
+    'num_iterations': [(16, 16), (20, 20), (24, 24)],
 
     # TODO lstm
 }
@@ -21,7 +22,7 @@ param2default = {
     'corpus': 'aochildes',  # or newsela
     'num_types': 8000,
     'num_parts': 256,
-    'context_size': 7,  # number of backprop-through-time steps
+    'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'num_sentences': None,  # all sentences if None
 
     'flavor': 'srn',  # simple-recurrent

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from typing import Union
 
-from preppy import FlexiblePrep
+from preppy import Prep
 
 from childesrnnlm import configs
 from childesrnnlm.rnn import RNN
@@ -19,7 +19,7 @@ def make_representations_without_context(model, word_ids):
 
 def make_representations_with_context(model: RNN,
                                       token_ids,
-                                      prep: FlexiblePrep,
+                                      prep: Prep,
                                       verbose=False,
                                       ) -> np.array:
     """
@@ -49,7 +49,7 @@ def make_representations_with_context(model: RNN,
 
 def make_output_representation(model: RNN,
                                probes,
-                               prep: FlexiblePrep,
+                               prep: Prep,
                                ) -> np.array:
     w_ids = [prep.token2id[w] for w in probes]
     x = np.expand_dims(np.array(w_ids), axis=1)

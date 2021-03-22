@@ -89,6 +89,34 @@ Alternatively, the experiment can be run without access to the lab's file server
 ludwig --isolated
 ```
 
+### Plot results
+
+To plot a summary of the results:
+
+```bash
+python3 plot/plot_ba_summary.py
+```
+
+## History
+
+### 2016-2018
+Initial work began in 2016, at the University of California, Riverside, under the supervision of Prof Jon Willits.
+
+### 2019
+In an effort to simplify the code used in this repository, a major rewrite was undertaken in October 2019.
+The code was ported from tensorflow 1.12 to pytorch.
+The following changes resulted due to the porting:
+* the custom RNN architecture was replaced by a more standard architecture. 
+Specifically, prior to October 2019, embeddings were directly added to the hidden layer.
+In the standard RNN architecture, embeddings undergo an additional transformation step before being added to the hidden layer.
+However, the key finding, that age-ordered training improves semantic category learning, replicated in this new architecture.
+
+### 2021
+
+* `spacy` tokenization was replaced by Byte-Level BPE tokenization, to remove `UNK` symbols from training.
+This reduced overall category learning, but provides a more realistic account of distributional learning.
+Importantly, the age-order effect still occurs with the new tokenization.
+
 ## Compatibility
 
 Developed on Ubuntu 18.04 with Python 3.7
