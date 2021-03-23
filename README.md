@@ -18,12 +18,12 @@ Note: The age-order effect occurs independent of tokenization choice,
 
 ## Research Findings
 
-The order in which the training data is presented to the RNN facilitates 
+The order in which the training data is presented to an RNN (either SRN or LSTM) facilitates 
 learning semantic category distinctions between common nouns.
 
-<img src="images/ao-effect.png" width="400">
+<img src="images/ao-effect_srn.png" width="400">
 
-<img src="images/silhouette_score.png" width="400">
+<img src="images/ao-effect_lstm.png" width="400">
 
 ## Installation
 
