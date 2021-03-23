@@ -94,6 +94,7 @@ def main(param2val):
         params.flavor,
         prep.num_types,  # is larger than params.num_types due to added tokens
         params.hidden_size,
+        params.num_layers,
     )
 
     # loss function

@@ -6,7 +6,8 @@ class RNN(torch.nn.Module):
     def __init__(self,
                  flavor: str,
                  input_size: int,
-                 hidden_size: int
+                 hidden_size: int,
+                 num_layers: int,
                  ):
 
         super().__init__()
@@ -23,9 +24,8 @@ class RNN(torch.nn.Module):
         self.encode = cell(input_size=hidden_size,  # this does not have to be hidden_size
                            hidden_size=hidden_size,
                            batch_first=True,
-                           nonlinearity='tanh',
                            bias=True,
-                           num_layers=1,
+                           num_layers=num_layers,
                            dropout=0)
         self.project = torch.nn.Linear(in_features=hidden_size,
                                        out_features=input_size)

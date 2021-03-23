@@ -5,7 +5,7 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
-    # TODO lstm
+    'flavor': ['srn', 'lstm'],
 }
 
 param2debug = {
@@ -25,6 +25,7 @@ param2default = {
 
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,
+    'num_layers': 1,
 
     'sliding': False,
     'reverse': False,
@@ -51,6 +52,7 @@ class Params:
 
     flavor: str
     hidden_size: int
+    num_layers: int
 
     reverse: bool
     sliding: bool
