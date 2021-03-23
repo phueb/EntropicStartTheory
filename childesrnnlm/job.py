@@ -7,8 +7,8 @@ from collections import defaultdict
 from pathlib import Path
 
 from aochildes.dataset import ChildesDataSet
-
 from preppy import Prep
+from ordermatters.reorder import reorder_sentences, separate_sentences
 
 from childesrnnlm import configs
 from childesrnnlm.io import load_probe2cat
@@ -40,8 +40,6 @@ def main(param2val):
     if params.num_sentences:
         sentences = sentences[:params.num_sentences]
 
-    # TODO add option to reorder corpus based on entropy - import ordermatters
-
     # collect all probes, they should be treated as whole words by tokenizer
     probes_in_data = set()
     num_total = 0
@@ -56,20 +54,30 @@ def main(param2val):
                 print(f'"{probe:<24}" not in raw data. Excluded.')
         print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in raw data')
 
+    if params.reorder:
+        print(f'Reordering sentences', flush=True)
+        prep = Prep(sentences,
+                    reverse=False,
+                    sliding=False,
+                    context_size=1,
+                    )
+        sentences_t, sentences_n = separate_sentences(prep, list(probes_in_data), num_parts=8)
+        sentences = reorder_sentences(sentences_t, sentences_n, num_parts=8)
+
     # tokenize + vectorize text
     prep = Prep(sentences,
-                        reverse=params.reverse,
-                        sliding=params.sliding,
-                        num_types=params.num_types,
-                        num_parts=params.num_parts,
-                        num_iterations=params.num_iterations,
-                        batch_size=params.batch_size,
-                        context_size=params.context_size,
-                        shuffle_within_part=False,
-                        shuffle_sentences=params.shuffle_sentences,
-                        min_num_test_tokens=configs.Eval.min_num_test_tokens,
-                        special_tokens=list(probes_in_data),
-                        )
+                reverse=params.reverse,
+                sliding=params.sliding,
+                num_types=params.num_types,
+                num_parts=params.num_parts,
+                num_iterations=params.num_iterations,
+                batch_size=params.batch_size,
+                context_size=params.context_size,
+                shuffle_within_part=False,
+                shuffle_sentences=params.shuffle_sentences,
+                min_num_test_tokens=configs.Eval.min_num_test_tokens,
+                special_tokens=list(probes_in_data),
+                )
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
     # make sure each probe is actually in the training data (may not be if isolated in test data)

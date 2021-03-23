@@ -5,7 +5,7 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
-    'flavor': ['srn', 'lstm'],
+    'reorder': [True],
 }
 
 param2debug = {
@@ -22,6 +22,7 @@ param2default = {
     'num_parts': 256,
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'num_sentences': None,  # all sentences if None
+    'reorder': False,
 
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,
@@ -49,6 +50,7 @@ class Params:
     num_parts: int
     context_size: int
     num_sentences: Union[None, int]
+    reorder: bool
 
     flavor: str
     hidden_size: int
