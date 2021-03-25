@@ -8,7 +8,7 @@ from pathlib import Path
 
 from aochildes.dataset import ChildesDataSet
 from preppy import Prep
-from ordermatters.reorder import reorder_sentences, separate_sentences
+from ordermatters.editor import Editor
 
 from childesrnnlm import configs
 from childesrnnlm.io import load_probe2cat
@@ -56,13 +56,8 @@ def main(param2val):
 
     if params.reorder:
         print(f'Reordering sentences', flush=True)
-        prep = Prep(sentences,
-                    reverse=False,
-                    sliding=False,
-                    context_size=1,
-                    )
-        sentences_t, sentences_n = separate_sentences(prep, list(probes_in_data), num_parts=8)
-        sentences = reorder_sentences(sentences_t, sentences_n, num_parts=8)
+        editor = Editor(sentences, list(probes_in_data), num_parts=params.num_parts)
+        sentences = editor.reorder_sentences()
 
     # tokenize + vectorize text
     prep = Prep(sentences,
