@@ -10,7 +10,7 @@ from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-BA_TYPE: str = 'ba_o'
+BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
@@ -20,7 +20,7 @@ PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.50, 0.70]
+Y_LIMS: List[float] = [0.50, 0.65]
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
 
@@ -31,7 +31,6 @@ elif BA_TYPE == 'ba_o':
 else:
     raise AttributeError('Invalid BA_TYPE')
 
-param2requests['num_parts'] = [16]
 
 # collect summaries
 summaries = []

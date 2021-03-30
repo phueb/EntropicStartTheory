@@ -495,7 +495,6 @@ january MONTH
 july MONTH
 june MONTH
 march MONTH
-may MONTH
 month MONTH
 november MONTH
 october MONTH
