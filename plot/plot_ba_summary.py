@@ -31,7 +31,6 @@ elif BA_TYPE == 'ba_o':
 else:
     raise AttributeError('Invalid BA_TYPE')
 
-
 # collect summaries
 summaries = []
 project_name = __name__

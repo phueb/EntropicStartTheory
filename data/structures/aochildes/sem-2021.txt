@@ -586,7 +586,6 @@ pencil TOOL
 plier TOOL
 plow TOOL
 rake TOOL
-saw TOOL
 scissor TOOL
 screw TOOL
 screwdriver TOOL

@@ -6,6 +6,7 @@ param2requests = {
     'reverse': [True, False],
 
     'reorder': [True],
+    # 'num_parts': [8],
     # 'shuffle_sentences': [True],
 }
 
