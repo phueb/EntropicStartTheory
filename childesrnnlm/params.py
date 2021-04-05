@@ -3,11 +3,11 @@ from typing import Tuple, Union
 
 # specify params to submit here
 param2requests = {
-    'reverse': [True, False],
+    # 'reverse': [True, False],
 
     'reorder': [True],
-    # 'num_parts': [8],
-    # 'shuffle_sentences': [True],
+    'start': ['entropic', 'random'],
+
 }
 
 param2debug = {
@@ -25,6 +25,7 @@ param2default = {
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'num_sentences': None,  # all sentences if None
     'reorder': False,
+    'start': 'none',
 
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,
@@ -53,6 +54,7 @@ class Params:
     context_size: int
     num_sentences: Union[None, int]
     reorder: bool
+    start: str
 
     flavor: str
     hidden_size: int

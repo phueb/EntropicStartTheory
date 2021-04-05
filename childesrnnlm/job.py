@@ -54,10 +54,19 @@ def main(param2val):
                 print(f'"{probe:<24}" not in raw data. Excluded.')
         print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in raw data')
 
+    # editor is used for re-ordering sentences, or adding sentences
+    editor = Editor(sentences, list(probes_in_data), num_parts=params.num_parts)
+
     if params.reorder:
         print(f'Reordering sentences', flush=True)
-        editor = Editor(sentences, list(probes_in_data), num_parts=params.num_parts)
-        sentences = editor.reorder_sentences()
+        sentences = editor.reorder_sentences(seed=1)
+
+    if params.start != 'none':
+        print(f'Adding {params.start} sentences to start of corpus', flush=True)
+        sentences = editor.make_start_sentences(
+            has_entropic_start=True if params.start == 'entropic' else 'random') + sentences
+
+        # TODO do not re-order, just compare entropic vs random start  on shuffled transcripts
 
     # tokenize + vectorize text
     prep = Prep(sentences,
