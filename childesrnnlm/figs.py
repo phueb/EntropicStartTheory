@@ -88,13 +88,15 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                 print(f'mean={mean_i:>6.2f} h={std_i:>6.2f}')
 
         # if passing multiple summaries, do not label all
-        if 'reverse=True' in label and 'shuffle_sentences=True' not in label:
+        if 'reverse=True' in label and 'shuffle_sentences=True' not in label \
+                or 'start=random' in label:
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'
             else:
                 first_r = False
-        elif 'reverse=False' in label and 'shuffle_sentences=True' not in label:
+        elif 'reverse=False' in label and 'shuffle_sentences=True' not in label \
+                or 'start=entropic' in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'

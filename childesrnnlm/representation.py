@@ -47,10 +47,10 @@ def make_representations_with_context(model: RNN,
     return probe_reps_o
 
 
-def make_output_representation(model: RNN,
-                               probes,
-                               prep: Prep,
-                               ) -> np.array:
+def make_output_representations(model: RNN,
+                                probes,
+                                prep: Prep,
+                                ) -> np.array:
     w_ids = [prep.token2id[w] for w in probes]
     x = np.expand_dims(np.array(w_ids), axis=1)
     inputs = torch.cuda.LongTensor(x)

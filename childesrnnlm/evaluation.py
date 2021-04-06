@@ -18,7 +18,7 @@ from childesrnnlm import configs
 from childesrnnlm.rnn import RNN
 from childesrnnlm.representation import make_representations_without_context
 from childesrnnlm.representation import make_representations_with_context
-from childesrnnlm.representation import make_output_representation
+from childesrnnlm.representation import make_output_representations
 from childesrnnlm.io import load_probe2cat
 
 
@@ -119,14 +119,15 @@ def update_dp_performance(performance,
 
         # collect dp for probes who tend to occur most frequently in some part of corpus
         probes = dp_scorer.probe_store.types
-        qs = make_output_representation(model, probes, prep)
+        qs = make_output_representations(model, probes, prep)
 
         # check predictions
         max_ids = np.argsort(qs.mean(axis=0))
         print(f'{structure_name} predict:', [prep.types[i] for i in max_ids[-10:]])
 
         # dp
-        performance.setdefault(f'dp_{structure_name}_js', []).append(dp_scorer.calc_dp(qs, structure_name, metric='js'))
+        dp = dp_scorer.calc_dp(qs, structure_name, metric='js')
+        performance.setdefault(f'dp_{structure_name}_js', []).append(dp)
 
     return performance
 
@@ -138,22 +139,30 @@ def update_cs_performance(performance,
                           ):
     """
     compute category-spread.
-    a home-made quantity that is proportional to the spread between probe representations in the same category
+    a home-made quantity that is proportional to the spread between probe representations.
+
+    to speed computation, we compute spread only within each category, and return the mean across categories.
     """
     exemplars_list = []
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
         cs_scorer = CSScorer(probe2cat)
 
-        # collect exemplars
+        # compute cs for each category
+        cs_total = 0
         for cat in cs_scorer.probe_store.cats:
-            exemplars = make_output_representation(model, cs_scorer.probe_store.cat2probes[cat], prep)
+            # collect output representations for probes in same category
+            exemplars = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
             exemplars_list.append(exemplars)
-        ps = np.vstack(exemplars_list)
+            ps = np.vstack(exemplars_list)
+            print(f'Input to computation of cs has shape={ps.shape}', flush=True)
+            # compute divergences between exemplars within a category
+            cs_cat = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
+            print(f'category spread for cat={cat:<18} ={cs_cat:.4f}', flush=True)
+            cs_total += cs_cat
 
-        # compute divergences between exemplars within a category (not prototypes - produces noisy plot)
-        dp = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
-        performance.setdefault(f'cs_{structure_name}_js', []).append(dp)
+        cs = cs_total / len(cs_scorer.probe_store.cats)
+        performance.setdefault(f'cs_{structure_name}_js', []).append(cs)
 
     return performance
 

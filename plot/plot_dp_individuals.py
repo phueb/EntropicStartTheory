@@ -58,7 +58,7 @@ fig = make_summary_fig(summaries,
                        xlims=X_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
-                       vline=200_000,
+                       # vline=200_000,
                        # legend_labels=['reverse age-ordered', 'age-ordered'],
                        # palette_ids=[0, 1],  # re-assign colors to each line
                        )

@@ -5,12 +5,16 @@ import numpy as np
 import torch
 from collections import defaultdict
 from pathlib import Path
+from itertools import chain
+from typing import List
+import random
 
 from aochildes.dataset import ChildesDataSet
 from preppy import Prep
 from ordermatters.editor import Editor
 
 from childesrnnlm import configs
+from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
 from childesrnnlm.evaluation import update_ba_performance
 from childesrnnlm.evaluation import update_pp_performance
@@ -29,21 +33,29 @@ def main(param2val):
 
     project_path = Path(param2val['project_path'])
 
-    # load childes data
+    # load corpus
     if params.corpus == 'aochildes':
-        sentences = ChildesDataSet().load_sentences()
+        _sentences = ChildesDataSet().load_sentences()
     elif params.corpus == 'newsela':
         raise NotImplementedError
     else:
         raise AttributeError('Invalid corpus')
 
     if params.num_sentences:
-        sentences = sentences[:params.num_sentences]
+        _sentences = _sentences[:params.num_sentences]
+
+    # shuffle at sentence level
+    # note: this removes clustering of same-age sentences within parts, necessary when training in shuffled order
+    if params.shuffle_sentences:
+        random.shuffle(_sentences)
+
+    text_original = ' '.join(_sentences)
+    tokens_original = text_original.split()
 
     # collect all probes, they should be treated as whole words by tokenizer
     probes_in_data = set()
     num_total = 0
-    types_in_sentences = set(' '.join(sentences).split())
+    types_in_sentences = set(tokens_original)
     for structure in configs.Eval.structures:
         probe2cat = load_probe2cat(project_path, structure, params.corpus)
         num_total += len(probe2cat)
@@ -53,41 +65,89 @@ def main(param2val):
             else:
                 print(f'"{probe:<24}" not in raw data. Excluded.')
         print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in raw data')
+    special_tokens = list(probes_in_data)  # special tokens should never be split
+    for special_token in special_tokens:
+        assert special_token in text_original
+
+    # tokenize text
+    tokenizer = train_bpe_tokenizer(_sentences, params.num_types, special_tokens=special_tokens)
+    print('Tokenizing text..', flush=True)
+    sentences = []
+    tokens = []
+    for s in _sentences:
+        if tokenizer is not None:
+            # TODO try without stripping space symbol
+            tokenized_s: List[str] = [t.lstrip('Ġ').strip() for t in tokenizer.encode(s, add_special_tokens=True).tokens
+                                      if t not in {'Ġ', '', ' '}]
+        else:
+            tokenized_s: List[str] = s.split()
+        sentences.append(' '.join(tokenized_s))
+        tokens.extend(tokenized_s)
+    print(f'{len(set(tokens)):,} types in tokenized text', flush=True)
+    print(f'Added {len(tokens) - len(tokens_original):,} tokens during tokenization')
+
+    # check that added tokens were not split during tokenization
+    num_errors = 0
+    for special_t in special_tokens:
+        if special_t not in tokens and special_t in tokens_original:
+            print(f'"{special_t:<24}" occurs {tokens_original.count(special_t)} times in original text '
+                  f'but not in tokenized text.')
+            num_errors += 1
+    if num_errors:
+        raise RuntimeError(f'{num_errors} special tokens were not found in tokenized text.')
 
     # editor is used for re-ordering sentences, or adding sentences
-    editor = Editor(sentences, list(probes_in_data), num_parts=params.num_parts)
+    editor = Editor(sentences, special_tokens, num_parts=params.num_parts)
 
     if params.reorder:
-        print(f'Reordering sentences', flush=True)
+        print('Reordering sentences...', flush=True)
         sentences = editor.reorder_sentences(seed=1)
+        tokens = ' '.join(sentences).split()
 
-    if params.start == 'entropic':
-        print(f'Adding entropic start sentences', flush=True)
-        sentences = editor.make_start_sentences(has_entropic_start=True) + sentences
-    elif params.start == 'random':
-        print(f'Adding random start sentences', flush=True)
-        sentences = editor.make_start_sentences(has_entropic_start=False) + sentences
-    elif params.start == 'none':
-        print(f'Not adding start sentences', flush=True)
-    else:
-        raise AttributeError('Invalid arg to start')
-
-        # TODO do not re-order, just compare entropic vs random start  on shuffled transcripts
-
-    # tokenize + vectorize text
-    prep = Prep(sentences,
+    #  prepare data for batching
+    prep = Prep(tokens,
                 reverse=params.reverse,
                 sliding=params.sliding,
-                num_types=params.num_types,
                 num_parts=params.num_parts,
                 num_iterations=params.num_iterations,
                 batch_size=params.batch_size,
                 context_size=params.context_size,
                 shuffle_within_part=False,
-                shuffle_sentences=params.shuffle_sentences,
                 min_num_test_tokens=configs.Eval.min_num_test_tokens,
-                special_tokens=list(probes_in_data),
+                disallow_non_ascii=True,
                 )
+
+    # add special start sentences
+    if params.start == 'entropic':
+        print(f'Adding entropic start sentences', flush=True)
+        start_sentences = editor.make_start_sentences(is_entropic=True)
+        tokens_start = ' '.join(start_sentences).split()
+    elif params.start == 'random':
+        print(f'Adding random start sentences', flush=True)
+        start_sentences = editor.make_start_sentences(is_entropic=False)
+        tokens_start = ' '.join(start_sentences).split()
+    elif params.start == 'none':
+        tokens_start = []
+        print(f'Not adding start sentences', flush=True)
+    else:
+        raise AttributeError('Invalid arg to start')
+    if tokens_start:
+        prep_start = Prep(tokens_start,
+                          reverse=False,
+                          sliding=False,
+                          num_parts=1,
+                          num_iterations=(1, 1),
+                          batch_size=params.batch_size,
+                          context_size=params.context_size,  # TODO 2?
+                          token2id=prep.token2id
+                          )
+        assert prep_start.token2id == prep.token2id
+        print(f'First {prep_start.num_mbs} batches are reserved for start sentences')
+        batch_generator = chain(prep_start.generate_batches(), prep.generate_batches())
+        high_resolution_eval_steps = list(range(0, prep_start.num_mbs, prep_start.num_mbs // 10))
+    else:
+        batch_generator = prep.generate_batches()
+        high_resolution_eval_steps = list(range(0, 10_000, 1_000))
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
     # make sure each probe is actually in the training data (may not be if isolated in test data)
@@ -131,7 +191,7 @@ def main(param2val):
     eval_steps = []  # to keep track when performance is evaluated
     start_train = time.time()
     pbar = pyprind.ProgBar(prep.num_mbs, stream=1)
-    for step, windows in enumerate(prep.generate_batches()):
+    for step, windows in enumerate(batch_generator):
 
         if step != 0:
             x, y = np.split(windows, [prep.context_size], axis=1)
@@ -153,14 +213,15 @@ def main(param2val):
         pbar.update()
 
         # evaluate performance
-        if step % configs.Eval.num_steps_to_eval == 0:
+        if step % configs.Eval.num_steps_to_eval == 0 \
+                or step in high_resolution_eval_steps:  # eval with higher resolution at start
             eval_steps.append(step)
             model.eval()
             performance = update_pp_performance(performance, model, criterion, prep)
 
             performance = update_ba_performance(performance, model, prep, structure2probe2cat)
-            # performance = update_cs_performance(performance, model, prep, structure2probe2cat)
-            # performance = update_dp_performance(performance, model, prep, structure2probe2cat)
+            # performance = update_cs_performance(performance, model, prep, structure2probe2cat)  # TODO slow
+            performance = update_dp_performance(performance, model, prep, structure2probe2cat)
             # performance = update_si_performance(performance, model, prep, structure2probe2cat)
             # performance = update_sd_performance(performance, model, prep, structure2probe2cat)
 
