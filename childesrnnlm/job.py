@@ -61,10 +61,16 @@ def main(param2val):
         print(f'Reordering sentences', flush=True)
         sentences = editor.reorder_sentences(seed=1)
 
-    if params.start != 'none':
-        print(f'Adding {params.start} sentences to start of corpus', flush=True)
-        sentences = editor.make_start_sentences(
-            has_entropic_start=True if params.start == 'entropic' else 'random') + sentences
+    if params.start == 'entropic':
+        print(f'Adding entropic start sentences', flush=True)
+        sentences = editor.make_start_sentences(has_entropic_start=True) + sentences
+    elif params.start == 'random':
+        print(f'Adding random start sentences', flush=True)
+        sentences = editor.make_start_sentences(has_entropic_start=False) + sentences
+    elif params.start == 'none':
+        print(f'Not adding start sentences', flush=True)
+    else:
+        raise AttributeError('Invalid arg to start')
 
         # TODO do not re-order, just compare entropic vs random start  on shuffled transcripts
 
