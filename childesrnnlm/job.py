@@ -44,8 +44,7 @@ def main(param2val):
     if params.num_sentences:
         _sentences = _sentences[:params.num_sentences]
 
-    # shuffle at sentence level
-    # note: this removes clustering of same-age sentences within parts, necessary when training in shuffled order
+    # shuffle at sentence level -removes clustering of same-age sentences within parts, when training in shuffled order
     if params.shuffle_sentences:
         random.shuffle(_sentences)
 
@@ -117,7 +116,7 @@ def main(param2val):
                 disallow_non_ascii=True,
                 )
 
-    # add special start sentences
+    # add special start sequences
     if params.start == 'entropic':
         print(f'Adding entropic start sentences', flush=True)
         start_sentences = editor.make_start_sentences(is_entropic=True)
@@ -131,14 +130,16 @@ def main(param2val):
         print(f'Not adding start sentences', flush=True)
     else:
         raise AttributeError('Invalid arg to start')
+
+    # combine start sequences and regular sequences
     if tokens_start:
         prep_start = Prep(tokens_start,
                           reverse=False,
                           sliding=False,
                           num_parts=1,
-                          num_iterations=(1, 1),
+                          num_iterations=params.num_iterations,  # TODO
                           batch_size=params.batch_size,
-                          context_size=params.context_size,  # TODO 2?
+                          context_size=params.context_size,
                           token2id=prep.token2id
                           )
         assert prep_start.token2id == prep.token2id
@@ -170,7 +171,7 @@ def main(param2val):
     # model
     model = RNN(
         params.flavor,
-        prep.num_types,  # is larger than params.num_types due to added tokens
+        prep.num_types,
         params.hidden_size,
         params.num_layers,
     )
