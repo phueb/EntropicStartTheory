@@ -10,5 +10,5 @@ tokenizers==0.10.1
 https://github.com/phueb/Ludwig/archive/v4.0.2.tar.gz
 https://github.com/phueb/Preppy/archive/v3.0.0.tar.gz
 https://github.com/phueb/CategoryEval/archive/v4.0.0.tar.gz
-https://github.com/phueb/OrderMatters/archive/v1.0.0.tar.gz
+https://github.com/phueb/EntropicStart/archive/v1.0.0.tar.gz
 https://github.com/UIUCLearningLanguageLab/AOCHILDES/archive/v2.0.0.tar.gz

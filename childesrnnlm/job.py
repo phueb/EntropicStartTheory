@@ -11,7 +11,7 @@ import random
 
 from aochildes.dataset import ChildesDataSet
 from preppy import Prep
-from ordermatters.editor import Editor
+from entropicstart.editor import Editor
 
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
@@ -71,7 +71,6 @@ def main(param2val):
     # tokenize text
     tokenizer = train_bpe_tokenizer(_sentences, params.num_types, special_tokens=special_tokens)
     print('Tokenizing text..', flush=True)
-    sentences = []
     tokens = []
     for s in _sentences:
         if tokenizer is not None:
@@ -80,7 +79,6 @@ def main(param2val):
                                       if t not in {'Ġ', '', ' '}]
         else:
             tokenized_s: List[str] = s.split()
-        sentences.append(' '.join(tokenized_s))
         tokens.extend(tokenized_s)
     print(f'{len(set(tokens)):,} types in tokenized text', flush=True)
     print(f'Added {len(tokens) - len(tokens_original):,} tokens during tokenization')
@@ -94,14 +92,6 @@ def main(param2val):
             num_errors += 1
     if num_errors:
         raise RuntimeError(f'{num_errors} special tokens were not found in tokenized text.')
-
-    # editor is used for re-ordering sentences, or adding sentences
-    editor = Editor(sentences, special_tokens, num_parts=params.num_parts)
-
-    if params.reorder:
-        print('Reordering sentences...', flush=True)
-        sentences = editor.reorder_sentences(seed=1)
-        tokens = ' '.join(sentences).split()
 
     #  prepare data for batching
     prep = Prep(tokens,
@@ -118,13 +108,13 @@ def main(param2val):
 
     # add special start sequences
     if params.start == 'entropic':
-        print(f'Adding entropic start sentences', flush=True)
-        start_sentences = editor.make_start_sentences(is_entropic=True)
-        tokens_start = ' '.join(start_sentences).split()
+        print(f'Adding entropic start', flush=True)
+        editor = Editor(tokens, special_tokens, num_parts=params.num_parts)
+        tokens_start = editor.make_start_tokens(is_entropic=True)
     elif params.start == 'random':
-        print(f'Adding random start sentences', flush=True)
-        start_sentences = editor.make_start_sentences(is_entropic=False)
-        tokens_start = ' '.join(start_sentences).split()
+        print(f'Adding random start', flush=True)
+        editor = Editor(tokens, special_tokens, num_parts=params.num_parts)
+        tokens_start = editor.make_start_tokens(is_entropic=False)
     elif params.start == 'none':
         tokens_start = []
         print(f'Not adding start sentences', flush=True)

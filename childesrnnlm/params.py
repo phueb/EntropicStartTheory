@@ -5,7 +5,6 @@ from typing import Tuple, Union
 param2requests = {
     # 'reverse': [True, False],
 
-    'reorder': [True],
     'start': ['entropic', 'random'],
 
 }
@@ -24,7 +23,6 @@ param2default = {
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'num_sentences': None,  # all sentences if None
-    'reorder': False,
     'start': 'none',
 
     'flavor': 'srn',  # simple-recurrent
@@ -53,7 +51,6 @@ class Params:
     num_parts: int
     context_size: int
     num_sentences: Union[None, int]
-    reorder: bool
     start: str
 
     flavor: str
