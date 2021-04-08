@@ -5,24 +5,24 @@ from typing import Tuple, Union
 param2requests = {
     # 'reverse': [True, False],
 
-    'start': ['entropic', 'fragmented', 'singleton'],
+    'shuffle_transcripts': [True],
+    'start': ['entropic', 'singleton'],
 
 }
 
 param2debug = {
     'context_size': 2,
     'num_iterations': (1, 1),
-    'num_sentences': 100_000,
+    'corpus': 'aonewsela',
 }
 
 # default params
 param2default = {
-    'shuffle_sentences': False,
+    'shuffle_transcripts': False,
     'corpus': 'aochildes',  # or aonewsela
     'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
-    'num_sentences': None,  # all sentences if None
     'start': 'none',
 
     'flavor': 'srn',  # simple-recurrent
@@ -45,12 +45,11 @@ class Params:
     this object is loaded at the start of job.main() by calling Params.from_param2val(),
     and is populated by Ludwig with hyper-parameters corresponding to a single job.
     """
-    shuffle_sentences: bool
+    shuffle_transcripts: bool
     corpus: str
     num_types: int
     num_parts: int
     context_size: int
-    num_sentences: Union[None, int]
     start: str
 
     flavor: str

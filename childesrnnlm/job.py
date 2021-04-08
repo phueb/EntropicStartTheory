@@ -10,6 +10,7 @@ from typing import List
 import random
 
 from aochildes.dataset import ChildesDataSet
+from aonewsela.dataset import NewselaDataSet
 from preppy import Prep
 from entropicstart.editor import Editor
 
@@ -35,20 +36,17 @@ def main(param2val):
 
     # load corpus
     if params.corpus == 'aochildes':
-        _sentences = ChildesDataSet().load_sentences()
-    elif params.corpus == 'newsela':
-        raise NotImplementedError
+        transcripts = ChildesDataSet().load_transcripts()
+    elif params.corpus == 'aonewsela':
+        transcripts = NewselaDataSet().load_transcripts()
     else:
         raise AttributeError('Invalid corpus')
 
-    if params.num_sentences:
-        _sentences = _sentences[:params.num_sentences]
+    # shuffle at transcript level
+    if params.shuffle_transcripts:
+        random.shuffle(transcripts)
 
-    # shuffle at sentence level -removes clustering of same-age sentences within parts, when training in shuffled order
-    if params.shuffle_sentences:
-        random.shuffle(_sentences)
-
-    text_original = ' '.join(_sentences)
+    text_original = ' '.join(transcripts)
     tokens_original = text_original.split()
 
     # collect all probes, they should be treated as whole words by tokenizer
@@ -62,24 +60,25 @@ def main(param2val):
             if probe in types_in_sentences:
                 probes_in_data.add(probe)
             else:
-                print(f'"{probe:<24}" not in raw data. Excluded.')
-        print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in raw data')
+                print(f'probe={probe:<24} not in original data. Excluded.')
+        print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in original data')
     special_tokens = list(probes_in_data)  # special tokens should never be split
     for special_token in special_tokens:
         assert special_token in text_original
 
     # tokenize text
-    tokenizer = train_bpe_tokenizer(_sentences, params.num_types, special_tokens=special_tokens)
-    print('Tokenizing text..', flush=True)
+    tokenizer = train_bpe_tokenizer(transcripts, params.num_types, special_tokens=special_tokens)
+    print(f'Tokenizing {len(transcripts)} transcripts..', flush=True)
     tokens = []
-    for s in _sentences:
+    for transcript in transcripts:
         if tokenizer is not None:
             # TODO try without stripping space symbol
-            tokenized_s: List[str] = [t.lstrip('Ġ').strip() for t in tokenizer.encode(s, add_special_tokens=True).tokens
-                                      if t not in {'Ġ', '', ' '}]
+            tmp: List[str] = [t.lstrip('Ġ').strip() for t in tokenizer.encode(transcript,
+                                                                              add_special_tokens=True).tokens
+                              if t not in {'Ġ', '', ' '}]
         else:
-            tokenized_s: List[str] = s.split()
-        tokens.extend(tokenized_s)
+            tmp: List[str] = transcript.split()
+        tokens.extend(tmp)
     print(f'{len(set(tokens)):,} types in tokenized text', flush=True)
     print(f'Added {len(tokens) - len(tokens_original):,} tokens during tokenization')
 
@@ -227,8 +226,8 @@ def main(param2val):
     for k, v in performance.items():
         if not v:
             continue
-        s = pd.Series(v, index=eval_steps)
-        s.name = k
-        res.append(s)
+        transcript = pd.Series(v, index=eval_steps)
+        transcript.name = k
+        res.append(transcript)
 
     return res

@@ -10,7 +10,7 @@ from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-BA_TYPE: str = 'ba_o'
+BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
