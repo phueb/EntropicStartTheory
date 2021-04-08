@@ -5,7 +5,7 @@ from typing import Tuple, Union
 param2requests = {
     # 'reverse': [True, False],
 
-    'start': ['entropic', 'random'],
+    'start': ['entropic', 'fragmented', 'singleton'],
 
 }
 
@@ -18,7 +18,7 @@ param2debug = {
 # default params
 param2default = {
     'shuffle_sentences': False,
-    'corpus': 'aochildes',  # or newsela
+    'corpus': 'aochildes',  # or aonewsela
     'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
@@ -69,4 +69,3 @@ class Params:
         kwargs = {k: v for k, v in param2val.items()
                   if k not in ['job_name', 'param_name', 'save_path', 'project_path']}
         return cls(**kwargs)
-

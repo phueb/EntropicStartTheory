@@ -89,7 +89,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
 
         # if passing multiple summaries, do not label all
         if 'reverse=True' in label and 'shuffle_sentences=True' not in label \
-                or 'start=random' in label:
+                or 'start=fragmented' in label:
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'

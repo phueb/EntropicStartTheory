@@ -93,7 +93,7 @@ def main(param2val):
     if num_errors:
         raise RuntimeError(f'{num_errors} special tokens were not found in tokenized text.')
 
-    #  prepare data for batching
+    # prepare data for batching
     prep = Prep(tokens,
                 reverse=params.reverse,
                 sliding=params.sliding,
@@ -106,34 +106,28 @@ def main(param2val):
                 disallow_non_ascii=True,
                 )
 
-    # add special start sequences
-    if params.start == 'entropic':
-        print(f'Adding entropic start', flush=True)
+    # prepare artificially generated start sequences for batching
+    if params.start != 'none':
+        print(f'Adding {params.start} start', flush=True)
         editor = Editor(tokens, special_tokens, num_parts=params.num_parts)
-        tokens_start = editor.make_start_tokens(is_entropic=True)
-    elif params.start == 'random':
-        print(f'Adding random start', flush=True)
-        editor = Editor(tokens, special_tokens, num_parts=params.num_parts)
-        tokens_start = editor.make_start_tokens(is_entropic=False)
-    elif params.start == 'none':
-        tokens_start = []
-        print(f'Not adding start sentences', flush=True)
-    else:
-        raise AttributeError('Invalid arg to start')
-
-    # combine start sequences and regular sequences
-    if tokens_start:
+        tokens_start = editor.make_start_tokens(params.start)
         prep_start = Prep(tokens_start,
                           reverse=False,
                           sliding=False,
                           num_parts=1,
-                          num_iterations=params.num_iterations,  # TODO
+                          num_iterations=params.num_iterations,
                           batch_size=params.batch_size,
                           context_size=params.context_size,
                           token2id=prep.token2id
                           )
         assert prep_start.token2id == prep.token2id
         print(f'First {prep_start.num_mbs} batches are reserved for start sentences')
+    else:
+        prep_start = None
+        print(f'Not adding start.')
+
+    # combine start sequences and regular sequences
+    if prep_start:
         batch_generator = chain(prep_start.generate_batches(), prep.generate_batches())
         high_resolution_eval_steps = list(range(0, prep_start.num_mbs, prep_start.num_mbs // 10))
     else:
