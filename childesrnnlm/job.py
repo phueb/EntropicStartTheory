@@ -116,7 +116,7 @@ def main(param2val):
                           num_parts=1,
                           num_iterations=params.num_iterations,
                           batch_size=params.batch_size,
-                          context_size=params.context_size,
+                          context_size=2,
                           token2id=prep.token2id
                           )
         assert prep_start.token2id == prep.token2id
@@ -129,9 +129,11 @@ def main(param2val):
     if prep_start:
         batch_generator = chain(prep_start.generate_batches(), prep.generate_batches())
         high_resolution_eval_steps = list(range(0, prep_start.num_mbs, prep_start.num_mbs // 10))
+        num_train_mbs = prep_start.num_mbs + prep.num_mbs
     else:
         batch_generator = prep.generate_batches()
         high_resolution_eval_steps = list(range(0, 10_000, 1_000))
+        num_train_mbs = prep.num_mbs
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
     # make sure each probe is actually in the training data (may not be if isolated in test data)
@@ -174,11 +176,12 @@ def main(param2val):
     # train and eval
     eval_steps = []  # to keep track when performance is evaluated
     start_train = time.time()
-    pbar = pyprind.ProgBar(prep.num_mbs, stream=1)
+    pbar = pyprind.ProgBar(num_train_mbs, stream=1)
     for step, windows in enumerate(batch_generator):
 
         if step != 0:
-            x, y = np.split(windows, [prep.context_size], axis=1)
+            context_size = windows.shape[1] - 1
+            x, y = np.split(windows, [context_size], axis=1)
             inputs = torch.cuda.LongTensor(x)
             targets = torch.cuda.LongTensor(np.squeeze(y))
 
@@ -206,8 +209,8 @@ def main(param2val):
             performance = update_ba_performance(performance, model, prep, structure2probe2cat)
             # performance = update_cs_performance(performance, model, prep, structure2probe2cat)  # TODO slow
             performance = update_dp_performance(performance, model, prep, structure2probe2cat)
-            # performance = update_si_performance(performance, model, prep, structure2probe2cat)
-            # performance = update_sd_performance(performance, model, prep, structure2probe2cat)
+            performance = update_si_performance(performance, model, prep, structure2probe2cat)
+            performance = update_sd_performance(performance, model, prep, structure2probe2cat)
 
             for k, v in performance.items():
                 if not v:
@@ -217,7 +220,7 @@ def main(param2val):
 
             # print progress to console
             minutes_elapsed = int(float(time.time() - start_train) / 60)
-            print(f'completed step={step:>12,}/{prep.num_mbs:>12,}')
+            print(f'completed step={step:>12,}/{num_train_mbs:>12,}')
             print(f'minutes elapsed={minutes_elapsed}')
             print(flush=True)
 
