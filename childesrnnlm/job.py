@@ -180,7 +180,7 @@ def main(param2val):
     for step, windows in enumerate(batch_generator):
 
         if step != 0:
-            context_size = windows.shape[1] - 1
+            context_size = windows.shape[1] - 1  # different depending on whether input is from prep_start
             x, y = np.split(windows, [context_size], axis=1)
             inputs = torch.cuda.LongTensor(x)
             targets = torch.cuda.LongTensor(np.squeeze(y))

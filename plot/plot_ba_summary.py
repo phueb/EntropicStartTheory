@@ -1,12 +1,13 @@
 from typing import Optional, List, Tuple
 from pathlib import Path
+import yaml
 
 from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
 from childesrnnlm.summary import make_summary
-from childesrnnlm.params import param2default, param2requests
+from childesrnnlm.params import param2default, param2requests, Params
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
@@ -24,6 +25,8 @@ Y_LIMS: List[float] = [0.50, 0.70]
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
 
+SHIFT_X_AXIS: Optional[int] = 50316  # number of start batches wehn start != 'none
+
 if BA_TYPE == 'ba_n':
     Y_LABEL: str = f'Balanced Accuracy at Input\n +/- 95%-CI'
 elif BA_TYPE == 'ba_o':
@@ -34,16 +37,28 @@ else:
 # collect summaries
 summaries = []
 project_name = __name__
-for p, label in gen_param_paths(project_name,
-                                param2requests,
-                                param2default,
-                                runs_path=RUNS_PATH,
-                                ludwig_data_path=LUDWIG_DATA_PATH,
-                                label_n=LABEL_N):
+for param_path, label in gen_param_paths(project_name,
+                                         param2requests,
+                                         param2default,
+                                         runs_path=RUNS_PATH,
+                                         ludwig_data_path=LUDWIG_DATA_PATH,
+                                         label_n=LABEL_N):
+
+    # load params
+    with (param_path / 'param2val.yaml').open('r') as f:
+        param2val = yaml.load(f, Loader=yaml.FullLoader)
+    params = Params.from_param2val(param2val)
+
+    # align curves to start of training corpus, not start of artificial pre-training data
+    if params.start != 'none':
+        shift_x = SHIFT_X_AXIS
+    else:
+        shift_x = None
+
     pattern = f'{BA_TYPE}_{PROBES_NAME}'
-    summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, n
-    summaries.append(summary)
-    print(f'--------------------- End section {p.name}')
+    summary = make_summary(pattern, param_path, label, CONFIDENCE, shift_x)
+    summaries.append(summary)   # summary contains: x, mean_y, std_y, label, n
+    print(f'--------------------- End section {param_path.name}')
     print()
 
 # sort data

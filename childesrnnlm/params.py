@@ -6,7 +6,7 @@ param2requests = {
     # 'reverse': [True, False],
 
     # 'corpus': ['aonewsela'],  # TODO previously showed that ao-effect for newsela requires 16K vocab, no less
-    'start': ['entropic', 'singleton'],
+    'start': ['entropic', 'none'],
 
 }
 
