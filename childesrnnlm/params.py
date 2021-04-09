@@ -3,17 +3,16 @@ from typing import Tuple, Union
 
 # specify params to submit here
 param2requests = {
-    # 'reverse': [True, False],
+    'reverse': [True, False],
 
-    'shuffle_transcripts': [True],
-    'start': ['entropic', 'singleton'],
+    # 'corpus': ['aonewsela'],  # TODO previously showed that ao-effect for newsela requires 16K vocab, no less
+    # 'start': ['entropic', 'singleton'],
 
 }
 
 param2debug = {
     'context_size': 2,
     'num_iterations': (1, 1),
-    'corpus': 'aonewsela',
 }
 
 # default params

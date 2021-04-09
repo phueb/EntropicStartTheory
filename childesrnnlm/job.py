@@ -48,6 +48,7 @@ def main(param2val):
 
     text_original = ' '.join(transcripts)
     tokens_original = text_original.split()
+    print(f'Loaded {len(tokens_original):<} words.')
 
     # collect all probes, they should be treated as whole words by tokenizer
     probes_in_data = set()
@@ -72,9 +73,8 @@ def main(param2val):
     tokens = []
     for transcript in transcripts:
         if tokenizer is not None:
-            # TODO try without stripping space symbol
-            tmp: List[str] = [t.lstrip('Ġ').strip() for t in tokenizer.encode(transcript,
-                                                                              add_special_tokens=True).tokens
+            tmp: List[str] = [t for t in tokenizer.encode(transcript,
+                                                          add_special_tokens=True).tokens
                               if t not in {'Ġ', '', ' '}]
         else:
             tmp: List[str] = transcript.split()
@@ -102,7 +102,7 @@ def main(param2val):
                 context_size=params.context_size,
                 shuffle_within_part=False,
                 min_num_test_tokens=configs.Eval.min_num_test_tokens,
-                disallow_non_ascii=True,
+                disallow_non_ascii=False,
                 )
 
     # prepare artificially generated start sequences for batching
