@@ -58,16 +58,13 @@ def update_pp_performance(performance,
                           criterion: CrossEntropyLoss,
                           prep: Prep,
                           ):
-    if not configs.Eval.train_pp:
-        if configs.Eval.min_num_test_tokens > 0:
-            test_pp = calc_perplexity(model, criterion, prep, is_test=True)
-            performance['test_pp'].append(test_pp)
-    else:
-        if configs.Eval.min_num_test_tokens > 0:
-            train_pp = calc_perplexity(model, criterion, prep, is_test=False)
-            test_pp = calc_perplexity(model, criterion, prep, is_test=True)
-            performance['train_pp'].append(train_pp)
-            performance['test_pp'].append(test_pp)
+    if configs.Eval.train_pp:
+        train_pp = calc_perplexity(model, criterion, prep, is_test=False)
+        performance['train_pp'].append(train_pp)
+    if configs.Eval.min_num_test_tokens > 0:
+        test_pp = calc_perplexity(model, criterion, prep, is_test=True)
+        performance['test_pp'].append(test_pp)
+
     return performance
 
 

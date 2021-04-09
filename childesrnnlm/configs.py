@@ -9,7 +9,7 @@ class Dirs:
 
 
 class Eval:
-    train_pp = False
+    train_pp = True
     structures = ['sem-2021']
     num_steps_to_eval = 50_000
     min_num_test_tokens = 0
@@ -17,10 +17,10 @@ class Eval:
 
     ba_o = True
     ba_n = True
-    si_o = False
-    si_n = False
-    sd_o = False
-    sd_n = False
+    si_o = True
+    si_n = True
+    sd_o = True
+    sd_n = True
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 

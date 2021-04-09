@@ -132,7 +132,7 @@ def main(param2val):
         num_train_mbs = prep_start.num_mbs + prep.num_mbs
     else:
         batch_generator = prep.generate_batches()
-        high_resolution_eval_steps = list(range(0, 10_000, 1_000))
+        high_resolution_eval_steps = [0]
         num_train_mbs = prep.num_mbs
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
