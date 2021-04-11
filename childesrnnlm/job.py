@@ -48,7 +48,7 @@ def main(param2val):
 
     text_original = ' '.join(transcripts)
     tokens_original = text_original.split()
-    print(f'Loaded {len(tokens_original):<} words.')
+    print(f'Loaded {len(tokens_original):,} words.')
 
     # collect all probes, they should be treated as whole words by tokenizer
     probes_in_data = set()
@@ -109,7 +109,9 @@ def main(param2val):
     if params.start != 'none':
         print(f'Adding {params.start} start', flush=True)
         editor = Editor(tokens, special_tokens, num_parts=params.num_parts)
-        tokens_start = editor.make_start_tokens(params.start)
+        tokens_start = editor.make_start_tokens(params.start,
+                                                num_left_words=configs.Start.num_left_words,
+                                                num_right_words=configs.Start.num_right_words)
         prep_start = Prep(tokens_start,
                           reverse=False,
                           sliding=False,

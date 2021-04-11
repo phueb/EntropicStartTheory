@@ -4,14 +4,14 @@ import yaml
 
 from ludwig.results import gen_param_paths
 
-from childesrnnlm import __name__
+from childesrnnlm import __name__, configs
 from childesrnnlm.figs import make_summary_fig
 from childesrnnlm.summary import make_summary
 from childesrnnlm.params import param2default, param2requests, Params
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-BA_TYPE: str = 'ba_o'
+BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
@@ -24,8 +24,6 @@ FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = [0.50, 0.70]
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
-
-SHIFT_X_AXIS: Optional[int] = 50316  # number of start batches wehn start != 'none
 
 if BA_TYPE == 'ba_n':
     Y_LABEL: str = f'Balanced Accuracy at Input\n +/- 95%-CI'
@@ -51,12 +49,14 @@ for param_path, label in gen_param_paths(project_name,
 
     # align curves to start of training corpus, not start of artificial pre-training data
     if params.start != 'none':
-        shift_x = SHIFT_X_AXIS
+        num_probes = 700
+        num_start_sequences = configs.Start.num_right_words * configs.Start.num_left_words * num_probes
+        num_shifted_steps = num_start_sequences // params.batch_size * params.num_iterations[0]
     else:
-        shift_x = None
+        num_shifted_steps = None
 
     pattern = f'{BA_TYPE}_{PROBES_NAME}'
-    summary = make_summary(pattern, param_path, label, CONFIDENCE, shift_x)
+    summary = make_summary(pattern, param_path, label, CONFIDENCE, num_shifted_steps)
     summaries.append(summary)   # summary contains: x, mean_y, std_y, label, n
     print(f'--------------------- End section {param_path.name}')
     print()
