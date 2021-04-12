@@ -1,6 +1,6 @@
 from typing import Optional, List, Tuple
 from pathlib import Path
-import numpy as np
+
 
 from ludwig.results import gen_param_paths
 

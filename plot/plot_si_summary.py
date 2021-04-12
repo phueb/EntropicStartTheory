@@ -20,11 +20,16 @@ PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [-0.06, 0.0]
-Y_LABEL: str = f'Silhouette Score\n +/- 95%-CI'
+Y_LIMS: List[float] = None  # [-0.06, 0.0]
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{SI_NAME}_{PROBES_NAME}.csv'
 
+if SI_TYPE == 'si_n':
+    Y_LABEL: str = f'Silhouette Score at Input\n +/- 95%-CI'
+elif SI_TYPE == 'si_o':
+    Y_LABEL: str = f'Silhouette Score at Hidden\n +/- 95%-CI'
+else:
+    raise AttributeError('Invalid SI_TYPE')
 
 # collect summaries
 summaries = []

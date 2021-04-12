@@ -9,7 +9,7 @@ class Dirs:
 
 
 class Start:
-    num_left_words = 10
+    num_left_words = 5
     num_right_words = 1
 
 

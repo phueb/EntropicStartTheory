@@ -49,9 +49,11 @@ for param_path, label in gen_param_paths(project_name,
 
     # align curves to start of training corpus, not start of artificial pre-training data
     if params.start != 'none':
-        num_probes = 700
+        # the calculation is not adjusted for pruning performed by preppy
+        num_probes = 699
         num_start_sequences = configs.Start.num_right_words * configs.Start.num_left_words * num_probes
-        num_shifted_steps = num_start_sequences // params.batch_size * params.num_iterations[0]
+        num_start_tokens = num_start_sequences * 3
+        num_shifted_steps = num_start_tokens // params.batch_size * params.num_iterations[0]
     else:
         num_shifted_steps = None
 

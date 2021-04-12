@@ -37,6 +37,7 @@ def main(param2val):
     # load corpus
     if params.corpus == 'aochildes':
         transcripts = ChildesDataSet().load_transcripts()
+        transcripts = ChildesDataSet().load_tokens()
     elif params.corpus == 'aonewsela':
         transcripts = NewselaDataSet().load_transcripts()
     else:

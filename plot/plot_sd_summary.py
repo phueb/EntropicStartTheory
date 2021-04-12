@@ -21,10 +21,15 @@ V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = None
-Y_LABEL: str = f'S_Dbw Score\n +/- 95%-CI'
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{SI_NAME}_{PROBES_NAME}.csv'
 
+if SD_TYPE == 'sd_n':
+    Y_LABEL: str = f'S_Dbw Score at Input\n +/- 95%-CI'
+elif SD_TYPE == 'sd_o':
+    Y_LABEL: str = f'S_Dbw Score at Hidden\n +/- 95%-CI'
+else:
+    raise AttributeError('Invalid SD_TYPE')
 
 # collect summaries
 summaries = []
