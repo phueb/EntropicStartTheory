@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Union
+from typing import Tuple
 
 # specify params to submit here
 param2requests = {
@@ -64,6 +64,11 @@ class Params:
 
     @classmethod
     def from_param2val(cls, param2val):
+        """
+        instantiate class.
+        exclude keys from param2val which are added by Ludwig.
+        they are relevant to job submission only.
+        """
         kwargs = {k: v for k, v in param2val.items()
                   if k not in ['job_name', 'param_name', 'save_path', 'project_path']}
         return cls(**kwargs)
