@@ -3,10 +3,11 @@ from typing import Tuple
 
 # specify params to submit here
 param2requests = {
-    # 'reverse': [True, False],
 
-    # 'corpus': ['aonewsela'],  # TODO previously showed that ao-effect for newsela requires 16K vocab, no less
-    'start': ['entropic', 'singleton', 'none'],
+    'corpus': ['original',
+               'cleaned',
+               'parsed',
+               ],
 
 }
 
@@ -18,9 +19,9 @@ param2debug = {
 # default params
 param2default = {
     'shuffle_transcripts': False,
-    'corpus': 'aochildes',  # or aonewsela
-    'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
-    'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
+    'corpus': 'original',
+    'num_types': '4095',
+    'num_parts': 1,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'start': 'none',
 
