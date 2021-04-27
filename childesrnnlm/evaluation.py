@@ -123,7 +123,7 @@ def update_dp_performance(performance,
         print(f'{structure_name} predict:', [prep.types[i] for i in max_ids[-10:]])
 
         # dp
-        dp = dp_scorer.calc_dp(qs, structure_name, metric='js')
+        dp = dp_scorer.calc_dp(qs, return_mean=True, metric='js')
         performance.setdefault(f'dp_{structure_name}_js', []).append(dp)
 
     return performance
