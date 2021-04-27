@@ -11,8 +11,8 @@ from childesrnnlm.params import param2default, param2requests, Params
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-BA_TYPE: str = 'ba_n'
-PROBES_NAME: str = 'sem-2021'
+BA_TYPE: str = 'ba_o'
+PROBES_NAME: str = '*'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param

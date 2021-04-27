@@ -33,8 +33,6 @@ def main(param2val):
     tokens_original = text_original.split()
     print(f'Loaded {len(tokens_original):,} words.')
 
-    print(tokens_original[:100])
-
     # tokenize text
     tokens = tokens_original
     print(f'{len(set(tokens)):,} types in tokenized text', flush=True)

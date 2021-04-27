@@ -7,6 +7,7 @@ param2requests = {
     'corpus': ['original',
                'cleaned',
                'parsed',
+               'cleanedparsed',
                ],
 
 }
