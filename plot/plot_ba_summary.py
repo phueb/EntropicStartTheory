@@ -11,17 +11,17 @@ from childesrnnlm.params import param2default, param2requests, Params
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-BA_TYPE: str = 'ba_o'
+BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = '*'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
-PLOT_MAX_LINES: bool = True                # plot horizontal line at best overall performance
+PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.50, 0.70]
+Y_LIMS: List[float] = [0.50, 0.65]
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
 
@@ -88,5 +88,6 @@ fig = make_summary_fig(summaries,
                        plot_max_lines=PLOT_MAX_LINES,
                        plot_max_line=PLOT_MAX_LINE,
                        legend_loc='best',
+                       y_grid=True,
                        )
 fig.show()

@@ -26,7 +26,7 @@ param2default = {
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'start': 'none',
 
-    'flavor': 'srn',  # simple-recurrent
+    'flavor': 'lstm',
     'hidden_size': 512,
     'num_layers': 1,
 
