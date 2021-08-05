@@ -122,7 +122,7 @@ def update_dp_performance(performance,
 
         # dp
         dp = dp_scorer.calc_dp(qs, return_mean=True, metric='js')
-        performance.setdefault(f'dp_{structure_name}_js', []).append(dp)
+        performance.setdefault(f'dp_n_{structure_name}', []).append(dp)
 
     return performance
 
@@ -154,7 +154,7 @@ def update_cs_performance(performance,
             cs_total += cs_cat
 
         cs = cs_total / len(cs_scorer.probe_store.cats)
-        performance.setdefault(f'cs_{structure_name}_js', []).append(cs)
+        performance.setdefault(f'cs_n_{structure_name}', []).append(cs)
 
     return performance
 
