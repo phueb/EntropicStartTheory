@@ -208,11 +208,16 @@ def main(param2val):
             model.eval()
             performance = update_pp_performance(performance, model, criterion, prep)
 
-            performance = update_ba_performance(performance, model, prep, structure2probe2cat)
-            # performance = update_cs_performance(performance, model, prep, structure2probe2cat)  # TODO slow
-            performance = update_dp_performance(performance, model, prep, structure2probe2cat)
-            performance = update_si_performance(performance, model, prep, structure2probe2cat)
-            performance = update_sd_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_ba:
+                performance = update_ba_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_cs:
+                performance = update_cs_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_dp:
+                performance = update_dp_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_si:
+                performance = update_si_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_sd:
+                performance = update_sd_performance(performance, model, prep, structure2probe2cat)
 
             for k, v in performance.items():
                 if not v:

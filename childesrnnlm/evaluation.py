@@ -19,7 +19,6 @@ from childesrnnlm.rnn import RNN
 from childesrnnlm.representation import make_representations_without_context
 from childesrnnlm.representation import make_representations_with_context
 from childesrnnlm.representation import make_output_representations
-from childesrnnlm.io import load_probe2cat
 
 
 def calc_perplexity(model: RNN,
@@ -89,12 +88,11 @@ def update_ba_performance(performance,
         probe_sims_o = cosine_similarity(probe_reps_o)
         probe_sims_n = cosine_similarity(probe_reps_n)
 
-        if configs.Eval.ba_n:
-            performance.setdefault(f'ba_n_{structure_name}', []).append(
-                ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
-        if configs.Eval.ba_o:
-            performance.setdefault(f'ba_o_{structure_name}', []).append(
-                ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+        performance.setdefault(f'ba_n_{structure_name}', []).append(
+            ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+
+        performance.setdefault(f'ba_o_{structure_name}', []).append(
+            ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
 
     return performance
 
@@ -136,11 +134,10 @@ def update_cs_performance(performance,
                           ):
     """
     compute category-spread.
-    a home-made quantity that is proportional to the spread between probe representations.
+    a home-made quantity that is proportional to the average spread between same-category probe representations.
 
     to speed computation, we compute spread only within each category, and return the mean across categories.
     """
-    exemplars_list = []
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
         cs_scorer = CSScorer(probe2cat)
@@ -148,10 +145,8 @@ def update_cs_performance(performance,
         # compute cs for each category
         cs_total = 0
         for cat in cs_scorer.probe_store.cats:
-            # collect output representations for probes in same category
-            exemplars = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
-            exemplars_list.append(exemplars)
-            ps = np.vstack(exemplars_list)
+            # get output representations for probes in same category
+            ps = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
             print(f'Input to computation of cs has shape={ps.shape}', flush=True)
             # compute divergences between exemplars within a category
             cs_cat = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
@@ -184,12 +179,10 @@ def update_si_performance(performance,
                    for p in si_scorer.probe_store.types]
 
         # compute silhouette score
-        if configs.Eval.si_n:
-            performance.setdefault(f'si_n_{structure_name}', []).append(
-                si_scorer.calc_si(probe_reps_n, cat_ids))
-        if configs.Eval.si_o:
-            performance.setdefault(f'si_o_{structure_name}', []).append(
-                si_scorer.calc_si(probe_reps_o, cat_ids))
+        performance.setdefault(f'si_n_{structure_name}', []).append(
+            si_scorer.calc_si(probe_reps_n, cat_ids))
+        performance.setdefault(f'si_o_{structure_name}', []).append(
+            si_scorer.calc_si(probe_reps_o, cat_ids))
 
     return performance
 
@@ -215,12 +208,10 @@ def update_sd_performance(performance,
                    for p in sd_scorer.probe_store.types]
 
         # compute score
-        if configs.Eval.sd_n:
-            performance.setdefault(f'sd_n_{structure_name}', []).append(
-                sd_scorer.calc_sd(probe_reps_n, cat_ids))
-        if configs.Eval.sd_o:
-            performance.setdefault(f'sd_o_{structure_name}', []).append(
-                sd_scorer.calc_sd(probe_reps_o, cat_ids))
+        performance.setdefault(f'sd_n_{structure_name}', []).append(
+            sd_scorer.calc_sd(probe_reps_n, cat_ids))
+        performance.setdefault(f'sd_o_{structure_name}', []).append(
+            sd_scorer.calc_sd(probe_reps_o, cat_ids))
 
     return performance
 
