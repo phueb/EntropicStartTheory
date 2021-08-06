@@ -15,9 +15,11 @@ class Start:
 class Eval:
     train_pp = False  # extremely slow if True
     structures = ['sem-2021']
-    num_steps_to_eval = 50_000
+    num_steps_to_eval = 100_000
     min_num_test_tokens = 0
-    cs_max_rows = 128
+    cs_max_rows = 32
+    cs_metric = 'xe'  # is 3X faster than 'js' but not normalized
+    ra_metric = 'xe'
 
     # set to True to calculate an evaluation metric
     calc_ra = True

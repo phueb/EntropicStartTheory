@@ -73,8 +73,11 @@ def update_ra_performance(performance,
                           model: RNN,
                           prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
-                          offset_percent: float = 0.1,  # magnitude added to a single vector dimension
+                          offset_percent: float = 0.01,
                           ):
+    """
+    compute raggedness of input-output mapping.
+    """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
         ra_scorer = RAScorer(probe2cat)
@@ -92,7 +95,8 @@ def update_ra_performance(performance,
 
             # get vectors representing locations close to probe representations.
             # note: these locations are created by adding offset to a single dimension
-            offset = np.eye(probe_rep_inp_tiled.shape[0], probe_rep_inp_tiled.shape[1]) * offset_percent * np.max(probe_rep_inp_tiled)
+            offset_magnitude = offset_percent * np.max(probe_rep_inp_tiled)
+            offset = np.eye(probe_rep_inp_tiled.shape[0], probe_rep_inp_tiled.shape[1]) * offset_magnitude
             nearby_reps_inp = probe_rep_inp_tiled + offset
 
             # get outputs for nearby_reps
@@ -101,7 +105,8 @@ def update_ra_performance(performance,
             nearby_reps_out = softmax(logits)
 
             # calc score for a single probe and collect
-            ra_probe = ra_scorer.calc_score(probe_rep_out_tiled, nearby_reps_out)  # TODO test
+            ra_probe = ra_scorer.calc_score(probe_rep_out_tiled, nearby_reps_out,
+                                            metric=configs.Eval.ra_metric)  # TODO fine-tune this function
             ra_total += ra_probe
 
         ra = ra_total / len(ra_scorer.probe_store.types)
@@ -188,7 +193,9 @@ def update_ws_performance(performance,
             # get output representations for probes in same category
             ps = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
             # compute divergences between exemplars within a category
-            ws_cat = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
+            ws_cat = cs_scorer.calc_cs(ps, ps,
+                                       metric=configs.Eval.cs_metric,
+                                       max_rows=configs.Eval.cs_max_rows)
             print(f'within-category spread for cat={cat:<18} ={ws_cat:.4f}', flush=True)
             ws_total += ws_cat
 
@@ -217,7 +224,9 @@ def update_as_performance(performance,
         for probe, probe_rep_out in zip(cs_scorer.probe_store.types, probe_reps_out):
 
             # compute divergences between one probe representation and all other probe representations
-            as_probe = cs_scorer.calc_cs(probe_rep_out, probe_reps_out, metric='js', max_rows=configs.Eval.cs_max_rows)
+            as_probe = cs_scorer.calc_cs(probe_rep_out[np.newaxis, :], probe_reps_out,
+                                         metric=configs.Eval.cs_metric,
+                                         max_rows=configs.Eval.cs_max_rows)
             print(f'across-category spread for probe={probe:<18} ={as_probe:.4f}', flush=True)
             as_total += as_probe
 

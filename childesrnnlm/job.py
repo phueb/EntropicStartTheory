@@ -211,19 +211,40 @@ def main(param2val):
             performance = update_pp_performance(performance, model, criterion, prep)
 
             if configs.Eval.calc_ra:
+                print('Computing raggedness...', flush=True)
+                start_eval = time.time()
                 performance = update_ra_performance(performance, model, prep, structure2probe2cat)  # TODO test
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_ba:
+                print('Computing balanced accuracy...', flush=True)
+                start_eval = time.time()
                 performance = update_ba_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_ws:
+                print('Computing within-category spread...', flush=True)
+                start_eval = time.time()
                 performance = update_ws_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_as:
+                print('Computing across-category spread...', flush=True)
+                start_eval = time.time()
                 performance = update_as_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_dp:
+                print('Computing distance-to-prototype spread...', flush=True)
+                start_eval = time.time()
                 performance = update_dp_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_si:
+                print('Computing silhouette score...', flush=True)
+                start_eval = time.time()
                 performance = update_si_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_sd:
+                print('Computing S_Dbw...', flush=True)
+                start_eval = time.time()
                 performance = update_sd_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
 
             for k, v in performance.items():
                 if not v:

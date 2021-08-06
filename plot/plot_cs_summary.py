@@ -12,12 +12,18 @@ LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 PROBES_NAME: str = 'sem-2021'
 
-Y_LABEL = 'Within Category Spread\n+/- 95%-CI'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.0, 1.0]
+Y_LIMS: List[float] = [0.0, 0.5]
 CONFIDENCE: float = 0.95
 TITLE = ''
+CS_TYPE = ['ws', 'as'][0]  # within or across
+
+if CS_TYPE == 'ws':
+    Y_LABEL = 'Within-Category Spread\n+/- 95%-CI'
+elif CS_TYPE == 'as':
+    Y_LABEL = 'Across-Category Spread\n+/- 95%-CI'
+else: raise AttributeError
 
 # collect summaries
 summaries = []
@@ -31,7 +37,7 @@ for param_path, label in gen_param_paths(project_name,
 
     num_shifted_steps = None  # TODO automate
 
-    pattern = f'cs_n_{PROBES_NAME}'
+    pattern = f'{CS_TYPE}_n_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE, num_shifted_steps)
     summaries.append(summary)  # summary contains: x, mean_y, std_y, label, n
     print(f'--------------------- End section {param_path.name}')
