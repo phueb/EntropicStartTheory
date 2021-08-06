@@ -17,10 +17,12 @@ from entropicstart.editor import Editor
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
+from childesrnnlm.evaluation import update_ra_performance
 from childesrnnlm.evaluation import update_ba_performance
 from childesrnnlm.evaluation import update_pp_performance
 from childesrnnlm.evaluation import update_dp_performance
-from childesrnnlm.evaluation import update_cs_performance
+from childesrnnlm.evaluation import update_ws_performance
+from childesrnnlm.evaluation import update_as_performance
 from childesrnnlm.evaluation import update_si_performance
 from childesrnnlm.evaluation import update_sd_performance
 from childesrnnlm.params import Params
@@ -208,10 +210,14 @@ def main(param2val):
             model.eval()
             performance = update_pp_performance(performance, model, criterion, prep)
 
+            if configs.Eval.calc_ra:
+                performance = update_ra_performance(performance, model, prep, structure2probe2cat)  # TODO test
             if configs.Eval.calc_ba:
                 performance = update_ba_performance(performance, model, prep, structure2probe2cat)
-            if configs.Eval.calc_cs:
-                performance = update_cs_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_ws:
+                performance = update_ws_performance(performance, model, prep, structure2probe2cat)
+            if configs.Eval.calc_as:
+                performance = update_as_performance(performance, model, prep, structure2probe2cat)
             if configs.Eval.calc_dp:
                 performance = update_dp_performance(performance, model, prep, structure2probe2cat)
             if configs.Eval.calc_si:

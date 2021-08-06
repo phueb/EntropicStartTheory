@@ -6,6 +6,7 @@ from typing import List, Union, Dict
 from sklearn.metrics.pairwise import cosine_similarity
 from torch.nn import CrossEntropyLoss
 
+from categoryeval.ra import RAScorer
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
@@ -19,6 +20,7 @@ from childesrnnlm.rnn import RNN
 from childesrnnlm.representation import make_representations_without_context
 from childesrnnlm.representation import make_representations_with_context
 from childesrnnlm.representation import make_output_representations
+from childesrnnlm.representation import softmax
 
 
 def calc_perplexity(model: RNN,
@@ -63,6 +65,47 @@ def update_pp_performance(performance,
     if configs.Eval.min_num_test_tokens > 0:
         test_pp = calc_perplexity(model, criterion, prep, is_test=True)
         performance['test_pp'].append(test_pp)
+
+    return performance
+
+
+def update_ra_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          offset_percent: float = 0.1,  # magnitude added to a single vector dimension
+                          ):
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        ra_scorer = RAScorer(probe2cat)
+
+        # get probe representations
+        probe_token_ids = [prep.token2id[token] for token in ra_scorer.probe_store.types]
+        probe_reps_inp = make_representations_without_context(model, probe_token_ids)
+        probe_reps_out = make_output_representations(model, ra_scorer.probe_store.types, prep)
+
+        ra_total = 0
+        for probe_rep_inp, probe_rep_out in zip(probe_reps_inp, probe_reps_out):
+
+            probe_rep_inp_tiled = np.tile(probe_rep_inp, (len(probe_rep_inp), 1))
+            probe_rep_out_tiled = np.tile(probe_rep_out, (len(probe_rep_inp), 1))
+
+            # get vectors representing locations close to probe representations.
+            # note: these locations are created by adding offset to a single dimension
+            offset = np.eye(probe_rep_inp_tiled.shape[0], probe_rep_inp_tiled.shape[1]) * offset_percent * np.max(probe_rep_inp_tiled)
+            nearby_reps_inp = probe_rep_inp_tiled + offset
+
+            # get outputs for nearby_reps
+            inputs = torch.cuda.LongTensor(nearby_reps_inp)
+            logits = model(inputs)['logits'].detach().cpu().numpy()
+            nearby_reps_out = softmax(logits)
+
+            # calc score for a single probe and collect
+            ra_probe = ra_scorer.calc_score(probe_rep_out_tiled, nearby_reps_out)  # TODO test
+            ra_total += ra_probe
+
+        ra = ra_total / len(ra_scorer.probe_store.types)
+        performance.setdefault(f'ra_n_{structure_name}', []).append(ra)
 
     return performance
 
@@ -127,34 +170,59 @@ def update_dp_performance(performance,
     return performance
 
 
-def update_cs_performance(performance,
+def update_ws_performance(performance,
                           model: RNN,
                           prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """
-    compute category-spread.
-    a home-made quantity that is proportional to the average spread between same-category probe representations.
-
-    to speed computation, we compute spread only within each category, and return the mean across categories.
+    compute spread between members of the same category (Within-category Spread).
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
         cs_scorer = CSScorer(probe2cat)
 
         # compute cs for each category
-        cs_total = 0
+        ws_total = 0
         for cat in cs_scorer.probe_store.cats:
             # get output representations for probes in same category
             ps = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
-            print(f'Input to computation of cs has shape={ps.shape}', flush=True)
             # compute divergences between exemplars within a category
-            cs_cat = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
-            print(f'category spread for cat={cat:<18} ={cs_cat:.4f}', flush=True)
-            cs_total += cs_cat
+            ws_cat = cs_scorer.calc_cs(ps, ps, metric='js', max_rows=configs.Eval.cs_max_rows)
+            print(f'within-category spread for cat={cat:<18} ={ws_cat:.4f}', flush=True)
+            ws_total += ws_cat
 
-        cs = cs_total / len(cs_scorer.probe_store.cats)
-        performance.setdefault(f'cs_n_{structure_name}', []).append(cs)
+        ws = ws_total / len(cs_scorer.probe_store.cats)
+        performance.setdefault(f'ws_n_{structure_name}', []).append(ws)
+
+    return performance
+
+
+def update_as_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    compute spread between members of different categories (Across-category Spread).
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        cs_scorer = CSScorer(probe2cat)
+
+        # get probe representations
+        probe_reps_out = make_output_representations(model, cs_scorer.probe_store.types, prep)
+
+        as_total = 0
+        for probe, probe_rep_out in zip(cs_scorer.probe_store.types, probe_reps_out):
+
+            # compute divergences between one probe representation and all other probe representations
+            as_probe = cs_scorer.calc_cs(probe_rep_out, probe_reps_out, metric='js', max_rows=configs.Eval.cs_max_rows)
+            print(f'across-category spread for probe={probe:<18} ={as_probe:.4f}', flush=True)
+            as_total += as_probe
+
+        as_ = as_total / len(cs_scorer.probe_store.cats)
+        performance.setdefault(f'as_n_{structure_name}', []).append(as_)
 
     return performance
 

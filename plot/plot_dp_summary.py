@@ -1,47 +1,23 @@
-import pandas as pd
 from typing import Optional, List, Tuple
 from pathlib import Path
-import numpy as np
-from scipy.stats import t, sem
 
 from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
+from childesrnnlm.summary import make_summary
 from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-DP_PROBES_NAME: str = 'sem-2021'
-METRIC = 'js'
-PART_ID = 0
+PROBES_NAME: str = 'sem-2021'
 
 Y_LABEL = 'Divergence from Prototype\n +/- 95%-CI'
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.0, 0.8]
-X_LIMS: Optional[List[int]] = None  # [0, 100_000]
-LOG_Y: bool = False
+Y_LIMS: List[float] = [0.0, 1.0]
 CONFIDENCE = 0.95
-TITLE = ''  # f'{DP_PROBES_NAME}\npartition={PART_ID}'
-
-
-
-def make_summary(pp, lb) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:
-    """
-    load all csv files for dp-unconditional plot
-    """
-    pattern = f'dp_{DP_PROBES_NAME}_{METRIC}.csv'
-    series_list = [pd.read_csv(p, index_col=0, squeeze=True) for p in pp.rglob(pattern)]
-    n = len(series_list)
-    if not series_list:
-        raise RuntimeError(f'Did not find any csv files matching pattern="{pattern}"')
-    concatenated_df = pd.concat(series_list, axis=1)
-    y_mean = concatenated_df.mean(axis=1).values.flatten()
-    y_sem = sem(concatenated_df.values, axis=1)
-    h = y_sem * t.ppf((1 + CONFIDENCE) / 2, n - 1)  # margin of error
-
-    return concatenated_df.index.values, y_mean, h, lb, n
+TITLE = ''
 
 
 # collect summaries
@@ -53,21 +29,31 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
-    # collect for comparison figure
-    summary = make_summary(param_path, label)
+    pattern = f'dp_n_{PROBES_NAME}'
+    summary = make_summary(pattern, param_path, label, CONFIDENCE)
     summaries.append(summary)
+    print(f'--------------------- End section {param_path.name}')
+    print()
 
-# plot comparison
+# sort data
+summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
+if not summaries:
+    raise SystemExit('No data found')
+
+# print to console
+for s in summaries:
+    _, y_mean, y_std, label, n = s
+    print(label)
+    print(y_mean)
+    print(y_std)
+    print()
+
+# plot
 fig = make_summary_fig(summaries,
                        ylabel=Y_LABEL,
                        title=TITLE,
-                       log_y=LOG_Y,
                        ylims=Y_LIMS,
-                       xlims=X_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
-                       # vline=100_000,
-                       # legend_labels=['reverse age-ordered', 'age-ordered'],
-                       palette_ids=[0, 1],  # re-assign colors to each line
                        )
 fig.show()

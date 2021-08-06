@@ -20,8 +20,10 @@ class Eval:
     cs_max_rows = 128
 
     # set to True to calculate an evaluation metric
+    calc_ra = True
     calc_ba = True
-    calc_cs = True
+    calc_ws = True  # within-category spread
+    calc_as = True  # across-category spread
     calc_dp = True
     calc_si = True
     calc_sd = True
