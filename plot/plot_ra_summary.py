@@ -21,7 +21,7 @@ PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.00, 1.0]
+Y_LIMS: List[float] = [0.0, 18.0]
 CONFIDENCE: float = 0.95
 TITLE = ''  # f'{RA_TYPE}_{PROBES_NAME}.csv'
 

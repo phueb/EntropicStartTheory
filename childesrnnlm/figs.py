@@ -3,6 +3,7 @@ from matplotlib.ticker import FuncFormatter
 import seaborn as sns
 import numpy as np
 from typing import List, Tuple, Union
+from itertools import count
 
 from childesrnnlm import configs
 
@@ -31,6 +32,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      vlines: List[int] = None,
                      vline: int = None,
                      legend_loc: str = 'lower right',
+                     annotate: bool = False,
                      verbose: bool = False,
                      ):
     # fig
@@ -67,6 +69,8 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     first_r = True
     first_c = True
 
+    counter = count()
+
     # plot summary
     max_ys = []
     for x, y_mean, h, label, n in summaries:
@@ -87,7 +91,18 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             for mean_i, std_i in zip(y_mean, h):
                 print(f'mean={mean_i:>6.2f} h={std_i:>6.2f}')
 
-        # if passing multiple summaries, do not label all
+        # add annotations which are helpful to distinguish individual trajectories
+        if annotate and 'reverse=False' in label:
+            ax.annotate(next(counter),
+                        xy=(x[-1], y_mean[-1]),
+                        xycoords='data',
+                        horizontalalignment='left',
+                        verticalalignment='center',
+                        fontsize=5,
+                        # color='C0',
+                        )
+
+        # if passing individual trajectories (not average trajectories), do not label all
         if 'reverse=True' in label and 'shuffle_sentences=True' not in label \
                 or 'start=none' in label:
             color = 'C1'

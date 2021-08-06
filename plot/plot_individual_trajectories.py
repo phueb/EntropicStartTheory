@@ -1,11 +1,12 @@
 from typing import Optional, List, Tuple
 from pathlib import Path
+import pandas as pd
+import numpy as np
 
 from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
-from childesrnnlm.summary import make_summary
 from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
@@ -16,14 +17,29 @@ LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
-CS_TYPE = ['ws', 'as'][1]  # within or across
+PERFORMANCE_NAME = ['ra', 'ba', 'dp', 'ws', 'as', 'si', 'sd'][4]
 
-if CS_TYPE == 'ws':
+if PERFORMANCE_NAME == 'ra':
+    Y_LABEL = 'Raggedness of In-Out Mapping\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0, 30]
+elif PERFORMANCE_NAME == 'ba':
+    Y_LABEL = 'Balanced Accuracy\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.5, 0.7]
+elif PERFORMANCE_NAME == 'dp':
+    Y_LABEL = 'Divergence from Prototype\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.0, 1.0]
+elif PERFORMANCE_NAME == 'ws':
     Y_LABEL = 'Within-Category Spread\n+/- 95%-CI'
     Y_LIMS: List[float] = [0.0, 13.0]
-elif CS_TYPE == 'as':
+elif PERFORMANCE_NAME == 'as':
     Y_LABEL = 'Across-Category Spread\n+/- 95%-CI'
     Y_LIMS: List[float] = [200, 350]
+elif PERFORMANCE_NAME == 'si':
+    Y_LABEL = 'Silhouette Score\n+/- 95%-CI'
+    Y_LIMS: List[float] = [-0.1, 0.0]
+elif PERFORMANCE_NAME == 'sd':
+    Y_LABEL = 'S_Dbw Score\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.9, 1.0]
 else:
     raise AttributeError
 
@@ -36,14 +52,15 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
+    pattern = f'{PERFORMANCE_NAME}_n_{PROBES_NAME}.csv'
+    for p in param_path.rglob(pattern):
+        s = pd.read_csv(p, index_col=0, squeeze=True)
+        n = 1
+        y_mean = s.values
+        h = np.zeros((len(s)))  # margin of error
 
-    num_shifted_steps = None  # TODO automate
-
-    pattern = f'{CS_TYPE}_n_{PROBES_NAME}'
-    summary = make_summary(pattern, param_path, label, CONFIDENCE, num_shifted_steps)
-    summaries.append(summary)  # summary contains: x, mean_y, std_y, label, n
-    print(f'--------------------- End section {param_path.name}')
-    print()
+        summary = (s.index.values, y_mean, h, label, n)
+        summaries.append(summary)
 
 # sort data
 summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
@@ -65,5 +82,6 @@ fig = make_summary_fig(summaries,
                        ylims=Y_LIMS,
                        figsize=FIG_SIZE,
                        legend_loc='best',
+                       annotate=True,
                        )
 fig.show()
