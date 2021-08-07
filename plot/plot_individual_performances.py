@@ -18,6 +18,7 @@ LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
+CONTEXT_TYPE = ['n', 'o'][0]
 PERFORMANCE_NAME = ['ma',  # 0
                     'ra',  # 1
                     'ba',  # 2
@@ -30,7 +31,8 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'cd',  # 9
                     'si',  # 10
                     'sd',  # 11
-                    ][8]
+                    'pi',  # 12
+                    ][1]
 
 # collect summaries
 summaries = []
@@ -41,7 +43,7 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
-    pattern = f'{PERFORMANCE_NAME}_n_{PROBES_NAME}.csv'
+    pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{PROBES_NAME}.csv'
     for job_id, path_to_csv in enumerate(sorted(param_path.rglob(pattern))):
         s = pd.read_csv(path_to_csv, index_col=0, squeeze=True)
         y_mean = s.values
@@ -52,7 +54,9 @@ for param_path, label in gen_param_paths(project_name,
 summaries = sort_and_print_summaries(summaries)
 
 # plot
-y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME)
+y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME,
+                                       CONTEXT_TYPE,
+                                       add_confidence_interval_to_label=False)
 fig = make_summary_fig(summaries,
                        ylabel=y_label,
                        title=TITLE,

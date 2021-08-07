@@ -158,36 +158,63 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     return fig
 
 
-def get_y_label_and_lims(performance_name):
+def get_y_label_and_lims(performance_name: str,
+                         context_type: str,
+                         add_confidence_interval_to_label: bool,
+                         ) -> Tuple[str, List[float]]:
+
+    # TODO this function assumes that context_type = 'n' instead of 'o'
 
     if performance_name == 'ma':
-        y_label = 'Vector Magnitude\n+/- 95%-CI'
+        y_label = 'Magnitude of Representations'
         y_lims: List[float] = [0.5, 1.5]
     elif performance_name == 'ra':
-        y_label = 'Raggedness of In-Out Mapping\n+/- 95%-CI'
+        y_label = 'Raggedness of In-Out Mapping'
         y_lims: List[float] = [0, 1]
+    elif performance_name == 'th':
+        y_label = 'Sim. Threshold at best Bal.Acc.'
+        if context_type == 'n':
+            y_lims: List[float] = [0, 0.2]
+        else:
+            y_lims: List[float] = [0.6, 1.0]
     elif performance_name == 'ba':
-        y_label = 'Balanced Accuracy\n+/- 95%-CI'
+        y_label = 'Balanced Accuracy'
         y_lims: List[float] = [0.5, 0.7]
     elif performance_name == 'dp':
-        y_label = 'Divergence from Prototype\n+/- 95%-CI'
+        y_label = 'Divergence from Prototype'
         y_lims: List[float] = [0.0, 1.0]
     elif performance_name == 'du':
-        y_label = 'Divergence from Unigram Prototype\n+/- 95%-CI'
+        y_label = 'Divergence from Unigram Prototype'
         y_lims: List[float] = [0.0, 0.7]
     elif performance_name == 'ws':
-        y_label = 'Within-Category Spread\n+/- 95%-CI'
+        y_label = 'Within-Category Spread'
         y_lims: List[float] = [0.0, 1.0]
     elif performance_name == 'as':
-        y_label = 'Across-Category Spread\n+/- 95%-CI'
-        y_lims: List[float] = [0, 16]
+        y_label = 'Across-Category Spread'
+        y_lims: List[float] = [0, 0.6]
+    elif performance_name == 'ed':
+        y_label = 'Average Pairwise Euclidean Distance'
+        y_lims: List[float] = [0.8, 2]
+    elif performance_name == 'cd':
+        y_label = 'Average Pairwise Cosine Distance'
+        y_lims: List[float] = [0.9, 1]
     elif performance_name == 'si':
-        y_label = 'Silhouette Score\n+/- 95%-CI'
+        y_label = 'Silhouette Score'
         y_lims: List[float] = [-0.1, 0.0]
     elif performance_name == 'sd':
-        y_label = 'S_Dbw Score\n+/- 95%-CI'
+        y_label = 'S_Dbw Score'
         y_lims: List[float] = [0.9, 1.0]
     else:
         raise AttributeError
+
+    if context_type == 'n':
+        y_label += '\n(Non-contextualized Representations)'
+    elif context_type == 'o':
+        y_label += '\n(Contextualized Representations)'
+    else:
+        raise AttributeError('Invalid arg to context_type')
+
+    if add_confidence_interval_to_label:
+        y_label += '\n+/- 95%-CI'
 
     return y_label, y_lims

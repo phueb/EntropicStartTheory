@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from typing import Union
+from typing import List
 
 from preppy import Prep
 
@@ -8,13 +8,19 @@ from childesrnnlm import configs
 from childesrnnlm.rnn import RNN
 
 
-def make_representations_without_context(model, word_ids):
+def make_representations_without_context(model: RNN,
+                                         word_ids: List[int],
+                                         ):
     """
     make word representations without context by retrieving embeddings
     """
     vocab_reps = model.embed.weight.detach().cpu().numpy()
-    probe_reps_n = vocab_reps[word_ids]
-    return probe_reps_n
+    res = vocab_reps[word_ids]
+
+    # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+    res = res.astype(np.float64)
+
+    return res
 
 
 def make_representations_with_context(model: RNN,
@@ -28,7 +34,7 @@ def make_representations_with_context(model: RNN,
     all_windows = prep.reordered_windows
 
     num_words = len(token_ids)
-    probe_reps_o = np.zeros((num_words, model.hidden_size))
+    res = np.zeros((num_words, model.hidden_size))
     for n, token_id in enumerate(token_ids):
         bool_idx = np.isin(all_windows[:, -2], token_id)
         x = all_windows[bool_idx][:, :-1]
@@ -43,12 +49,16 @@ def make_representations_with_context(model: RNN,
         if verbose:
             print(f'Made {num_exemplars:>6} representations for {prep.types[token_id]:<12}')
         probe_exemplar_reps = model(inputs)['last_encodings'].detach().cpu().numpy()  # [num exemplars, hidden_size]
-        probe_reps_o[n] = probe_exemplar_reps.mean(axis=0)
-    return probe_reps_o
+        res[n] = probe_exemplar_reps.mean(axis=0)
+
+    # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+    res = res.astype(np.float64)
+
+    return res
 
 
 def make_output_representations(model: RNN,
-                                probes,
+                                probes: List[str],
                                 prep: Prep,
                                 ) -> np.array:
     w_ids = [prep.token2id[w] for w in probes]

@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from typing import Dict, Any
 
 
 class RNN(torch.nn.Module):
@@ -42,7 +43,7 @@ class RNN(torch.nn.Module):
 
     def forward(self,
                 inputs: torch.cuda.LongTensor
-                ) -> torch.cuda.LongTensor:
+                ) -> Dict[str, Any]:
 
         embedded = self.embed(inputs)
         encoded, _ = self.encode(embedded)  # returns all time steps [batch_size, context_size, hidden_size]

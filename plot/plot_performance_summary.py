@@ -12,9 +12,9 @@ LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
 PROBES_NAME: str = 'sem-2021'
 
-LABEL_N: bool = True                       # add information about number of replications to legend
+LABEL_N: bool = True                        # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
-PLOT_MAX_LINES: bool = True                # plot horizontal line at best overall performance
+PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
@@ -34,6 +34,7 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'cd',  # 9
                     'si',  # 10
                     'sd',  # 11
+                    'pi',  # 12
                     ][8]
 
 # collect summaries
@@ -55,7 +56,9 @@ for param_path, label in gen_param_paths(project_name,
 summaries = sort_and_print_summaries(summaries)
 
 # plot
-y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME)
+y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME,
+                                       CONTEXT_TYPE,
+                                       add_confidence_interval_to_label=True)
 fig = make_summary_fig(summaries,
                        ylabel=y_label,
                        title=TITLE,

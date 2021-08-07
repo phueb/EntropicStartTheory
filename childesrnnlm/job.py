@@ -28,6 +28,7 @@ from childesrnnlm.evaluation import update_as_performance
 from childesrnnlm.evaluation import update_di_performance
 from childesrnnlm.evaluation import update_si_performance
 from childesrnnlm.evaluation import update_sd_performance
+from childesrnnlm.evaluation import update_pi_performance
 from childesrnnlm.params import Params
 from childesrnnlm.rnn import RNN
 
@@ -194,8 +195,8 @@ def main(param2val):
         if step != 0:
             context_size = windows.shape[1] - 1  # different depending on whether input is from prep_start
             x, y = np.split(windows, [context_size], axis=1)
-            inputs = torch.cuda.LongTensor(x)
-            targets = torch.cuda.LongTensor(np.squeeze(y))
+            inputs = torch.LongTensor(x).cuda()
+            targets = torch.LongTensor(np.squeeze(y)).cuda()
 
             # forward step
             model.batch_size = len(windows)  # dynamic batch size
@@ -267,6 +268,11 @@ def main(param2val):
                 print('Computing S_Dbw...', flush=True)
                 start_eval = time.time()
                 performance = update_sd_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+            if configs.Eval.calc_pi:
+                print('Computing distance between origin and prototype-at-input...', flush=True)
+                start_eval = time.time()
+                performance = update_pi_performance(performance, model, prep, structure2probe2cat)
                 print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():

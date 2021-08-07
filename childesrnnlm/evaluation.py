@@ -5,8 +5,9 @@ from typing import List, Union, Dict
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics.pairwise import euclidean_distances, cosine_distances
 from torch.nn import CrossEntropyLoss
+from pyitlib import discrete_random_variable as drv
 
-from categoryeval.ra import RAScorer
+from categoryeval.probestore import ProbeStore
 from categoryeval.ba import BAScorer
 from categoryeval.dp import DPScorer
 from categoryeval.cs import CSScorer
@@ -79,10 +80,10 @@ def update_ma_performance(performance,
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
-        ra_scorer = RAScorer(probe2cat)
+        probe_store = ProbeStore(probe2cat)
 
         # get probe representations
-        probe_token_ids = [prep.token2id[token] for token in ra_scorer.probe_store.types]
+        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
         probe_reps_inp = make_representations_without_context(model, probe_token_ids)
 
         ma = np.linalg.norm(probe_reps_inp, axis=1).mean()  # computes magnitude for each vector, then mean
@@ -99,15 +100,21 @@ def update_ra_performance(performance,
                           ):
     """
     compute raggedness of input-output mapping.
+
+    Raggedness is defined as teh divergence between two probability distributions (output by some model)
+    given two inputs that are nearby in the input space.
+
+    intuition: if two inputs (which are nearby) produce large divergences at the output,
+    it can be said that the model's input-output mapping is ragged.
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
-        ra_scorer = RAScorer(probe2cat)
+        probe_store = ProbeStore(probe2cat)
 
         # get probe representations
-        probe_token_ids = [prep.token2id[token] for token in ra_scorer.probe_store.types]
+        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
         probe_reps_inp = make_representations_without_context(model, probe_token_ids)
-        probe_reps_out = make_output_representations(model, ra_scorer.probe_store.types, prep)
+        probe_reps_out = make_output_representations(model, probe_store.types, prep)
 
         ra_total = 0
         for probe_rep_inp, probe_rep_out in zip(probe_reps_inp, probe_reps_out):
@@ -124,16 +131,28 @@ def update_ra_performance(performance,
             nearby_reps_inp = probe_rep_inp_tiled + offset
 
             # get outputs for nearby_reps
-            inputs = torch.cuda.LongTensor(nearby_reps_inp)
-            logits = model(inputs)['logits'].detach().cpu().numpy()
-            nearby_reps_out = softmax(logits)
+            with torch.no_grad():
+                reshaped = nearby_reps_inp[:, np.newaxis, :].astype(np.float32)  # embeddings must be in last (3rd dim)
+                embedded = torch.from_numpy(reshaped).cuda()
+                encoded, _ = model.encode(embedded)
+                last_encodings = torch.squeeze(encoded[:, -1])
+                logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
+                nearby_reps_out = softmax(logits)
+
+            ps = probe_rep_out_tiled
+            qs = nearby_reps_out
 
             # calc score for a single probe and collect
-            ra_probe = ra_scorer.calc_score(probe_rep_out_tiled, nearby_reps_out,
-                                            metric=configs.Eval.ra_metric)
+            assert ps.shape == qs.shape
+
+            rand_ids = np.random.choice(len(ps), configs.Eval.ra_max_rows, replace=False)
+            ps = ps[rand_ids]
+            qs = qs[rand_ids]
+
+            ra_probe = drv.divergence_jensenshannon_pmf(ps, qs, base=2, cartesian_product=False).mean()
             ra_total += ra_probe
 
-        ra = ra_total / len(ra_scorer.probe_store.types)
+        ra = ra_total / len(probe_store.types)
         performance.setdefault(f'ra_n_{structure_name}', []).append(ra)
 
     return performance
@@ -369,6 +388,52 @@ def update_sd_performance(performance,
             sd_scorer.calc_sd(probe_reps_n, cat_ids))
         performance.setdefault(f'sd_o_{structure_name}', []).append(
             sd_scorer.calc_sd(probe_reps_o, cat_ids))
+
+    return performance
+
+
+def update_pi_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    compute how far the prototype at the input layer is from the origin.
+
+    the prototype at the input layer is computed by first computing the prototype at the output layer,
+    and retrieving from a random set of input vectors,
+     the one vector that best approximates the prototype at the output.
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        dp_scorer = DPScorer(probe2cat, prep.tokens)
+
+        # compute prototype at output layer
+        p = dp_scorer._make_p(is_unconditional=False)
+
+        # find input vector that best approximates prototype at output
+
+        # 1. compute outputs given a sample of random input vectors
+        sample_shape = (configs.Eval.pi_num_samples, model.hidden_size)
+        random_sample = np.random.uniform(0, configs.Eval.pi_max_magnitude, sample_shape)
+        reshaped = random_sample[:, np.newaxis, :].astype(np.float32)  # embeddings must be in last (3rd dim)
+        with torch.no_grad():
+            embedded = torch.from_numpy(reshaped).cuda()
+            encoded, _ = model.encode(embedded)
+            last_encodings = torch.squeeze(encoded[:, -1])
+            logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
+            qs = softmax(logits)
+
+        # 2. compute divergences from prototype for each output
+        divergences = [drv.entropy_cross_pmf(p, q) for q in qs]
+
+        # 3. get vector that resulted in smallest divergence at output
+        prototype_at_input = random_sample[np.argmin(divergences)]
+
+        # compute score
+        origin = np.zeros(model.hidden_size, dtype=np.float64)
+        pi = np.asscalar(euclidean_distances(origin.reshape(1, -1), prototype_at_input.reshape(1, -1)))
+        performance.setdefault(f'pi_n_{structure_name}', []).append(pi)
 
     return performance
 
