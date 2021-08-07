@@ -1,6 +1,6 @@
 from pathlib import Path
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union, List
 
 import pandas as pd
 from scipy.stats import sem, t
@@ -11,7 +11,7 @@ def make_summary(pattern: str,
                  label: str,
                  confidence: float,
                  shift_x: Optional[int] = None,
-                 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]:
+                 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]]:
     """
     load all csv files matching pattern and return mean and std across their contents
     """
@@ -31,4 +31,24 @@ def make_summary(pattern: str,
         print(f'Shifting x axis by {shift_x}')
         x -= shift_x
 
-    return x, y_mean, h, label, n
+    job_id = None  # this is useful only when a summary corresponds to an individual job
+
+    return x, y_mean, h, label, job_id
+
+
+def sort_and_print_summaries(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]]],
+                             ) -> List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]]]:
+    # sort
+    summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
+    if not summaries:
+        raise SystemExit('No data found')
+
+    # print to console
+    for s in summaries:
+        _, y_mean, y_std, label, job_id = s
+        print()
+        print(label)
+        print(job_id)
+        print(np.round(y_mean, 2))
+
+    return summaries

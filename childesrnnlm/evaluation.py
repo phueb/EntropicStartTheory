@@ -69,11 +69,33 @@ def update_pp_performance(performance,
     return performance
 
 
+def update_ma_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    compute average magnitude of probe representations.
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        ra_scorer = RAScorer(probe2cat)
+
+        # get probe representations
+        probe_token_ids = [prep.token2id[token] for token in ra_scorer.probe_store.types]
+        probe_reps_inp = make_representations_without_context(model, probe_token_ids)
+
+        ma = np.linalg.norm(probe_reps_inp, axis=1).mean()  # computes magnitude for each vector, then mean
+        performance.setdefault(f'ma_n_{structure_name}', []).append(ma)
+
+    return performance
+
+
 def update_ra_performance(performance,
                           model: RNN,
                           prep: Prep,
                           structure2probe2cat: Dict[str, Dict[str, str]],
-                          offset_percent: float = 0.01,
+                          offset_magnitude: float = 0.001,
                           ):
     """
     compute raggedness of input-output mapping.
@@ -95,7 +117,9 @@ def update_ra_performance(performance,
 
             # get vectors representing locations close to probe representations.
             # note: these locations are created by adding offset to a single dimension
-            offset_magnitude = offset_percent * np.max(probe_rep_inp_tiled)
+
+            # TODO fine-tune offset magnitude
+
             offset = np.eye(probe_rep_inp_tiled.shape[0], probe_rep_inp_tiled.shape[1]) * offset_magnitude
             nearby_reps_inp = probe_rep_inp_tiled + offset
 
@@ -106,7 +130,7 @@ def update_ra_performance(performance,
 
             # calc score for a single probe and collect
             ra_probe = ra_scorer.calc_score(probe_rep_out_tiled, nearby_reps_out,
-                                            metric=configs.Eval.ra_metric)  # TODO fine-tune this function
+                                            metric=configs.Eval.ra_metric)
             ra_total += ra_probe
 
         ra = ra_total / len(ra_scorer.probe_store.types)
@@ -152,7 +176,7 @@ def update_dp_performance(performance,
                           ):
     """
     calculate distance-to-prototype (aka dp):
-    a home-made quantity that is proportional to the distance of same-category probe representations
+    a home-made quantity that is proportional to the distance of all probe representations
     to a location in representational space that can be thought of as the category's "prototype",
     obtained by leveraging all of the co-occurrence data in a corpus.
     """
@@ -160,7 +184,7 @@ def update_dp_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         dp_scorer = DPScorer(probe2cat, prep.tokens)
 
-        # collect dp for probes who tend to occur most frequently in some part of corpus
+        # get representations at output layer
         probes = dp_scorer.probe_store.types
         qs = make_output_representations(model, probes, prep)
 
@@ -171,6 +195,35 @@ def update_dp_performance(performance,
         # dp
         dp = dp_scorer.calc_dp(qs, return_mean=True, metric='js')
         performance.setdefault(f'dp_n_{structure_name}', []).append(dp)
+
+    return performance
+
+
+def update_du_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    calculate distance-to-unigram (aka du):
+    a home-made quantity that is proportional to the distance of all probe representations
+    to the representation of the unigram-prototype (given by the unigram probability distribution).
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        du_scorer = DPScorer(probe2cat, prep.tokens)
+
+        # collect dp for probes who tend to occur most frequently in some part of corpus
+        probes = du_scorer.probe_store.types
+        qs = make_output_representations(model, probes, prep)
+
+        # check predictions
+        max_ids = np.argsort(qs.mean(axis=0))
+        print(f'{structure_name} predict:', [prep.types[i] for i in max_ids[-10:]])
+
+        # calc du
+        du = du_scorer.calc_dp(qs, return_mean=True, metric='js', prototype_is_unigram_distribution=True)
+        performance.setdefault(f'du_n_{structure_name}', []).append(du)
 
     return performance
 
@@ -195,7 +248,7 @@ def update_ws_performance(performance,
             # compute divergences between exemplars within a category
             ws_cat = cs_scorer.calc_cs(ps, ps,
                                        metric=configs.Eval.cs_metric,
-                                       max_rows=configs.Eval.cs_max_rows)
+                                       max_rows=configs.Eval.ws_max_rows)
             print(f'within-category spread for cat={cat:<18} ={ws_cat:.4f}', flush=True)
             ws_total += ws_cat
 
@@ -220,17 +273,11 @@ def update_as_performance(performance,
         # get probe representations
         probe_reps_out = make_output_representations(model, cs_scorer.probe_store.types, prep)
 
-        as_total = 0
-        for probe, probe_rep_out in zip(cs_scorer.probe_store.types, probe_reps_out):
+        # compute all pairwise divergences
+        as_ = cs_scorer.calc_cs(probe_reps_out, probe_reps_out,
+                                metric=configs.Eval.cs_metric,
+                                max_rows=configs.Eval.as_max_rows)
 
-            # compute divergences between one probe representation and all other probe representations
-            as_probe = cs_scorer.calc_cs(probe_rep_out[np.newaxis, :], probe_reps_out,
-                                         metric=configs.Eval.cs_metric,
-                                         max_rows=configs.Eval.cs_max_rows)
-            print(f'across-category spread for probe={probe:<18} ={as_probe:.4f}', flush=True)
-            as_total += as_probe
-
-        as_ = as_total / len(cs_scorer.probe_store.cats)
         performance.setdefault(f'as_n_{structure_name}', []).append(as_)
 
     return performance

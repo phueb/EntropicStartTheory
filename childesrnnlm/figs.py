@@ -3,7 +3,6 @@ from matplotlib.ticker import FuncFormatter
 import seaborn as sns
 import numpy as np
 from typing import List, Tuple, Union
-from itertools import count
 
 from childesrnnlm import configs
 
@@ -16,7 +15,7 @@ def human_format(num, pos):  # pos is required for formatting mpl axis ticklabel
     return '{}{}'.format(num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
 
-def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, int]],
+def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]]],
                      ylabel: str,
                      title: str = '',
                      palette_ids: List[int] = None,
@@ -69,11 +68,9 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     first_r = True
     first_c = True
 
-    counter = count()
-
     # plot summary
     max_ys = []
-    for x, y_mean, h, label, n in summaries:
+    for x, y_mean, h, label, job_id in summaries:
         max_ys.append(max(y_mean))
 
         if legend_labels is not None:
@@ -93,12 +90,12 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
 
         # add annotations which are helpful to distinguish individual trajectories
         if annotate and 'reverse=False' in label:
-            ax.annotate(next(counter),
-                        xy=(x[-1], y_mean[-1]),
+            ax.annotate(job_id,
+                        xy=(x[-1] + x[-1] * 0.01, y_mean[-1]),
                         xycoords='data',
                         horizontalalignment='left',
                         verticalalignment='center',
-                        fontsize=5,
+                        fontsize=3,
                         # color='C0',
                         )
 
@@ -118,9 +115,16 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             else:
                 first_c = False
 
-        ax.plot(x, y_mean, '-', linewidth=configs.Figs.lw, color=color,
-                label=label, zorder=3 if n == 8 else 2)
-        ax.fill_between(x, y_mean + h, y_mean - h, alpha=0.2, color=color)
+        ax.plot(x, y_mean, '-',
+                linewidth=configs.Figs.lw,
+                color=color,
+                label=label,
+                )
+        ax.fill_between(x,
+                        y_mean + h,
+                        y_mean - h,
+                        alpha=0.2,
+                        color=color)
 
     # legend
     if title:

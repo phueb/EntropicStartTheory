@@ -17,10 +17,12 @@ from entropicstart.editor import Editor
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
+from childesrnnlm.evaluation import update_ma_performance
 from childesrnnlm.evaluation import update_ra_performance
 from childesrnnlm.evaluation import update_ba_performance
 from childesrnnlm.evaluation import update_pp_performance
 from childesrnnlm.evaluation import update_dp_performance
+from childesrnnlm.evaluation import update_du_performance
 from childesrnnlm.evaluation import update_ws_performance
 from childesrnnlm.evaluation import update_as_performance
 from childesrnnlm.evaluation import update_si_performance
@@ -136,7 +138,7 @@ def main(param2val):
         num_train_mbs = prep_start.num_mbs + prep.num_mbs
     else:
         batch_generator = prep.generate_batches()
-        high_resolution_eval_steps = [0]
+        high_resolution_eval_steps = configs.Eval.high_res_eval_steps
         num_train_mbs = prep.num_mbs
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
@@ -210,6 +212,11 @@ def main(param2val):
             model.eval()
             performance = update_pp_performance(performance, model, criterion, prep)
 
+            if configs.Eval.calc_ma:
+                print('Computing magnitude...', flush=True)
+                start_eval = time.time()
+                performance = update_ma_performance(performance, model, prep, structure2probe2cat)  # TODO test
+                print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_ra:
                 print('Computing raggedness...', flush=True)
                 start_eval = time.time()
@@ -231,9 +238,14 @@ def main(param2val):
                 performance = update_as_performance(performance, model, prep, structure2probe2cat)
                 print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_dp:
-                print('Computing distance-to-prototype spread...', flush=True)
+                print('Computing distance-to-prototype...', flush=True)
                 start_eval = time.time()
                 performance = update_dp_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs')
+            if configs.Eval.calc_du:
+                print('Computing distance-to-unigram...', flush=True)
+                start_eval = time.time()
+                performance = update_du_performance(performance, model, prep, structure2probe2cat)
                 print(f'Elapsed={time.time() - start_eval}secs')
             if configs.Eval.calc_si:
                 print('Computing silhouette score...', flush=True)

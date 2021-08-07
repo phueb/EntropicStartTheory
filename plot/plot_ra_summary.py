@@ -56,22 +56,11 @@ for param_path, label in gen_param_paths(project_name,
 
     pattern = f'{RA_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE, num_shifted_steps)
-    summaries.append(summary)   # summary contains: x, mean_y, std_y, label, n
+    summaries.append(summary)   # summary contains: x, mean_y, std_y, label, job_id
     print(f'--------------------- End section {param_path.name}')
     print()
 
-# sort data
-summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
-if not summaries:
-    raise SystemExit('No data found')
-
-# print to console
-for s in summaries:
-    _, y_mean, y_std, label, n = s
-    print(label)
-    print(y_mean)
-    print(y_std)
-    print()
+summaries = sort_and_print_summaries(summaries)
 
 # plot
 fig = make_summary_fig(summaries,

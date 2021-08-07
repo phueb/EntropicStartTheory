@@ -59,7 +59,7 @@ for param_path, label in gen_param_paths(project_name,
 
     pattern = f'{BA_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE, num_shifted_steps)
-    summaries.append(summary)  # summary contains: x, mean_y, std_y, label, n
+    summaries.append(summary)  # summary contains: x, mean_y, std_y, label, job_id
     print(f'--------------------- End section {param_path.name}')
     print()
 
@@ -70,7 +70,7 @@ if not summaries:
 
 # print to console
 for s in summaries:
-    _, y_mean, y_std, label, n = s
+    _, y_mean, y_std, label, job_id = s
     print(label)
     print(y_mean)
     print(y_std)

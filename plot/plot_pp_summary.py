@@ -35,23 +35,12 @@ for p, label in gen_param_paths(project_name,
                                 ludwig_data_path=LUDWIG_DATA_PATH,
                                 label_n=LABEL_N):
     pattern = f'{WHICH_PP}_pp'
-    summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, n
+    summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, job_id
     summaries.append(summary)
     print(f'--------------------- End section {p.name}')
     print()
 
-# sort data
-summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
-if not summaries:
-    raise SystemExit('No data found')
-
-# print to console
-for s in summaries:
-    _, y_mean, y_std, label, n = s
-    print(label)
-    print(y_mean)
-    print(y_std)
-    print()
+summaries = sort_and_print_summaries(summaries)
 
 # plot
 fig = make_summary_fig(summaries,

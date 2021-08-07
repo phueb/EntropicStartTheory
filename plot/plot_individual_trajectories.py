@@ -7,6 +7,7 @@ from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
+from childesrnnlm.summary import sort_and_print_summaries
 from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
@@ -17,23 +18,29 @@ LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
-PERFORMANCE_NAME = ['ra', 'ba', 'dp', 'ws', 'as', 'si', 'sd'][4]
+PERFORMANCE_NAME = ['ma', 'ra', 'ba', 'dp', 'du', 'ws', 'as', 'si', 'sd'][8]
 
-if PERFORMANCE_NAME == 'ra':
+if PERFORMANCE_NAME == 'ma':
+    Y_LABEL = 'Vector Magnitude\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.5, 1.5]
+elif PERFORMANCE_NAME == 'ra':
     Y_LABEL = 'Raggedness of In-Out Mapping\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0, 30]
+    Y_LIMS: List[float] = [0, 1]
 elif PERFORMANCE_NAME == 'ba':
     Y_LABEL = 'Balanced Accuracy\n+/- 95%-CI'
     Y_LIMS: List[float] = [0.5, 0.7]
 elif PERFORMANCE_NAME == 'dp':
     Y_LABEL = 'Divergence from Prototype\n+/- 95%-CI'
     Y_LIMS: List[float] = [0.0, 1.0]
+elif PERFORMANCE_NAME == 'du':
+    Y_LABEL = 'Divergence from Unigram Prototype\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.0, 0.7]
 elif PERFORMANCE_NAME == 'ws':
     Y_LABEL = 'Within-Category Spread\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.0, 13.0]
+    Y_LIMS: List[float] = [0.0, 1.0]
 elif PERFORMANCE_NAME == 'as':
     Y_LABEL = 'Across-Category Spread\n+/- 95%-CI'
-    Y_LIMS: List[float] = [200, 350]
+    Y_LIMS: List[float] = [0, 16]
 elif PERFORMANCE_NAME == 'si':
     Y_LABEL = 'Silhouette Score\n+/- 95%-CI'
     Y_LIMS: List[float] = [-0.1, 0.0]
@@ -53,27 +60,14 @@ for param_path, label in gen_param_paths(project_name,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
     pattern = f'{PERFORMANCE_NAME}_n_{PROBES_NAME}.csv'
-    for p in param_path.rglob(pattern):
-        s = pd.read_csv(p, index_col=0, squeeze=True)
-        n = 1
+    for job_id, path_to_csv in enumerate(sorted(param_path.rglob(pattern))):
+        s = pd.read_csv(path_to_csv, index_col=0, squeeze=True)
         y_mean = s.values
         h = np.zeros((len(s)))  # margin of error
-
-        summary = (s.index.values, y_mean, h, label, n)
+        summary = (s.index.values, y_mean, h, label, job_id)
         summaries.append(summary)
 
-# sort data
-summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
-if not summaries:
-    raise SystemExit('No data found')
-
-# print to console
-for s in summaries:
-    _, y_mean, y_std, label, n = s
-    print(label)
-    print(y_mean)
-    print(y_std)
-    print()
+summaries = sort_and_print_summaries(summaries)
 
 # plot
 fig = make_summary_fig(summaries,
