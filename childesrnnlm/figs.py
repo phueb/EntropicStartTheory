@@ -204,6 +204,9 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'sd':
         y_label = 'S_Dbw Score'
         y_lims: List[float] = [0.9, 1.0]
+    elif performance_name == 'pi':
+        y_label = 'Prototype-Origin Distance'
+        y_lims: List[float] = [0.6, 0.7]
     else:
         raise AttributeError
 

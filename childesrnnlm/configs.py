@@ -18,12 +18,8 @@ class Eval:
     num_steps_to_eval = 100_000
     high_res_eval_steps = [0, 1_000, 10_000, 20_000, 30_000, 40_000, 50_000, 60_000, 70_000, 80_000, 90_000]
     min_num_test_tokens = 0
-    ra_max_rows = 32
     ws_max_rows = 128
     as_max_rows = 128  # all 700 probes with 8K vocab takes 15min, but 128 probes require only 20 secs
-
-    pi_num_samples = 1000
-    pi_max_magnitude = 0.05  # average value per dimension at end of training is approx. 0.02
 
     # set to True to calculate an evaluation metric
     calc_ma = bool(1)  # vector magnitude

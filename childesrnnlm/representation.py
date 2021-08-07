@@ -73,7 +73,8 @@ def make_output_representations(model: RNN,
     return res
 
 
-def softmax(z) -> np.array:
+def softmax(z: np.array) -> np.array:
+    assert np.ndim(z) == 2
     a = 1  # should be 1 if rows should sum to 1
     z_norm = np.exp(z - np.max(z, axis=a, keepdims=True))
     res = np.divide(z_norm, np.sum(z_norm, axis=a, keepdims=True))

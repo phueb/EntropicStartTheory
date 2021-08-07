@@ -222,12 +222,12 @@ def main(param2val):
             if configs.Eval.calc_ma:
                 print('Computing magnitude...', flush=True)
                 start_eval = time.time()
-                performance = update_ma_performance(performance, model, prep, structure2probe2cat)  # TODO test
+                performance = update_ma_performance(performance, model, prep, structure2probe2cat)
                 print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_ra:
                 print('Computing raggedness...', flush=True)
                 start_eval = time.time()
-                performance = update_ra_performance(performance, model, prep, structure2probe2cat)  # TODO test
+                performance = update_ra_performance(performance, model, prep, structure2probe2cat)  # TODO improve
                 print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_ba:
                 print('Computing balanced accuracy...', flush=True)
