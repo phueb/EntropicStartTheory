@@ -4,7 +4,7 @@ from pathlib import Path
 from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
-from childesrnnlm.figs import make_summary_fig
+from childesrnnlm.figs import make_summary_fig, get_y_label_and_lims
 from childesrnnlm.summary import make_summary, sort_and_print_summaries
 from childesrnnlm.params import param2default, param2requests
 
@@ -19,41 +19,22 @@ PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [0.50, 0.70]
 CONFIDENCE: float = 0.95
 TITLE = ''
 CONTEXT_TYPE = ['o', 'n'][1]
-PERFORMANCE_NAME = ['ma', 'ra', 'ba', 'dp', 'du', 'ws', 'as', 'si', 'sd'][0]
-
-if PERFORMANCE_NAME == 'ma':
-    Y_LABEL = 'Vector Magnitude\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.5, 1.5]
-elif PERFORMANCE_NAME == 'ra':
-    Y_LABEL = 'Raggedness of In-Out Mapping\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0, 1]
-elif PERFORMANCE_NAME == 'ba':
-    Y_LABEL = 'Balanced Accuracy\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.5, 0.7]
-elif PERFORMANCE_NAME == 'dp':
-    Y_LABEL = 'Divergence from Prototype\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.0, 1.0]
-elif PERFORMANCE_NAME == 'du':
-    Y_LABEL = 'Divergence from Unigram Prototype\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.0, 0.7]
-elif PERFORMANCE_NAME == 'ws':
-    Y_LABEL = 'Within-Category Spread\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.0, 1.0]
-elif PERFORMANCE_NAME == 'as':
-    Y_LABEL = 'Across-Category Spread\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0, 16]
-elif PERFORMANCE_NAME == 'si':
-    Y_LABEL = 'Silhouette Score\n+/- 95%-CI'
-    Y_LIMS: List[float] = [-0.1, 0.0]
-elif PERFORMANCE_NAME == 'sd':
-    Y_LABEL = 'S_Dbw Score\n+/- 95%-CI'
-    Y_LIMS: List[float] = [0.9, 1.0]
-else:
-    raise AttributeError
+PERFORMANCE_NAME = ['ma',  # 0
+                    'ra',  # 1
+                    'ba',  # 2
+                    'th',  # 3
+                    'dp',  # 4
+                    'du',  # 5
+                    'ws',  # 6
+                    'as',  # 7
+                    'ed',  # 8
+                    'cd',  # 9
+                    'si',  # 10
+                    'sd',  # 11
+                    ][8]
 
 # collect summaries
 summaries = []
@@ -74,12 +55,13 @@ for param_path, label in gen_param_paths(project_name,
 summaries = sort_and_print_summaries(summaries)
 
 # plot
+y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME)
 fig = make_summary_fig(summaries,
-                       ylabel=Y_LABEL,
+                       ylabel=y_label,
                        title=TITLE,
                        palette_ids=PALETTE_IDS,
                        figsize=FIG_SIZE,
-                       ylims=Y_LIMS,
+                       ylims=y_lims,
                        legend_labels=LABELS,
                        vlines=V_LINES,
                        plot_max_lines=PLOT_MAX_LINES,

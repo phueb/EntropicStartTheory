@@ -158,7 +158,36 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
     return fig
 
 
+def get_y_label_and_lims(performance_name):
 
+    if performance_name == 'ma':
+        y_label = 'Vector Magnitude\n+/- 95%-CI'
+        y_lims: List[float] = [0.5, 1.5]
+    elif performance_name == 'ra':
+        y_label = 'Raggedness of In-Out Mapping\n+/- 95%-CI'
+        y_lims: List[float] = [0, 1]
+    elif performance_name == 'ba':
+        y_label = 'Balanced Accuracy\n+/- 95%-CI'
+        y_lims: List[float] = [0.5, 0.7]
+    elif performance_name == 'dp':
+        y_label = 'Divergence from Prototype\n+/- 95%-CI'
+        y_lims: List[float] = [0.0, 1.0]
+    elif performance_name == 'du':
+        y_label = 'Divergence from Unigram Prototype\n+/- 95%-CI'
+        y_lims: List[float] = [0.0, 0.7]
+    elif performance_name == 'ws':
+        y_label = 'Within-Category Spread\n+/- 95%-CI'
+        y_lims: List[float] = [0.0, 1.0]
+    elif performance_name == 'as':
+        y_label = 'Across-Category Spread\n+/- 95%-CI'
+        y_lims: List[float] = [0, 16]
+    elif performance_name == 'si':
+        y_label = 'Silhouette Score\n+/- 95%-CI'
+        y_lims: List[float] = [-0.1, 0.0]
+    elif performance_name == 'sd':
+        y_label = 'S_Dbw Score\n+/- 95%-CI'
+        y_lims: List[float] = [0.9, 1.0]
+    else:
+        raise AttributeError
 
-
-
+    return y_label, y_lims

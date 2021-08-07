@@ -160,11 +160,15 @@ def update_ba_performance(performance,
         probe_sims_o = cosine_similarity(probe_reps_o)
         probe_sims_n = cosine_similarity(probe_reps_n)
 
-        performance.setdefault(f'ba_n_{structure_name}', []).append(
-            ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba'))
+        ba_n, best_th_n = ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba', return_threshold=True)
+        ba_o, best_th_o = ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba', return_threshold=True)
 
-        performance.setdefault(f'ba_o_{structure_name}', []).append(
-            ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba'))
+        performance.setdefault(f'ba_n_{structure_name}', []).append(ba_n)
+        performance.setdefault(f'ba_o_{structure_name}', []).append(ba_o)
+
+        # also save best threshold
+        performance.setdefault(f'th_n_{structure_name}', []).append(best_th_n)
+        performance.setdefault(f'th_o_{structure_name}', []).append(best_th_o)
 
     return performance
 
