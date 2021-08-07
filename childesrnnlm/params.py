@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Union
 
 # specify params to submit here
 param2requests = {
@@ -13,6 +13,7 @@ param2requests = {
 param2debug = {
     'context_size': 2,
     'num_iterations': (1, 1),
+    'num_transcripts': 100,
 }
 
 # default params
@@ -20,6 +21,7 @@ param2default = {
     'shuffle_transcripts': False,
     'corpus': 'aochildes',  # or aonewsela
     'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
+    'num_transcripts': None,  # useful for debuggin only
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'start': 'none',
@@ -47,6 +49,7 @@ class Params:
     shuffle_transcripts: bool
     corpus: str
     num_types: int
+    num_transcripts: Union[None, int]
     num_parts: int
     context_size: int
     start: str

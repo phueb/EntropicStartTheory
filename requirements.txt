@@ -3,6 +3,7 @@ scipy
 scikit-learn==0.21.3
 seaborn
 matplotlib
+PyYaml
 pandas
 pyprind
 torch==1.6

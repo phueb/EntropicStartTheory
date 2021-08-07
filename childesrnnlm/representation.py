@@ -56,6 +56,10 @@ def make_output_representations(model: RNN,
     inputs = torch.cuda.LongTensor(x)
     logits = model(inputs)['logits'].detach().cpu().numpy()
     res = softmax(logits)
+
+    # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+    res = res.astype(np.float64)
+
     return res
 
 

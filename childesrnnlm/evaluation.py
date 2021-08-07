@@ -1,9 +1,9 @@
 import pyprind
 import torch
 import numpy as np
-
 from typing import List, Union, Dict
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import euclidean_distances, cosine_distances
 from torch.nn import CrossEntropyLoss
 
 from categoryeval.ra import RAScorer
@@ -246,9 +246,9 @@ def update_ws_performance(performance,
             # get output representations for probes in same category
             ps = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
             # compute divergences between exemplars within a category
-            ws_cat = cs_scorer.calc_cs(ps, ps,
-                                       metric=configs.Eval.cs_metric,
-                                       max_rows=configs.Eval.ws_max_rows)
+            ws_cat = cs_scorer.calc_score(ps, ps,
+                                          metric=configs.Eval.cs_metric,
+                                          max_rows=configs.Eval.ws_max_rows)
             print(f'within-category spread for cat={cat:<18} ={ws_cat:.4f}', flush=True)
             ws_total += ws_cat
 
@@ -265,20 +265,49 @@ def update_as_performance(performance,
                           ):
     """
     compute spread between members of different categories (Across-category Spread).
+
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
         cs_scorer = CSScorer(probe2cat)
 
-        # get probe representations
+        # get probe representations.
+        # note: this function also casts from float32 to float64 to avoid very slow check for NaNs
         probe_reps_out = make_output_representations(model, cs_scorer.probe_store.types, prep)
 
         # compute all pairwise divergences
-        as_ = cs_scorer.calc_cs(probe_reps_out, probe_reps_out,
-                                metric=configs.Eval.cs_metric,
-                                max_rows=configs.Eval.as_max_rows)
+        res = cs_scorer.calc_score(probe_reps_out, probe_reps_out,
+                                   metric=configs.Eval.cs_metric,
+                                   max_rows=configs.Eval.as_max_rows)
 
-        performance.setdefault(f'as_n_{structure_name}', []).append(as_)
+        performance.setdefault(f'as_n_{structure_name}', []).append(res)
+
+    return performance
+
+
+def update_di_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    compute average pairwise Euclidean ("ed") and cosine distance ("cd") between probe representations.
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        ba_scorer = BAScorer(probe2cat)  # we only need this to get the probe_store
+
+        # get probe representations
+        probe_store = ba_scorer.probe_store
+        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
+        probe_reps_n = make_representations_without_context(model, probe_token_ids)
+
+        # compute distances
+        ed = euclidean_distances(probe_reps_n, probe_reps_n).mean()
+        cd = cosine_distances(probe_reps_n, probe_reps_n).mean()
+
+        performance.setdefault(f'ed_n_{structure_name}', []).append(ed)
+        performance.setdefault(f'cd_n_{structure_name}', []).append(cd)
 
     return performance
 

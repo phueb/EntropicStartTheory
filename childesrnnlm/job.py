@@ -25,6 +25,7 @@ from childesrnnlm.evaluation import update_dp_performance
 from childesrnnlm.evaluation import update_du_performance
 from childesrnnlm.evaluation import update_ws_performance
 from childesrnnlm.evaluation import update_as_performance
+from childesrnnlm.evaluation import update_di_performance
 from childesrnnlm.evaluation import update_si_performance
 from childesrnnlm.evaluation import update_sd_performance
 from childesrnnlm.params import Params
@@ -49,6 +50,10 @@ def main(param2val):
     # shuffle at transcript level
     if params.shuffle_transcripts:
         random.shuffle(transcripts)
+
+    if params.num_transcripts is not None:  # for debugging
+        print(f'WARNING: Using {params.num_transcripts} transcripts')
+        transcripts = transcripts[:params.num_transcripts]
 
     text_original = ' '.join(transcripts)
     tokens_original = text_original.split()
@@ -154,7 +159,8 @@ def main(param2val):
             num_in_valid = prep.tokens_valid.count(probe)
             if num_in_train == 0:
                 if num_in_valid == 0:
-                    raise RuntimeError(f'"{probe:<24}" not in train or test data after tokenization.')
+                    if params.num_transcripts is None:  # do not raise exception when debugging
+                        raise RuntimeError(f'"{probe:<24}" not in train or test data after tokenization.')
 
             else:
                 structure2probe2cat[structure][probe] = cat
@@ -216,47 +222,52 @@ def main(param2val):
                 print('Computing magnitude...', flush=True)
                 start_eval = time.time()
                 performance = update_ma_performance(performance, model, prep, structure2probe2cat)  # TODO test
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_ra:
                 print('Computing raggedness...', flush=True)
                 start_eval = time.time()
                 performance = update_ra_performance(performance, model, prep, structure2probe2cat)  # TODO test
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_ba:
                 print('Computing balanced accuracy...', flush=True)
                 start_eval = time.time()
                 performance = update_ba_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_ws:
                 print('Computing within-category spread...', flush=True)
                 start_eval = time.time()
                 performance = update_ws_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_as:
                 print('Computing across-category spread...', flush=True)
                 start_eval = time.time()
                 performance = update_as_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+            if configs.Eval.calc_di:
+                print('Computing Euclidean and cosine distances...', flush=True)
+                start_eval = time.time()
+                performance = update_di_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_dp:
                 print('Computing distance-to-prototype...', flush=True)
                 start_eval = time.time()
                 performance = update_dp_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_du:
                 print('Computing distance-to-unigram...', flush=True)
                 start_eval = time.time()
                 performance = update_du_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_si:
                 print('Computing silhouette score...', flush=True)
                 start_eval = time.time()
                 performance = update_si_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_sd:
                 print('Computing S_Dbw...', flush=True)
                 start_eval = time.time()
                 performance = update_sd_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs')
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():
                 if not v:

@@ -1,17 +1,15 @@
 from typing import Optional, List, Tuple
 from pathlib import Path
 
-
 from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
 from childesrnnlm.summary import make_summary, sort_and_print_summaries
-from childesrnnlm.params import param2default, param2requests, Params
+from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
-BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
@@ -23,14 +21,39 @@ LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # 
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 Y_LIMS: List[float] = [0.50, 0.70]
 CONFIDENCE: float = 0.95
-TITLE = ''  # f'{BA_TYPE}_{PROBES_NAME}.csv'
+TITLE = ''
+CONTEXT_TYPE = ['o', 'n'][1]
+PERFORMANCE_NAME = ['ma', 'ra', 'ba', 'dp', 'du', 'ws', 'as', 'si', 'sd'][0]
 
-if BA_TYPE == 'ba_n':
-    Y_LABEL: str = f'Balanced Accuracy at Input\n +/- 95%-CI'
-elif BA_TYPE == 'ba_o':
-    Y_LABEL: str = f'Balanced Accuracy at Hidden\n +/- 95%-CI'
+if PERFORMANCE_NAME == 'ma':
+    Y_LABEL = 'Vector Magnitude\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.5, 1.5]
+elif PERFORMANCE_NAME == 'ra':
+    Y_LABEL = 'Raggedness of In-Out Mapping\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0, 1]
+elif PERFORMANCE_NAME == 'ba':
+    Y_LABEL = 'Balanced Accuracy\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.5, 0.7]
+elif PERFORMANCE_NAME == 'dp':
+    Y_LABEL = 'Divergence from Prototype\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.0, 1.0]
+elif PERFORMANCE_NAME == 'du':
+    Y_LABEL = 'Divergence from Unigram Prototype\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.0, 0.7]
+elif PERFORMANCE_NAME == 'ws':
+    Y_LABEL = 'Within-Category Spread\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.0, 1.0]
+elif PERFORMANCE_NAME == 'as':
+    Y_LABEL = 'Across-Category Spread\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0, 16]
+elif PERFORMANCE_NAME == 'si':
+    Y_LABEL = 'Silhouette Score\n+/- 95%-CI'
+    Y_LIMS: List[float] = [-0.1, 0.0]
+elif PERFORMANCE_NAME == 'sd':
+    Y_LABEL = 'S_Dbw Score\n+/- 95%-CI'
+    Y_LIMS: List[float] = [0.9, 1.0]
 else:
-    raise AttributeError('Invalid BA_TYPE')
+    raise AttributeError
 
 # collect summaries
 summaries = []
@@ -42,7 +65,7 @@ for param_path, label in gen_param_paths(project_name,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
 
-    pattern = f'{BA_TYPE}_{PROBES_NAME}'
+    pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE)
     summaries.append(summary)  # summary contains: x, mean_y, std_y, label, job_id
     print(f'--------------------- End section {param_path.name}')
