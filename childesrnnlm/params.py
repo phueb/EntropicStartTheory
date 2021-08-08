@@ -5,6 +5,8 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
+    # 'bias': [False],
+
     # 'corpus': ['aonewsela'],  # TODO previously showed that ao-effect for newsela requires 16K vocab, no less
     # 'start': ['entropic', 'singleton', 'none'],
 
@@ -29,6 +31,7 @@ param2default = {
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,
     'num_layers': 1,
+    'bias': True,
 
     'sliding': False,
     'reverse': False,
@@ -57,6 +60,7 @@ class Params:
     flavor: str
     hidden_size: int
     num_layers: int
+    bias: bool
 
     reverse: bool
     sliding: bool

@@ -170,7 +170,7 @@ def get_y_label_and_lims(performance_name: str,
         y_lims: List[float] = [0.5, 1.5]
     elif performance_name == 'ra':
         y_label = 'Raggedness of In-Out Mapping'
-        y_lims: List[float] = [0, 1]
+        y_lims: List[float] = [0, 0.5]
     elif performance_name == 'th':
         y_label = 'Sim. Threshold at best Bal.Acc.'
         if context_type == 'n':
@@ -206,7 +206,7 @@ def get_y_label_and_lims(performance_name: str,
         y_lims: List[float] = [0.9, 1.0]
     elif performance_name == 'pi':
         y_label = 'Prototype-Origin Distance'
-        y_lims: List[float] = [0.6, 0.7]
+        y_lims: List[float] = [0.2, 1.0]
     else:
         raise AttributeError
 

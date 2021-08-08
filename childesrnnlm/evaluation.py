@@ -175,26 +175,32 @@ def update_dp_performance(performance,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """
-    calculate distance-to-prototype (aka dp):
+    calculate distance-to-prototype:
     a home-made quantity that is proportional to the distance of all probe representations
-    to a location in representational space that can be thought of as the category's "prototype",
+    to a location in representational space that can be thought of as the probe (typically nouns) "prototype",
     obtained by leveraging all of the co-occurrence data in a corpus.
+
+    also, compute distance of output probability due to bias only to protoype
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
         dp_scorer = DPScorer(probe2cat, prep.tokens)
 
-        # get representations at output layer
+        # get representations of probes at output
         probes = dp_scorer.probe_store.types
-        qs = make_output_representations(model, probes, prep)
+        probe_reps_out = make_output_representations(model, probes, prep)
 
-        # check predictions
-        max_ids = np.argsort(qs.mean(axis=0))
-        print(f'{structure_name} predict:', [prep.types[i] for i in max_ids[-10:]])
+        # get representation of bias at output
+        projection_bias = model.project.bias.detach().cpu().numpy().astype(np.float64)
+        bias_rep_out = softmax(projection_bias[np.newaxis, :])
 
-        # dp
-        dp = dp_scorer.calc_dp(qs, return_mean=True, metric='js')
+        # calc divergence between probes and probe prototype
+        dp = dp_scorer.calc_dp(probe_reps_out, return_mean=True, metric='js')
         performance.setdefault(f'dp_n_{structure_name}', []).append(dp)
+
+        # calc divergence between bias and probe prototype
+        db = dp_scorer.calc_dp(bias_rep_out, return_mean=True, metric='js')
+        performance.setdefault(f'db_n_{structure_name}', []).append(db)
 
     return performance
 
@@ -216,10 +222,6 @@ def update_du_performance(performance,
         # collect dp for probes who tend to occur most frequently in some part of corpus
         probes = du_scorer.probe_store.types
         qs = make_output_representations(model, probes, prep)
-
-        # check predictions
-        max_ids = np.argsort(qs.mean(axis=0))
-        print(f'{structure_name} predict:', [prep.types[i] for i in max_ids[-10:]])
 
         # calc du
         du = du_scorer.calc_dp(qs, return_mean=True, metric='js', prototype_is_unigram_distribution=True)
@@ -247,9 +249,7 @@ def update_ws_performance(performance,
             ps = make_output_representations(model, cs_scorer.probe_store.cat2probes[cat], prep)
             # compute divergences between exemplars within a category
             ws_cat = cs_scorer.calc_score(ps, ps,
-                                          metric=configs.Eval.cs_metric,
                                           max_rows=configs.Eval.ws_max_rows)
-            print(f'within-category spread for cat={cat:<18} ={ws_cat:.4f}', flush=True)
             ws_total += ws_cat
 
         ws = ws_total / len(cs_scorer.probe_store.cats)
@@ -277,7 +277,6 @@ def update_as_performance(performance,
 
         # compute all pairwise divergences
         res = cs_scorer.calc_score(probe_reps_out, probe_reps_out,
-                                   metric=configs.Eval.cs_metric,
                                    max_rows=configs.Eval.as_max_rows)
 
         performance.setdefault(f'as_n_{structure_name}', []).append(res)
@@ -404,7 +403,39 @@ def update_pi_performance(performance,
     return performance
 
 
-def get_weights(model):
-    ih = model.rnn.weight_ih_l  # [hidden_size, input_size]
-    hh = model.rnn.weight_hh_l  # [hidden_size, hidden_size]
-    return {'ih': ih, 'hh': hh}
+def update_ep_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    compute average entropy of probe representations at output layer.
+
+    also, compute entropy of representation of origin at output layer.
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        probe_store = ProbeStore(probe2cat)
+
+        # compute representations of probes
+        probe_reps_out = make_output_representations(model, probe_store.types, prep)
+
+        # compute output that results at origin
+        origin = np.zeros((1, model.hidden_size), dtype=np.float32)
+        reshaped = origin[:, np.newaxis, :]  # embeddings must be in last (3rd dim)
+        with torch.no_grad():
+            embedded = torch.from_numpy(reshaped).cuda()
+            encoded, _ = model.encode(embedded)
+            last_encodings = torch.squeeze(encoded[:, -1])
+            logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
+            origin_rep_out = softmax(logits[np.newaxis, :])  # softmax requires num dim = 2
+
+        # compute entropy of probes
+        ep = drv.entropy_pmf(probe_reps_out).mean()
+        performance.setdefault(f'ep_n_{structure_name}', []).append(ep)
+
+        # compute entropy of origin
+        eo = drv.entropy_pmf(origin_rep_out).mean()
+        performance.setdefault(f'eo_n_{structure_name}', []).append(eo)
+
+    return performance

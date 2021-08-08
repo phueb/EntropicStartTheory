@@ -8,6 +8,12 @@ from childesrnnlm import configs
 from childesrnnlm.rnn import RNN
 
 
+def get_weights(model):
+    ih = model.rnn.weight_ih_l  # [hidden_size, input_size]
+    hh = model.rnn.weight_hh_l  # [hidden_size, hidden_size]
+    return {'ih': ih, 'hh': hh}
+
+
 def make_representations_without_context(model: RNN,
                                          word_ids: List[int],
                                          ):

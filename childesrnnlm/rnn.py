@@ -9,6 +9,7 @@ class RNN(torch.nn.Module):
                  input_size: int,
                  hidden_size: int,
                  num_layers: int,
+                 bias: bool,
                  ):
 
         super().__init__()
@@ -29,13 +30,15 @@ class RNN(torch.nn.Module):
                            num_layers=num_layers,
                            dropout=0)
         self.project = torch.nn.Linear(in_features=hidden_size,
-                                       out_features=input_size)
+                                       out_features=input_size,
+                                       bias=bias)
 
         # init weights - this is required to get good balanced accuracy
         max_w = np.sqrt(1 / hidden_size)
         self.embed.weight.data.uniform_(-max_w, max_w)
         self.project.weight.data.uniform_(-max_w, max_w)
-        self.project.bias.data.fill_(0.0)
+        if bias:
+            self.project.bias.data.fill_(0.0)
 
         self.cuda()
 

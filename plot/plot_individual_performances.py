@@ -32,7 +32,10 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'si',  # 10
                     'sd',  # 11
                     'pi',  # 12
-                    ][12]
+                    'ep',  # 13
+                    'eo',  # 14
+                    'db',  # 15  # TODO test
+                    ][7]
 
 # collect summaries
 summaries = []

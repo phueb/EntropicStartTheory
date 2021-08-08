@@ -29,6 +29,7 @@ from childesrnnlm.evaluation import update_di_performance
 from childesrnnlm.evaluation import update_si_performance
 from childesrnnlm.evaluation import update_sd_performance
 from childesrnnlm.evaluation import update_pi_performance
+from childesrnnlm.evaluation import update_ep_performance
 from childesrnnlm.params import Params
 from childesrnnlm.rnn import RNN
 
@@ -172,6 +173,7 @@ def main(param2val):
         prep.num_types,
         params.hidden_size,
         params.num_layers,
+        params.bias,
     )
 
     # loss function
@@ -273,6 +275,11 @@ def main(param2val):
                 print('Computing distance between origin and prototype-at-input...', flush=True)
                 start_eval = time.time()
                 performance = update_pi_performance(performance, model, prep, structure2probe2cat)
+                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+            if configs.Eval.calc_ep:
+                print('Computing entropy of probe representations at output...', flush=True)
+                start_eval = time.time()
+                performance = update_ep_performance(performance, model, prep, structure2probe2cat)
                 print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():
