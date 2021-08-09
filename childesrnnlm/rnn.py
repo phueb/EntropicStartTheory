@@ -26,7 +26,7 @@ class RNN(torch.nn.Module):
         self.encode = cell(input_size=hidden_size,  # this does not have to be hidden_size
                            hidden_size=hidden_size,
                            batch_first=True,
-                           bias=True,
+                           bias=bias,
                            num_layers=num_layers,
                            dropout=0)
         self.project = torch.nn.Linear(in_features=hidden_size,

@@ -28,14 +28,17 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'ws',  # 6
                     'as',  # 7
                     'ed',  # 8
-                    'cd',  # 9
+                    'cs',  # 9
                     'si',  # 10
                     'sd',  # 11
                     'pi',  # 12
                     'ep',  # 13
                     'eo',  # 14
-                    'db',  # 15  # TODO test
-                    ][7]
+                    'db',  # 15
+                    'fi',  # 16
+                    'fo',  # 17
+                    'co',  # 18
+                    ][6]
 
 # collect summaries
 summaries = []

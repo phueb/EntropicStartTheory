@@ -21,7 +21,7 @@ LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # 
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
-CONTEXT_TYPE = ['o', 'n'][1]
+CONTEXT_TYPE = ['n', 'o'][0]
 PERFORMANCE_NAME = ['ma',  # 0
                     'ra',  # 1
                     'ba',  # 2
@@ -31,14 +31,17 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'ws',  # 6
                     'as',  # 7
                     'ed',  # 8
-                    'cd',  # 9
+                    'cs',  # 9
                     'si',  # 10
                     'sd',  # 11
                     'pi',  # 12
                     'ep',  # 13
                     'eo',  # 14
-                    'db',  # 15  # TODO test
-                    ][7]
+                    'db',  # 15
+                    'fi',  # 16
+                    'fo',  # 17
+                    'co',  # 18
+                    ][18]
 
 # collect summaries
 summaries = []
@@ -56,6 +59,7 @@ for param_path, label in gen_param_paths(project_name,
     print(f'--------------------- End section {param_path.name}')
     print()
 
+print(len(summaries))
 summaries = sort_and_print_summaries(summaries)
 
 # plot

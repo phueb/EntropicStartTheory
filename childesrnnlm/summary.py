@@ -52,10 +52,12 @@ def make_summary(pattern: str,
 
 def sort_and_print_summaries(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]]],
                              ) -> List[Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]]]:
+
+    if not summaries:
+        raise RuntimeError('No summaries were collected')
+
     # sort
     summaries = sorted(summaries, key=lambda s: s[1][-1], reverse=True)
-    if not summaries:
-        raise SystemExit('No data found')
 
     # print to console
     for s in summaries:

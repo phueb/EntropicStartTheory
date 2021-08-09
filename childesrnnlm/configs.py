@@ -26,15 +26,16 @@ class Eval:
     calc_ma = bool(1)  # vector magnitude
     calc_ra = bool(0)  # raggedness of in-out mapping
     calc_ba = bool(1)  # balanced accuracy
-    calc_ws = bool(1)  # within-category spread
-    calc_as = bool(1)  # across-category spread  - does not replicate findings from osf.io paper (2019)
+    calc_ws = bool(0)  # within-category spread
+    calc_as = bool(0)  # across-category spread  - does not replicate findings from osf.io paper (2019)
     calc_di = bool(1)  # Euclidean and cosine distance
     calc_dp = bool(1)  # divergence from prototype
     calc_du = bool(1)  # divergence from unigram prototype
-    calc_si = bool(1)  # silhouette score
+    calc_si = bool(0)  # silhouette score
     calc_sd = bool(1)  # S-dbw score
     calc_pi = bool(1)  # distance of prototype at input to origin at input
     calc_ep = bool(1)  # entropy of probe representations at output
+    calc_fr = bool(1)  # fragmentation of probe representations
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 

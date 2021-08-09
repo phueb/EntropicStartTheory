@@ -167,46 +167,64 @@ def get_y_label_and_lims(performance_name: str,
 
     if performance_name == 'ma':
         y_label = 'Magnitude of Representations'
-        y_lims: List[float] = [0.5, 1.5]
+        y_lims = [0.5, 1.5]
     elif performance_name == 'ra':
         y_label = 'Raggedness of In-Out Mapping'
-        y_lims: List[float] = [0, 0.5]
+        y_lims = [0, 0.5]
     elif performance_name == 'th':
         y_label = 'Sim. Threshold at best Bal.Acc.'
         if context_type == 'n':
-            y_lims: List[float] = [0, 0.2]
+            y_lims = [0, 0.2]
         else:
-            y_lims: List[float] = [0.6, 1.0]
+            y_lims = [0.6, 1.0]
     elif performance_name == 'ba':
         y_label = 'Balanced Accuracy'
-        y_lims: List[float] = [0.5, 0.7]
+        y_lims = [0.5, 0.7]
     elif performance_name == 'dp':
         y_label = 'Divergence from Prototype'
-        y_lims: List[float] = [0.0, 1.0]
+        y_lims = [0.0, 1.0]
     elif performance_name == 'du':
         y_label = 'Divergence from Unigram Prototype'
-        y_lims: List[float] = [0.0, 0.7]
+        y_lims = [0.0, 0.7]
     elif performance_name == 'ws':
         y_label = 'Within-Category Spread'
-        y_lims: List[float] = [0.0, 1.0]
+        y_lims = [0.0, 0.5]
     elif performance_name == 'as':
         y_label = 'Across-Category Spread'
-        y_lims: List[float] = [0, 0.6]
+        y_lims = [0, 0.6]
     elif performance_name == 'ed':
         y_label = 'Average Pairwise Euclidean Distance'
-        y_lims: List[float] = [0.8, 2]
-    elif performance_name == 'cd':
-        y_label = 'Average Pairwise Cosine Distance'
-        y_lims: List[float] = [0.9, 1]
+        y_lims = [0.8, 2]
+    elif performance_name == 'cs':
+        y_label = 'Average Pairwise Cosine Similarity'
+        y_lims = None
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
-        y_lims: List[float] = [-0.1, 0.0]
+        y_lims = [-0.1, 0.0]
     elif performance_name == 'sd':
         y_label = 'S_Dbw Score'
-        y_lims: List[float] = [0.9, 1.0]
+        y_lims = [0.9, 1.0]
     elif performance_name == 'pi':
         y_label = 'Prototype-Origin Distance'
-        y_lims: List[float] = [0.2, 1.0]
+        y_lims = [0.2, 1.0]
+    elif performance_name == 'ep':
+        y_label = 'Entropy at Output'
+        y_lims = [0.0, 14.0]
+    elif performance_name == 'eo':
+        y_label = 'Entropy of Origin at Output'
+        y_lims = [0.0, 14.0]
+    elif performance_name == 'db':
+        y_label = 'Divergence of Bias from Prototype'
+        y_lims = None
+    elif performance_name == 'fi':
+        y_label = 'Fragmentation at Input'
+        y_lims = None
+    elif performance_name == 'fo':
+        y_label = 'Fragmentation at Output'
+        y_lims = [0, 1]
+    elif performance_name == 'co':
+        y_label = 'Condition Number'
+        y_lims = None
     else:
         raise AttributeError
 

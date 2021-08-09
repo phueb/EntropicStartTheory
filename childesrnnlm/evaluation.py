@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from typing import List, Union, Dict
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics.pairwise import euclidean_distances, cosine_distances
+from sklearn.metrics.pairwise import euclidean_distances
 from torch.nn import CrossEntropyLoss
 from pyitlib import discrete_random_variable as drv
 
@@ -180,7 +180,7 @@ def update_dp_performance(performance,
     to a location in representational space that can be thought of as the probe (typically nouns) "prototype",
     obtained by leveraging all of the co-occurrence data in a corpus.
 
-    also, compute distance of output probability due to bias only to protoype
+    also, compute distance of output probability due to bias only to prototype
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
@@ -191,16 +191,18 @@ def update_dp_performance(performance,
         probe_reps_out = make_output_representations(model, probes, prep)
 
         # get representation of bias at output
-        projection_bias = model.project.bias.detach().cpu().numpy().astype(np.float64)
-        bias_rep_out = softmax(projection_bias[np.newaxis, :])
+        if model.project.bias is not None:
+            projection_bias = model.project.bias.detach().cpu().numpy().astype(np.float64)
+            bias_rep_out = softmax(projection_bias[np.newaxis, :])
 
         # calc divergence between probes and probe prototype
         dp = dp_scorer.calc_dp(probe_reps_out, return_mean=True, metric='js')
         performance.setdefault(f'dp_n_{structure_name}', []).append(dp)
 
         # calc divergence between bias and probe prototype
-        db = dp_scorer.calc_dp(bias_rep_out, return_mean=True, metric='js')
-        performance.setdefault(f'db_n_{structure_name}', []).append(db)
+        if model.project.bias is not None:
+            db = dp_scorer.calc_dp(bias_rep_out, return_mean=True, metric='js')
+            performance.setdefault(f'db_n_{structure_name}', []).append(db)
 
     return performance
 
@@ -290,7 +292,10 @@ def update_di_performance(performance,
                           structure2probe2cat: Dict[str, Dict[str, str]],
                           ):
     """
-    compute average pairwise Euclidean ("ed") and cosine distance ("cd") between probe representations.
+    compute average pairwise Euclidean ("ed") and cosine similarity ("cs") between probe representations.
+
+    Cosine distance is defined as 1.0 minus the cosine similarity.
+
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
@@ -303,10 +308,10 @@ def update_di_performance(performance,
 
         # compute distances
         ed = euclidean_distances(probe_reps_n, probe_reps_n).mean()
-        cd = cosine_distances(probe_reps_n, probe_reps_n).mean()
+        cs = cosine_similarity(probe_reps_n).mean()
 
         performance.setdefault(f'ed_n_{structure_name}', []).append(ed)
-        performance.setdefault(f'cd_n_{structure_name}', []).append(cd)
+        performance.setdefault(f'cs_n_{structure_name}', []).append(cs)
 
     return performance
 
@@ -437,5 +442,42 @@ def update_ep_performance(performance,
         # compute entropy of origin
         eo = drv.entropy_pmf(origin_rep_out).mean()
         performance.setdefault(f'eo_n_{structure_name}', []).append(eo)
+
+    return performance
+
+
+def update_fr_performance(performance,
+                          model: RNN,
+                          prep: Prep,
+                          structure2probe2cat: Dict[str, Dict[str, str]],
+                          ):
+    """
+    compute fragmentation = 1 - proportion of variance accounted for by first singular value of:
+
+    1. probe representations at input (fragmentation at input, "fi"), and
+    2. probe representations at output (fragmentation at output "fo")
+    """
+    for structure_name in configs.Eval.structures:
+        probe2cat = structure2probe2cat[structure_name]
+        probe_store = ProbeStore(probe2cat)
+
+        # compute representations of probes
+        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
+        probe_reps_n = make_representations_without_context(model, probe_token_ids)
+        probe_reps_out = make_output_representations(model, probe_store.types, prep)
+
+        # compute fragmentation at input
+        u, s, vt = np.linalg.svd(probe_reps_n, compute_uv=True)
+        fi = 1 - (s[0] / np.sum(s))
+        performance.setdefault(f'fi_n_{structure_name}', []).append(fi)
+
+        # compute fragmentation at output
+        u, s, vt = np.linalg.svd(probe_reps_out, compute_uv=True)
+        fo = 1 - (s[0] / np.sum(s))
+        performance.setdefault(f'fo_n_{structure_name}', []).append(fo)
+
+        # also compute condition number (ratio between first and last singular value)
+        co = s[0] / s[-1]
+        performance.setdefault(f'co_n_{structure_name}', []).append(co)
 
     return performance
