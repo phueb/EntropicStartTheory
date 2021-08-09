@@ -5,7 +5,7 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
-    # 'bias': [False],
+    'flavor': ['lstm'],
 
     # 'corpus': ['aonewsela'],  # TODO previously showed that ao-effect for newsela requires 16K vocab, no less
     # 'start': ['entropic', 'singleton', 'none'],

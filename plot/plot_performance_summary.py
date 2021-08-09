@@ -5,7 +5,7 @@ from ludwig.results import gen_param_paths
 
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig, get_y_label_and_lims
-from childesrnnlm.summary import make_summary, sort_and_print_summaries
+from childesrnnlm.summary import make_summary, sort_and_print_summaries, save_summary_to_txt
 from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
@@ -41,7 +41,7 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'fi',  # 16
                     'fo',  # 17
                     'co',  # 18
-                    ][18]
+                    ][17]
 
 # collect summaries
 summaries = []
@@ -56,10 +56,12 @@ for param_path, label in gen_param_paths(project_name,
     pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE)
     summaries.append(summary)  # summary contains: x, mean_y, std_y, label, job_id
+
+    save_summary_to_txt(summary, pattern)
+
     print(f'--------------------- End section {param_path.name}')
     print()
 
-print(len(summaries))
 summaries = sort_and_print_summaries(summaries)
 
 # plot

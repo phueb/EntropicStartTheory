@@ -145,15 +145,17 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         for max_y in max_ys:
             ax.axhline(y=max_y, color='grey', lw=1, linestyle='-', zorder=1)
             print('y max={}'.format(max_y))
+
     # vertical lines
     if vlines:
         for vline in vlines:
             if vline == 0:
                 continue
-            print(x[-1], vline / len(vlines))
+
             ax.axvline(x=x[-1] * (vline / len(vlines)), color='grey', linestyle=':', zorder=1)
     if vline:
         ax.axvline(x=vline, color='grey', linestyle=':', zorder=1)
+
     plt.tight_layout()
     return fig
 
