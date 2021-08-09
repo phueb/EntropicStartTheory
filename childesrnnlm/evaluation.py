@@ -306,9 +306,13 @@ def update_di_performance(performance,
         probe_token_ids = [prep.token2id[token] for token in probe_store.types]
         probe_reps_n = make_representations_without_context(model, probe_token_ids)
 
-        # compute distances
+        # compute euclidean distance
         ed = euclidean_distances(probe_reps_n, probe_reps_n).mean()
-        cs = cosine_similarity(probe_reps_n).mean()
+
+        # calc average cosine similarity over off-diagonals (ignore 1s)
+        sim = cosine_similarity(probe_reps_n)
+        masked = np.ma.masked_where(np.eye(*sim.shape), sim)
+        cs = masked.mean()
 
         performance.setdefault(f'ed_n_{structure_name}', []).append(ed)
         performance.setdefault(f'cs_n_{structure_name}', []).append(cs)
