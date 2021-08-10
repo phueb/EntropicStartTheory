@@ -291,7 +291,6 @@ sugar FOOD
 drink FOOD
 coffee FOOD
 orange FOOD
-fast-food FOOD
 dinner FOOD
 grocery FOOD
 breakfast FOOD
@@ -482,7 +481,6 @@ lesson LEARNING
 student LEARNING
 history LEARNING
 economics LEARNING
-after-school LEARNING
 instruction LEARNING
 tuition LEARNING
 preschool LEARNING

@@ -93,6 +93,6 @@ def sort_and_print_summaries(summaries: List[Tuple[np.ndarray, np.ndarray, np.nd
         print()
         print(label)
         print(job_id)
-        print(np.round(y_mean, 2))
+        print(np.round(y_mean, 3))
 
     return summaries

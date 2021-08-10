@@ -7,12 +7,15 @@ param2requests = {
 
     'flavor': ['lstm'],
 
-    # 'corpus': ['aonewsela'],  # TODO previously showed that ao-effect for newsela requires 16K vocab, no less
+    'corpus': ['aonewsela'],
+    'num_types': [16_000],
+
     # 'start': ['entropic', 'singleton', 'none'],
 
 }
 
 param2debug = {
+    'corpus': 'aonewsela',
     'context_size': 2,
     'num_iterations': (1, 1),
     'num_transcripts': 100,

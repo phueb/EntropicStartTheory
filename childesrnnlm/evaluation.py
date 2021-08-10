@@ -480,8 +480,8 @@ def update_fr_performance(performance,
         fo = 1 - (s[0] / np.sum(s))
         performance.setdefault(f'fo_n_{structure_name}', []).append(fo)
 
-        # also compute condition number (ratio between first and last singular value)
-        co = s[0] / s[-1]
+        # also compute condition number (ratio between first and last normalized singular value)
+        co = (s[0] / np.sum(s)) / (s[-1] / np.sum(s))
         performance.setdefault(f'co_n_{structure_name}', []).append(co)
 
     return performance

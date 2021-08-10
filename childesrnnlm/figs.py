@@ -217,10 +217,10 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = [0.0, 14.0]
     elif performance_name == 'db':
         y_label = 'Divergence of Bias from Prototype'
-        y_lims = None
+        y_lims = [0, 0.70]
     elif performance_name == 'fi':
         y_label = 'Fragmentation at Input'
-        y_lims = None
+        y_lims = [0, 1]
     elif performance_name == 'fo':
         y_label = 'Fragmentation at Output'
         y_lims = [0, 1]

@@ -92,13 +92,13 @@ def main(param2val):
             tmp: List[str] = transcript.split()
         tokens.extend(tmp)
     print(f'{len(set(tokens)):,} types in tokenized text', flush=True)
-    print(f'Added {len(tokens) - len(tokens_original):,} tokens during tokenization')
+    print(f'Tokenized text has {len(tokens) - len(tokens_original):,} more tokens than before tokenization')
 
     # check that added tokens were not split during tokenization
     num_errors = 0
     for special_t in special_tokens:
         if special_t not in tokens and special_t in tokens_original:
-            print(f'"{special_t:<24}" occurs {tokens_original.count(special_t)} times in original text '
+            print(f'{special_t:<24} occurs {tokens_original.count(special_t)} times in original text '
                   f'but not in tokenized text.')
             num_errors += 1
     if num_errors:
@@ -230,7 +230,7 @@ def main(param2val):
             if configs.Eval.calc_ra:
                 print('Computing raggedness...', flush=True)
                 start_eval = time.time()
-                performance = update_ra_performance(performance, model, prep, structure2probe2cat)  # TODO improve
+                performance = update_ra_performance(performance, model, prep, structure2probe2cat)
                 print(f'Elapsed={time.time() - start_eval}secs', flush=True)
             if configs.Eval.calc_ba:
                 print('Computing balanced accuracy...', flush=True)
