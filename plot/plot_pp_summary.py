@@ -7,11 +7,11 @@ from ludwig.results import gen_param_paths
 from childesrnnlm import __name__
 from childesrnnlm.figs import make_summary_fig
 from childesrnnlm.params import param2default, param2requests
-from childesrnnlm.summary import make_summary
+from childesrnnlm.summary import make_summary, sort_and_print_summaries
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # configs.Dirs.runs  # configs.Dirs.runs if loading runs locally or None if loading data from ludwig
-WHICH_PP = 'train'
+WHICH_PP = 'test'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
@@ -35,7 +35,7 @@ for p, label in gen_param_paths(project_name,
                                 ludwig_data_path=LUDWIG_DATA_PATH,
                                 label_n=LABEL_N):
     pattern = f'{WHICH_PP}_pp'
-    summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, std_y, label, job_id
+    summary = make_summary(pattern, p, label, CONFIDENCE)  # summary contains: x, mean_y, margin-of-error, label, job_id
     summaries.append(summary)
     print(f'--------------------- End section {p.name}')
     print()

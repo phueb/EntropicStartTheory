@@ -44,7 +44,7 @@ for param_path, label in gen_param_paths(project_name,
 
     pattern = f'{BA_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE)
-    summaries.append(summary)  # summary contains: x, mean_y, std_y, label, job_id
+    summaries.append(summary)  # summary contains: x, mean_y, margin-of-error, label, job_id
     print(f'--------------------- End section {param_path.name}')
     print()
 

@@ -68,7 +68,6 @@ fig = make_summary_fig(summaries,
                        title=TITLE,
                        ylims=y_lims,
                        figsize=FIG_SIZE,
-                       legend_loc='best',
                        annotate=True,
                        )
 fig.show()

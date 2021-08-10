@@ -55,7 +55,7 @@ for param_path, label in gen_param_paths(project_name,
 
     pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE)
-    summaries.append(summary)  # summary contains: x, mean_y, std_y, label, job_id
+    summaries.append(summary)  # summary contains: x, mean_y, margin-of-error, label, job_id
 
     save_summary_to_txt(summary, pattern)
 
@@ -78,6 +78,5 @@ fig = make_summary_fig(summaries,
                        vlines=V_LINES,
                        plot_max_lines=PLOT_MAX_LINES,
                        plot_max_line=PLOT_MAX_LINE,
-                       legend_loc='best',
                        )
 fig.show()
