@@ -15,13 +15,16 @@ def get_weights(model):
 
 
 def make_representations_without_context(model: RNN,
-                                         word_ids: List[int],
+                                         probes: List[str],
+                                         prep: Prep,
                                          ):
     """
     make word representations without context by retrieving embeddings
     """
     vocab_reps = model.embed.weight.detach().cpu().numpy()
-    res = vocab_reps[word_ids]
+
+    w_ids = [prep.token2id[w] for w in probes]
+    res = vocab_reps[w_ids]
 
     # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
     res = res.astype(np.float64)
@@ -30,7 +33,7 @@ def make_representations_without_context(model: RNN,
 
 
 def make_representations_with_context(model: RNN,
-                                      token_ids,
+                                      probes: List[str],
                                       prep: Prep,
                                       verbose=False,
                                       ) -> np.array:
@@ -39,9 +42,10 @@ def make_representations_with_context(model: RNN,
     """
     all_windows = prep.reordered_windows
 
-    num_words = len(token_ids)
+    w_ids = [prep.token2id[w] for w in probes]
+    num_words = len(w_ids)
     res = np.zeros((num_words, model.hidden_size))
-    for n, token_id in enumerate(token_ids):
+    for n, token_id in enumerate(w_ids):
         bool_idx = np.isin(all_windows[:, -2], token_id)
         x = all_windows[bool_idx][:, :-1]
 
@@ -49,7 +53,7 @@ def make_representations_with_context(model: RNN,
         if len(x) > configs.Eval.max_num_exemplars:
             x = x[np.random.choice(len(x), size=configs.Eval.max_num_exemplars)]
 
-        inputs = torch.cuda.LongTensor(x)
+        inputs = torch.LongTensor(x).cuda()
         num_exemplars, dim1 = inputs.shape
         assert dim1 == prep.context_size, (inputs.shape, x.shape, prep.context_size)
         if verbose:
@@ -67,10 +71,17 @@ def make_output_representations(model: RNN,
                                 probes: List[str],
                                 prep: Prep,
                                 ) -> np.array:
+
+    # feed-forward
     w_ids = [prep.token2id[w] for w in probes]
     x = np.expand_dims(np.array(w_ids), axis=1)
-    inputs = torch.cuda.LongTensor(x)
+    inputs = torch.LongTensor(x).cuda()
     logits = model(inputs)['logits'].detach().cpu().numpy()
+
+    # softmax (requires 2 dimensions)
+    # if only one representation is requested, first dimension is lost in RNN output, so we add it again.
+    if len(x) == 1:
+        logits = logits[np.newaxis, :]
     res = softmax(logits)
 
     # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf

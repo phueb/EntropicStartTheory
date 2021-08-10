@@ -6,6 +6,7 @@ class Dirs:
     src = Path(__file__).parent
     structures = root / 'data' / 'structures'
     summaries = root / 'summaries'
+    runs = root / 'runs'
 
 
 class Start:

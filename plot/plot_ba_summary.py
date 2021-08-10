@@ -10,7 +10,7 @@ from childesrnnlm.summary import make_summary, sort_and_print_summaries
 from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
-RUNS_PATH = None  # config.Dirs.runs if using local plot or None if using plot form Ludwig
+RUNS_PATH = None  # configs.Dirs.runs if loading runs locally or None if loading data from ludwig
 BA_TYPE: str = 'ba_n'
 PROBES_NAME: str = 'sem-2021'
 

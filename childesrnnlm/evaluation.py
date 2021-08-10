@@ -39,7 +39,7 @@ def calc_perplexity(model: RNN,
 
         # to tensor
         x, y = np.split(windows, [prep.context_size], axis=1)
-        inputs = torch.cuda.LongTensor(x)
+        inputs = torch.LongTensor(x).cuda()
         targets = torch.cuda.LongTensor(np.squeeze(y))
 
         # calc pp (using torch only, on GPU)
@@ -83,8 +83,7 @@ def update_ma_performance(performance,
         probe_store = ProbeStore(probe2cat)
 
         # get probe representations
-        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
-        probe_reps_inp = make_representations_without_context(model, probe_token_ids)
+        probe_reps_inp = make_representations_without_context(model, probe_store.types, prep)
 
         ma = np.linalg.norm(probe_reps_inp, axis=1).mean()  # computes magnitude for each vector, then mean
         performance.setdefault(f'ma_n_{structure_name}', []).append(ma)
@@ -144,11 +143,9 @@ def update_ba_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         ba_scorer = BAScorer(probe2cat)
 
-        probe_store = ba_scorer.probe_store
-        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
-
-        probe_reps_o = make_representations_with_context(model, probe_token_ids, prep)
-        probe_reps_n = make_representations_without_context(model, probe_token_ids)
+        # make probe representations
+        probe_reps_o = make_representations_with_context(model, ba_scorer.probe_store.types, prep)
+        probe_reps_n = make_representations_without_context(model, ba_scorer.probe_store.types, prep)
 
         assert len(probe_reps_o) > 0
         assert len(probe_reps_n) > 0
@@ -156,8 +153,8 @@ def update_ba_performance(performance,
         probe_sims_o = cosine_similarity(probe_reps_o)
         probe_sims_n = cosine_similarity(probe_reps_n)
 
-        ba_n, best_th_n = ba_scorer.calc_score(probe_sims_n, probe_store.gold_sims, 'ba', return_threshold=True)
-        ba_o, best_th_o = ba_scorer.calc_score(probe_sims_o, probe_store.gold_sims, 'ba', return_threshold=True)
+        ba_n, best_th_n = ba_scorer.calc_score(probe_sims_n, ba_scorer.probe_store.gold_sims, 'ba', return_threshold=True)
+        ba_o, best_th_o = ba_scorer.calc_score(probe_sims_o, ba_scorer.probe_store.gold_sims, 'ba', return_threshold=True)
 
         performance.setdefault(f'ba_n_{structure_name}', []).append(ba_n)
         performance.setdefault(f'ba_o_{structure_name}', []).append(ba_o)
@@ -302,9 +299,7 @@ def update_di_performance(performance,
         ba_scorer = BAScorer(probe2cat)  # we only need this to get the probe_store
 
         # get probe representations
-        probe_store = ba_scorer.probe_store
-        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
-        probe_reps_n = make_representations_without_context(model, probe_token_ids)
+        probe_reps_n = make_representations_without_context(model, ba_scorer.probe_store.types, prep)
 
         # compute euclidean distance
         ed = euclidean_distances(probe_reps_n, probe_reps_n).mean()
@@ -333,9 +328,8 @@ def update_si_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         si_scorer = SIScorer(probe2cat)
 
-        probe_token_ids = [prep.token2id[token] for token in si_scorer.probe_store.types]
-        probe_reps_n = make_representations_without_context(model, probe_token_ids)
-        probe_reps_o = make_representations_with_context(model, probe_token_ids, prep)
+        probe_reps_n = make_representations_without_context(model, si_scorer.probe_store.types, prep)
+        probe_reps_o = make_representations_with_context(model, si_scorer.probe_store.types, prep)
         cat_ids = [si_scorer.probe_store.cat2id[si_scorer.probe_store.probe2cat[p]]
                    for p in si_scorer.probe_store.types]
 
@@ -361,10 +355,8 @@ def update_sd_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         sd_scorer = SDScorer(probe2cat)
 
-        probe_token_ids = [prep.token2id[token] for token in sd_scorer.probe_store.types]
-
-        probe_reps_n = make_representations_without_context(model, probe_token_ids)
-        probe_reps_o = make_representations_with_context(model, probe_token_ids, prep)
+        probe_reps_n = make_representations_without_context(model, sd_scorer.probe_store.types, prep)
+        probe_reps_o = make_representations_with_context(model, sd_scorer.probe_store.types, prep)
         cat_ids = [sd_scorer.probe_store.cat2id[sd_scorer.probe_store.probe2cat[p]]
                    for p in sd_scorer.probe_store.types]
 
@@ -466,8 +458,7 @@ def update_fr_performance(performance,
         probe_store = ProbeStore(probe2cat)
 
         # compute representations of probes
-        probe_token_ids = [prep.token2id[token] for token in probe_store.types]
-        probe_reps_n = make_representations_without_context(model, probe_token_ids)
+        probe_reps_n = make_representations_without_context(model, probe_store.types, prep)
         probe_reps_out = make_output_representations(model, probe_store.types, prep)
 
         # compute fragmentation at input
@@ -480,8 +471,8 @@ def update_fr_performance(performance,
         fo = 1 - (s[0] / np.sum(s))
         performance.setdefault(f'fo_n_{structure_name}', []).append(fo)
 
-        # also compute condition number (ratio between first and last normalized singular value)
-        co = (s[0] / np.sum(s)) / (s[-1] / np.sum(s))
+        # also compute condition number (ratio between first and last singular value)
+        co = (s[0] / s[-1]) / np.sum(s)
         performance.setdefault(f'co_n_{structure_name}', []).append(co)
 
     return performance

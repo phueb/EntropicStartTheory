@@ -31,6 +31,7 @@ from childesrnnlm.evaluation import update_sd_performance
 from childesrnnlm.evaluation import update_pi_performance
 from childesrnnlm.evaluation import update_ep_performance
 from childesrnnlm.evaluation import update_fr_performance
+from childesrnnlm.representation import make_representations_without_context, make_output_representations
 from childesrnnlm.params import Params
 from childesrnnlm.rnn import RNN
 
@@ -41,6 +42,11 @@ def main(param2val):
     print(params)
 
     project_path = Path(param2val['project_path'])
+    save_path = Path(param2val['save_path'])
+
+    # in case, job is run locally, we must create save_path
+    if not save_path.exists():
+        save_path.mkdir(parents=True)
 
     # load corpus
     if params.corpus == 'aochildes':
@@ -220,6 +226,18 @@ def main(param2val):
                 or step in high_resolution_eval_steps:  # eval with higher resolution at start
             eval_steps.append(step)
             model.eval()
+
+            # save probe representations to shared drive (for offline clustering analysis)
+            for structure_name in configs.Eval.structures:
+                probe2cat = structure2probe2cat[structure_name]
+                probes = sorted(probe2cat.keys())
+                probe_reps_inp = make_representations_without_context(model, probes, prep)
+                probe_reps_out = make_output_representations(model, probes, prep)
+                np.savez_compressed(save_path / f'probe_reps_{step:0>12}',
+                                    probe_reps_inp=probe_reps_inp,
+                                    probe_reps_out=probe_reps_out)
+
+            # evaluate perplexity
             performance = update_pp_performance(performance, model, criterion, prep)
 
             if configs.Eval.calc_ma:

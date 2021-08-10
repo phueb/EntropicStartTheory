@@ -10,7 +10,7 @@ from childesrnnlm.params import param2default, param2requests
 from childesrnnlm.summary import make_summary
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
-RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig
+RUNS_PATH = None  # configs.Dirs.runs  # configs.Dirs.runs if loading runs locally or None if loading data from ludwig
 WHICH_PP = 'train'
 
 LABEL_N: bool = True                       # add information about number of replications to legend
