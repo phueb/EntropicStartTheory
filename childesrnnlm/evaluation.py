@@ -1,4 +1,3 @@
-import pyprind
 import torch
 import numpy as np
 from typing import List, Union, Dict
@@ -33,24 +32,31 @@ def calc_perplexity(model: RNN,
 
     pp_sum = 0
     num_batches = 0
-    pbar = pyprind.ProgBar(prep.num_mbs, stream=1)
 
-    for windows in prep.generate_batches(is_test=is_test):
+    with torch.no_grad():
 
-        # to tensor
-        x, y = np.split(windows, [prep.context_size], axis=1)
-        inputs = torch.LongTensor(x).cuda()
-        targets = torch.cuda.LongTensor(np.squeeze(y))
+        for windows in prep.generate_batches(is_test=is_test):
 
-        # calc pp (using torch only, on GPU)
-        logits = model(inputs)['logits']  # initial hidden state defaults to zero if not provided
-        loss_batch = criterion(logits, targets).detach()  # detach to prevent saving complete graph for every sample
-        pp_batch = torch.exp(loss_batch)  # need base e
+            print(windows.shape)  # TODO remove
 
-        pbar.update()
+            # to tensor
+            x, y = np.split(windows, [prep.context_size], axis=1)
+            inputs = torch.LongTensor(x).cuda()
+            targets = torch.LongTensor(np.squeeze(y)).cuda()
 
-        pp_sum += pp_batch.detach().cpu().numpy()
-        num_batches += 1
+            # calc pp (using torch only, on GPU)
+            logits = model(inputs)['logits']  # initial hidden state defaults to zero if not provided
+            loss_batch = criterion(logits, targets)
+            pp_batch = torch.exp(loss_batch)  # need base e
+
+            print(pp_batch)
+            print(pp_batch.cpu())
+            print(pp_batch.cpu().numpy())
+
+
+            pp_sum += pp_batch.cpu().numpy()
+            num_batches += 1
+
     pp = pp_sum / num_batches
     return pp
 

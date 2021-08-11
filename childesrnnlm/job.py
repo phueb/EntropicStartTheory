@@ -165,9 +165,9 @@ def main(param2val):
                 continue
 
             num_in_train = prep.tokens_train.count(probe)
-            num_in_valid = prep.tokens_valid.count(probe)
+            num_in_test_ = prep.tokens_test_.count(probe)
             if num_in_train == 0:
-                if num_in_valid == 0:
+                if num_in_test_ == 0:
                     if params.num_transcripts is None:  # do not raise exception when debugging
                         raise RuntimeError(f'"{probe:<24}" not in train or test data after tokenization.')
 
