@@ -169,7 +169,7 @@ def get_y_label_and_lims(performance_name: str,
 
     if performance_name == 'ma':
         y_label = 'Magnitude of Representations'
-        y_lims = [0.5, 1.5]
+        y_lims = [0.5, 1.8]
     elif performance_name == 'ra':
         y_label = 'Raggedness of In-Out Mapping'
         y_lims = [0, 0.5]
@@ -190,13 +190,13 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = [0.0, 0.7]
     elif performance_name == 'ws':
         y_label = 'Within-Category Spread'
-        y_lims = [0.0, 0.5]
+        y_lims = [0.0, 0.6]
     elif performance_name == 'as':
         y_label = 'Across-Category Spread'
-        y_lims = [0, 0.6]
+        y_lims = [0, 0.7]
     elif performance_name == 'ed':
         y_label = 'Average Pairwise Euclidean Distance'
-        y_lims = [0.8, 2]
+        y_lims = [0.8, 3]
     elif performance_name == 'cs':
         y_label = 'Average Pairwise Cosine Similarity'
         y_lims = None
@@ -220,13 +220,13 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = [0, 0.70]
     elif performance_name == 'fi':
         y_label = 'Fragmentation at Input'
-        y_lims = [0, 1]
+        y_lims = [0.9, 1]
     elif performance_name == 'fo':
         y_label = 'Fragmentation at Output'
         y_lims = [0, 1]
     elif performance_name == 'co':
         y_label = 'Condition Number'
-        y_lims = None
+        y_lims = [0, 10_000]
     else:
         raise AttributeError
 

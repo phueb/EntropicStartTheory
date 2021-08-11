@@ -241,7 +241,7 @@ def update_ws_performance(performance,
         probe2cat = structure2probe2cat[structure_name]
         cs_scorer = CSScorer(probe2cat)
 
-        # compute cs for each category
+        # compute spread for each category
         ws_total = 0
         for cat in cs_scorer.probe_store.cats:
             # get output representations for probes in same category
@@ -296,10 +296,10 @@ def update_di_performance(performance,
     """
     for structure_name in configs.Eval.structures:
         probe2cat = structure2probe2cat[structure_name]
-        ba_scorer = BAScorer(probe2cat)  # we only need this to get the probe_store
+        probe_store = ProbeStore(probe2cat)
 
         # get probe representations
-        probe_reps_n = make_representations_without_context(model, ba_scorer.probe_store.types, prep)
+        probe_reps_n = make_representations_without_context(model, probe_store.types, prep)
 
         # compute euclidean distance
         ed = euclidean_distances(probe_reps_n, probe_reps_n).mean()
@@ -311,6 +311,18 @@ def update_di_performance(performance,
 
         performance.setdefault(f'ed_n_{structure_name}', []).append(ed)
         performance.setdefault(f'cs_n_{structure_name}', []).append(cs)
+
+        # calc cosine similarity separately for same-category probes
+        cc_total = 0
+        for cat in probe_store.cats:
+            # get probe representations
+            probe_reps_n = make_representations_without_context(model, probe_store.cat2probes[cat], prep)
+            sim = cosine_similarity(probe_reps_n)
+            masked = np.ma.masked_where(np.eye(*sim.shape), sim)
+            cc_cat = masked.mean()
+            cc_total += cc_cat
+        cc = cc_total / len(probe_store.cats)
+        performance.setdefault(f'cc_n_{structure_name}', []).append(cc)
 
     return performance
 

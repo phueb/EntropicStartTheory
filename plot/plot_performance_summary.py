@@ -41,7 +41,7 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'fi',  # 16
                     'fo',  # 17
                     'co',  # 18
-                    ][18]
+                    ][9]
 
 # collect summaries
 summaries = []

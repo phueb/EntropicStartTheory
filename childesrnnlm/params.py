@@ -5,10 +5,10 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
-    'flavor': ['lstm'],
+    'flavor': ['srn'],
 
     'corpus': ['aonewsela'],
-    'num_types': [16_000],
+    'num_types': [6_000],
 
     # 'start': ['entropic', 'singleton', 'none'],
 
@@ -26,7 +26,7 @@ param2default = {
     'shuffle_transcripts': False,
     'corpus': 'aochildes',  # or aonewsela
     'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
-    'num_transcripts': None,  # useful for debuggin only
+    'num_transcripts': None,  # useful for debugging only
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'start': 'none',
