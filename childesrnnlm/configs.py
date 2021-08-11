@@ -7,6 +7,7 @@ class Dirs:
     structures = root / 'data' / 'structures'
     summaries = root / 'summaries'
     runs = root / 'runs'
+    animations = root / 'animations'
 
 
 class Start:

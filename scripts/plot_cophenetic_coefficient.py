@@ -18,7 +18,7 @@ RUNS_PATH: Optional[Path] = None  # configs.Dirs.runs if loading runs locally or
 METRIC = 'cosine'
 METHOD = 'single'
 
-WHERE = ['input', 'output'][0]
+WHERE = ['input', 'output'][1]
 FIRST_NUM_STEPS = 100  # the number of first training steps (otherwise, script takes long)
 
 PLOT_DENDROGRAM = False

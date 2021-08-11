@@ -5,6 +5,7 @@ seaborn
 matplotlib
 PyYaml
 pandas
+celluloid
 pyprind
 torch==1.6
 numpy==1.18.1

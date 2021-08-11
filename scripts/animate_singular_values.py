@@ -11,10 +11,11 @@ from pathlib import Path
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm
 import time
+from celluloid import Camera
 
 from ludwig.results import gen_param_paths
 
-from childesrnnlm import __name__
+from childesrnnlm import __name__, configs
 from childesrnnlm.params import param2default, param2requests
 
 
@@ -42,7 +43,7 @@ for param_path, label in gen_param_paths(project_name,
                                          param2default,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
-                                         label_n=True):
+                                         label_n=False):
 
     job_names = [path.stem for path in param_path.glob('*-*-*:*:*_*')]
     print(f'Found job names:')
@@ -60,6 +61,10 @@ for param_path, label in gen_param_paths(project_name,
 
         # init plot once for each job
         fig, ax = plt.subplots(figsize=(6, 4), dpi=200)
+        ax.set_title(f'SVD of probe representations'
+                     f'\nat {WHERE}'
+                     f'\n{label}'
+                     )
         ax.set_xlabel(f'Singular Dimension (1-{NUM_SINGULAR_DIMS})')
         ax.set_ylabel(f'Proportion of Variance explained')
         ax.set_ylim(Y_LIMS)
@@ -68,6 +73,9 @@ for param_path, label in gen_param_paths(project_name,
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.tick_params(axis='both', which='both', top=False, right=False)
+
+        # create camera for animation
+        camera = Camera(fig)
 
         colors = iter(cm.rainbow(np.linspace(0, 1, len(npz_paths))))
 
@@ -91,16 +99,23 @@ for param_path, label in gen_param_paths(project_name,
             # do svd
             s = np.linalg.svd(probe_reps, compute_uv=False)
 
-            # TODO collect s across jobs and THEN plot average (not individual jobs)
-
-            # plot
+            # plot changes
             # note: if plot does not show up, turn off Python Scientific in Pycharm Settings
-            ax.set_title(f'SVD of probe representations'
-                         f'\nat {WHERE}'
-                         f'\nstep={step:,}'
-                         )
+            # note: animating the title does not work, so we use ax.text()
+            text = ax.text(0.7, 0.7, f'step={step:,}', transform=ax.transAxes)
             color = next(colors)
             y = (s / np.sum(s))[:NUM_SINGULAR_DIMS]
-            line, = ax.plot(y, color=color)
+            ax.plot(y, color=color)
+            fig.tight_layout()
+
+            # update figure to show in interactive window
             fig.canvas.draw()
             fig.canvas.flush_events()
+
+            text.remove()  # this must be called after flush_events() and before camera.snap()
+            # note: calling text.remove() above results in no text in animation, but in interactive window
+            camera.snap()
+
+        animation = camera.animate()
+        fn = label.replace('\n', '_') + f'_{job_name}_.gif'
+        animation.save(str(configs.Dirs.animations / fn))
