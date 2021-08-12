@@ -3,7 +3,7 @@ import pyprind
 import pandas as pd
 import numpy as np
 import torch
-from collections import defaultdict
+from collections import defaultdict, Counter
 from pathlib import Path
 from itertools import chain
 from typing import List
@@ -68,7 +68,12 @@ def main(param2val):
     tokens_original = text_original.split()
     print(f'Loaded {len(tokens_original):,} words.')
 
-    # collect all probes, they should be treated as whole words by tokenizer
+    # probes should never be split by tokenizer.
+    # so, we replace all probes by a single special token.
+    # using only 1 special token speeds tokenization - but we must re-populate probes after tokenization
+    special_token = '<probe>'
+
+    # get probes for evaluation, and check they are in the corpus
     probes_in_data = set()
     num_total = 0
     types_in_sentences = set(tokens_original)
@@ -81,28 +86,37 @@ def main(param2val):
             else:
                 print(f'probe={probe:<24} not in original data. Excluded.')
         print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in original data')
-    special_tokens = list(probes_in_data)  # special tokens should never be split
-    for special_token in special_tokens:
-        assert special_token in text_original
+    probes = list(probes_in_data)
+    for probe in probes:
+        assert probe in text_original
+
+    # replace probes in corpus with special_token
+    tokens_special = []
+    replaced_probes = []
+    for token in tokens_original:
+        if token in probes_in_data:
+            tokens_special.append(special_token)
+            replaced_probes.append(token)
+        else:
+            tokens_special.append(token)
 
     # tokenize text
-    tokenizer = train_bpe_tokenizer(transcripts, params.num_types, special_tokens=special_tokens)
     print(f'Tokenizing {len(transcripts)} transcripts..', flush=True)
-    tokens = []
-    for transcript in transcripts:
-        if tokenizer is not None:
-            tmp: List[str] = [t for t in tokenizer.encode(transcript,
-                                                          add_special_tokens=True).tokens
-                              if t not in {'Ġ', '', ' '}]
-        else:
-            tmp: List[str] = transcript.split()
-        tokens.extend(tmp)
+    tokenizer = train_bpe_tokenizer(transcripts, params.num_types, special_tokens=[special_token])
+    text_special = ' '.join(tokens_special)
+    tokens: List[str] = [t for t in tokenizer.encode(text_special, add_special_tokens=True).tokens
+                         if t not in {'Ġ', '', ' '}]
     print(f'{len(set(tokens)):,} types in tokenized text', flush=True)
     print(f'Tokenized text has {len(tokens) - len(tokens_original):,} more tokens than before tokenization')
 
+    # replace special token with original probes
+    replaced_probes_it = iter(replaced_probes)
+    tokens = [token if token != special_token else next(replaced_probes_it) for token in tokens]
+    assert len(list(replaced_probes_it)) == 0
+
     # check that added tokens were not split during tokenization
     num_errors = 0
-    for special_t in special_tokens:
+    for special_t in probes:
         if special_t not in tokens and special_t in tokens_original:
             print(f'{special_t:<24} occurs {tokens_original.count(special_t)} times in original text '
                   f'but not in tokenized text.')
@@ -126,7 +140,7 @@ def main(param2val):
     # prepare artificially generated start sequences for batching
     if params.start != 'none':
         print(f'Adding {params.start} start', flush=True)
-        editor = Editor(tokens, special_tokens, num_parts=params.num_parts)
+        editor = Editor(tokens, probes, num_parts=params.num_parts)
         tokens_start = editor.make_start_tokens(params.start,
                                                 num_left_words=configs.Start.num_left_words,
                                                 num_right_words=configs.Start.num_right_words)
@@ -157,15 +171,17 @@ def main(param2val):
 
     # load all structures, for evaluation, each consisting of a dict mapping probe -> category,
     # make sure each probe is actually in the training data (may not be if isolated in test data)
+    print(f'Checking that probes are in tokenized data...', flush=True)
+    counter_train = Counter(prep.tokens_train)
+    counter_test_ = Counter(prep.tokens_test_)
     structure2probe2cat = defaultdict(dict)
     for structure in configs.Eval.structures:
         probe2cat = load_probe2cat(project_path, structure, params.corpus)
         for probe, cat in probe2cat.items():
             if probe not in probes_in_data:
                 continue
-
-            num_in_train = prep.tokens_train.count(probe)
-            num_in_test_ = prep.tokens_test_.count(probe)
+            num_in_train = counter_train[probe]
+            num_in_test_ = counter_test_[probe]
             if num_in_train == 0:
                 if num_in_test_ == 0:
                     if params.num_transcripts is None:  # do not raise exception when debugging
@@ -173,6 +189,10 @@ def main(param2val):
 
             else:
                 structure2probe2cat[structure][probe] = cat
+
+    # TODO why is prep.num_types > params.num_types?
+    #  it's probably because tokenizer is trained to split probes into sub-words,
+    #  and the probes are added as whole-words later into prep
 
     # model
     model = RNN(

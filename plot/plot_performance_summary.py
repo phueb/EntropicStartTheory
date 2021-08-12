@@ -23,7 +23,7 @@ CONFIDENCE: float = 0.95
 TITLE = ''
 CONTEXT_TYPE = ['n', 'o'][0]
 PERFORMANCE_NAME = ['ma',  # 0
-                    'ra',  # 1
+                    'ra',  # 1  # TODO test this
                     'ba',  # 2
                     'th',  # 3
                     'dp',  # 4
@@ -41,7 +41,10 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'fi',  # 16
                     'fo',  # 17
                     'co',  # 18
-                    ][9]
+                    'cc',  # 19
+                    ][1]
+
+param2requests = {'reverse': [True, False]}
 
 # collect summaries
 summaries = []

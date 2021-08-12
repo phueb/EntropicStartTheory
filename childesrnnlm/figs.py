@@ -227,6 +227,9 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'co':
         y_label = 'Condition Number'
         y_lims = [0, 10_000]
+    elif performance_name == 'cc':
+        y_label = 'Within-Category Cosine Sim.'
+        y_lims = None
     else:
         raise AttributeError
 

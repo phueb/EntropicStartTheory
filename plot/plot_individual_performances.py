@@ -38,7 +38,9 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'fi',  # 16
                     'fo',  # 17
                     'co',  # 18
-                    ][6]
+                    ][13]
+
+param2requests = {'reverse': [True, False]}
 
 # collect summaries
 summaries = []

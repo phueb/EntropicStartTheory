@@ -3,10 +3,11 @@ from typing import Optional
 from pathlib import Path
 from matplotlib import pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage, cophenet
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import pdist, squareform
 from scipy.stats import sem, t
 
 from ludwig.results import gen_param_paths
+
 
 from childesrnnlm import __name__
 from childesrnnlm.params import param2default, param2requests
@@ -15,14 +16,14 @@ from childesrnnlm.figs import make_summary_fig
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH: Optional[Path] = None  # configs.Dirs.runs if loading runs locally or None if from ludwig
 
-METRIC = 'cosine'
-METHOD = 'single'
+METRIC = ['cosine', 'euclidean'][0]  # cosine
+METHOD = ['single', 'average', 'complete', 'ward'][1]  # complete
 
 WHERE = ['input', 'output'][1]
 FIRST_NUM_STEPS = 100  # the number of first training steps (otherwise, script takes long)
 
 PLOT_DENDROGRAM = False
-Y_LIMS = [0, 1]
+Y_LIMS = [0, 2]
 SHOW_NUM_CLUSTERS = 128
 LEAF_FONT_SIZE = 6
 
@@ -63,7 +64,6 @@ for param_path, label in gen_param_paths(project_name,
 
         # load representations at each step
         for col_id, npz_path in enumerate(npz_paths):
-
             print(f'Loading representations from archive at {npz_path.relative_to(param_path.parent)}')
             with np.load(npz_path, allow_pickle=True) as loaded:
                 if WHERE == 'input':
@@ -78,7 +78,7 @@ for param_path, label in gen_param_paths(project_name,
             # do clustering
             Z = linkage(probe_reps, method=METHOD, metric=METRIC)
             # compute cophenetic coefficient - used to check that linkage is good and if data is nested
-            c, _ = cophenet(Z, pdist(probe_reps, metric=METRIC))
+            c, cophenetic_sim_mat = cophenet(Z, pdist(probe_reps, metric=METRIC))
             print(f'cophenetic coefficient={c:.2f}')
 
             # collect cophenetic coefficient
@@ -88,7 +88,6 @@ for param_path, label in gen_param_paths(project_name,
 
             # plot
             if PLOT_DENDROGRAM:
-
                 plt.title(f'Hierarchical Clustering Dendrogram (truncated)'
                           f'\nprobe representations at {WHERE}'
                           f'\n{label}'  # TODO remove string "n=..."
@@ -134,6 +133,11 @@ for param_path, label in gen_param_paths(project_name,
     summary = (x, y_mean, h, label, job_id)
     summaries.append(summary)  # summary contains: x, mean_y, margin-of-error, label, job_id
 
+if WHERE == 'output':
+    y_lims = [0.4, 0.8]
+else:
+    y_lims = [0, 1]
+
 
 # plot cophenetic coefficient across training
 # note: this graph should be shown in Pycharm SciView, and will not be drawn if Python Scientific is off
@@ -145,6 +149,6 @@ y_label = f'Cophenetic Coefficient' \
 fig = make_summary_fig(summaries,
                        ylabel=y_label,
                        figsize=(6, 4),
-                       ylims=[0, 1],
+                       ylims=y_lims,
                        )
 fig.show()
