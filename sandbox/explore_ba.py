@@ -74,7 +74,7 @@ for param_path, label in gen_param_paths(project_name,
                 raise AttributeError('Invalid arg to METRIC')
 
             # TODO ba scorer only searches sim threshold range of 0 to 1.o but euclidean sim range extends byond 1.0
-            ba, th = ba_scorer.calc_score(sim_mat, ba_scorer.probe_store.gold_sims, 'ba',
+            ba, th = ba_scorer.calc_score(sim_mat, ba_scorer.gold_sims, 'ba',
                                       return_threshold=True)
             print(f'best threshold={th}')
 

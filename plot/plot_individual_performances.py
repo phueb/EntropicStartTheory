@@ -12,35 +12,17 @@ from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # configs.Dirs.runs if loading runs locally or None if loading data from ludwig
-PROBES_NAME: str = 'sem-2021'
+STRUCTURE_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
-CONTEXT_TYPE = ['n', 'o'][0]
-PERFORMANCE_NAME = ['ma',  # 0
-                    'ra',  # 1
-                    'ba',  # 2
-                    'th',  # 3
-                    'dp',  # 4
-                    'du',  # 5
-                    'ws',  # 6
-                    'as',  # 7
-                    'ed',  # 8
-                    'cs',  # 9
-                    'si',  # 10
-                    'sd',  # 11
-                    'pi',  # 12
-                    'ep',  # 13
-                    'eo',  # 14
-                    'db',  # 15
-                    'fi',  # 16
-                    'fo',  # 17
-                    'co',  # 18
-                    ][13]
 
-param2requests = {'reverse': [True, False]}
+
+# TODO naming scheme
+
+pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{STRUCTURE_NAME}.csv'
 
 # collect summaries
 summaries = []
@@ -51,7 +33,7 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
-    pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{PROBES_NAME}.csv'
+
     for job_id, path_to_csv in enumerate(sorted(param_path.rglob(pattern))):
         s = pd.read_csv(path_to_csv, index_col=0, squeeze=True)
         y_mean = s.values

@@ -5,7 +5,6 @@ import numpy as np
 from typing import Optional
 from pathlib import Path
 from matplotlib import pyplot as plt
-from matplotlib.lines import Line2D
 from collections import defaultdict
 from celluloid import Camera
 
@@ -26,7 +25,7 @@ if WHERE == 'output':
 else:
     Y_LIMS = [0, 0.025]
 
-param2requests = {'reverse': [True, False]}
+# param2requests = {'reverse': [True, False]}
 
 # init collection
 step2param_name2probe_reps_list = defaultdict(dict)  # representations is a list of matrices

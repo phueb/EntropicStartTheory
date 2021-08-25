@@ -165,13 +165,13 @@ def get_y_label_and_lims(performance_name: str,
                          add_confidence_interval_to_label: bool,
                          ) -> Tuple[str, List[float]]:
 
-    # TODO this function assumes that context_type = 'n' instead of 'o'
+    # TODO this function assumes that context_type = 'n' instead of 'o' - make this more explicit
 
     if performance_name == 'ma':
         y_label = 'Magnitude of Representations'
         y_lims = [0.5, 1.8]
-    elif performance_name == 'ra':
-        y_label = 'Raggedness of In-Out Mapping'
+    elif performance_name == 'pr':
+        y_label = 'Divergence actual vs. theoretical prototype'
         y_lims = [0, 0.5]
     elif performance_name == 'th':
         y_label = 'Sim. Threshold at best Bal.Acc.'
@@ -185,9 +185,9 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'dp':
         y_label = 'Divergence from Prototype'
         y_lims = [0.0, 1.0]
-    elif performance_name == 'du':
-        y_label = 'Divergence from Unigram Prototype'
-        y_lims = [0.0, 0.7]
+    elif performance_name == 'cf':
+        y_label = 'Left-context Fragmentation'
+        y_lims = [0.8, 1.0]
     elif performance_name == 'ws':
         y_label = 'Within-Category Spread'
         y_lims = [0.0, 0.6]

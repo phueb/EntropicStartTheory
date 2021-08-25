@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from collections import defaultdict, Counter
 from pathlib import Path
-from itertools import chain
+from itertools import chain, product
 from typing import List
 import random
 
@@ -17,21 +17,20 @@ from entropicstart.editor import Editor
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
-from childesrnnlm.evaluation import update_ma_performance
-from childesrnnlm.evaluation import update_ra_performance
-from childesrnnlm.evaluation import update_ba_performance
-from childesrnnlm.evaluation import update_pp_performance
-from childesrnnlm.evaluation import update_dp_performance
-from childesrnnlm.evaluation import update_du_performance
-from childesrnnlm.evaluation import update_ws_performance
-from childesrnnlm.evaluation import update_as_performance
-from childesrnnlm.evaluation import update_di_performance
-from childesrnnlm.evaluation import update_si_performance
-from childesrnnlm.evaluation import update_sd_performance
-from childesrnnlm.evaluation import update_pi_performance
-from childesrnnlm.evaluation import update_ep_performance
-from childesrnnlm.evaluation import update_fr_performance
-from childesrnnlm.representation import make_representations_without_context, make_output_representations
+from childesrnnlm.evaluation import calc_perplexity
+from childesrnnlm.evaluation import eval_ma_performance
+from childesrnnlm.evaluation import eval_pr1_performance
+from childesrnnlm.evaluation import eval_ba_performance
+from childesrnnlm.evaluation import eval_pr2_performance
+from childesrnnlm.evaluation import eval_pd_performance
+from childesrnnlm.evaluation import eval_cs_performance
+from childesrnnlm.evaluation import eval_si_performance
+from childesrnnlm.evaluation import eval_sd_performance
+from childesrnnlm.evaluation import eval_op_performance
+from childesrnnlm.evaluation import eval_en_performance
+from childesrnnlm.evaluation import eval_fr_performance
+from childesrnnlm.evaluation import get_context2f
+from childesrnnlm.representation import make_inp_representations, make_out_representations
 from childesrnnlm.params import Params
 from childesrnnlm.rnn import RNN
 
@@ -247,84 +246,140 @@ def main(param2val):
             eval_steps.append(step)
             model.eval()
 
-            # save probe representations to shared drive (for offline clustering analysis)
+            # evaluate perplexity
+            if configs.Eval.train_pp:
+                train_pp = calc_perplexity(model, criterion, prep, is_test=False)
+                performance['train_pp'].append(train_pp)
+            if configs.Eval.min_num_test_tokens > 0:
+                test_pp = calc_perplexity(model, criterion, prep, is_test=True)
+                performance['test_pp'].append(test_pp)
+
+            # evaluate the semantic space using probe words
             for structure_name in configs.Eval.structures:
+
+                # get probes
                 probe2cat = structure2probe2cat[structure_name]
                 probes = sorted(probe2cat.keys())
-                probe_reps_inp = make_representations_without_context(model, probes, prep)
-                probe_reps_out = make_output_representations(model, probes, prep)
+
+                # save probe representations to shared drive (for offline clustering analysis)
+                probe_reps_inp = make_inp_representations(model, probes, prep, 'n')
+                probe_reps_out = make_out_representations(model, probes, prep, 'n')
                 np.savez_compressed(save_path / f'probe_reps_{step:0>12}',
                                     probe_reps_inp=probe_reps_inp,
                                     probe_reps_out=probe_reps_out)
 
-            # evaluate perplexity
-            performance = update_pp_performance(performance, model, criterion, prep)
+                for direction, location, context_type in product(
+                        configs.Eval.directions,
+                        configs.Eval.locations,
+                        configs.Eval.context_types,
+                ):
 
-            if configs.Eval.calc_ma:
-                print('Computing magnitude...', flush=True)
-                start_eval = time.time()
-                performance = update_ma_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_ra:
-                print('Computing raggedness...', flush=True)
-                start_eval = time.time()
-                performance = update_ra_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_ba:
-                print('Computing balanced accuracy...', flush=True)
-                start_eval = time.time()
-                performance = update_ba_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_ws:
-                print('Computing within-category spread...', flush=True)
-                start_eval = time.time()
-                performance = update_ws_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_as:
-                print('Computing across-category spread...', flush=True)
-                start_eval = time.time()
-                performance = update_as_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_di:
-                print('Computing Euclidean and cosine distances...', flush=True)
-                start_eval = time.time()
-                performance = update_di_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_dp:
-                print('Computing distance-to-prototype...', flush=True)
-                start_eval = time.time()
-                performance = update_dp_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_du:
-                print('Computing distance-to-unigram...', flush=True)
-                start_eval = time.time()
-                performance = update_du_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_si:
-                print('Computing silhouette score...', flush=True)
-                start_eval = time.time()
-                performance = update_si_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_sd:
-                print('Computing S_Dbw...', flush=True)
-                start_eval = time.time()
-                performance = update_sd_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_pi:
-                print('Computing distance between origin and prototype-at-input...', flush=True)
-                start_eval = time.time()
-                performance = update_pi_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_ep:
-                print('Computing entropy of probe representations at output...', flush=True)
-                start_eval = time.time()
-                performance = update_ep_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
-            if configs.Eval.calc_fr:
-                print('Computing fragmentation...', flush=True)
-                start_eval = time.time()
-                performance = update_fr_performance(performance, model, prep, structure2probe2cat)
-                print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+                    performance_name = '{}_' + f'{structure_name}_{direction}_{location}_{context_type}'
+
+                    # get words for evaluation
+                    if direction in {'l', 'r'}:
+                        type_eval2f = get_context2f(prep, probes, direction)
+                        types_eval = list(type_eval2f.keys())
+                    elif direction == 'c':
+                        type_eval2f = None  # we do not weight probes by their frequency
+                        types_eval = probes
+                    else:
+                        raise AttributeError('Invalid arg for direction.')
+
+                    print(f'Found {len(types_eval):,} types for evaluation', flush=True)
+                    print(f'Evaluating representations '
+                          f'with direction={direction} location={location} context_type={context_type}', flush=True)
+
+                    # make representations
+                    if location == 'out':
+                        representations = make_out_representations(model, types_eval, prep, context_type)
+                    elif location == 'inp':
+                        representations = make_inp_representations(model, types_eval, prep, context_type)
+                    else:
+                        raise AttributeError('Invalid arg to location')
+
+                    assert len(representations) > 0
+                    assert np.ndim(representations) == 2
+
+                    if configs.Eval.calc_ba and direction == 'c':
+                        print('Computing balanced accuracy...', flush=True)
+                        start_eval = time.time()
+                        res = eval_ba_performance(representations, probe2cat)
+                        performance.setdefault(performance_name.format('ba'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_si and direction == 'c':
+                        print('Computing silhouette score...', flush=True)
+                        start_eval = time.time()
+                        res = eval_si_performance(representations, probe2cat)
+                        performance.setdefault(performance_name.format('si'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_sd and direction == 'c':
+                        print('Computing S_Dbw...', flush=True)
+                        start_eval = time.time()
+                        res = eval_sd_performance(representations, probe2cat)
+                        performance.setdefault(performance_name.format('sd'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_ma:
+                        print('Computing magnitude...', flush=True)
+                        start_eval = time.time()
+                        res = eval_ma_performance(representations)
+                        performance.setdefault(performance_name.format('ma'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_pr1 and location == 'inp' and context_type == 'n':
+                        print('Computing actual-prototype to theoretical-prototype distance...', flush=True)
+                        start_eval = time.time()
+                        res = eval_pr1_performance(representations, types_eval, prep, model)
+                        performance.setdefault(performance_name.format('pr1'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_pr2 and location == 'out' and context_type == 'n':
+                        print('Computing exemplar to theoretical-prototype distance...', flush=True)
+                        start_eval = time.time()
+                        res = eval_pr2_performance(representations, types_eval, prep)
+                        performance.setdefault(performance_name.format('pr2'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_pd and location == 'out':
+                        print('Computing pairwise divergences...', flush=True)
+                        start_eval = time.time()
+                        res = eval_pd_performance(representations)
+                        performance.setdefault(performance_name.format('pd'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_cs:
+                        print('Computing cosine similarity...', flush=True)
+                        start_eval = time.time()
+                        cs, cc = eval_cs_performance(representations, probe2cat)
+                        performance.setdefault(performance_name.format('cs'), []).append(cs)
+                        performance.setdefault(performance_name.format('cc'), []).append(cc)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_op and location == 'inp':
+                        print('Computing divergence between origin and prototype...', flush=True)
+                        start_eval = time.time()
+                        res = eval_op_performance(model, prep, types_eval)
+                        performance.setdefault(performance_name.format('op'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_en and location == 'out':
+                        print('Computing entropy of representations and of origin...', flush=True)
+                        start_eval = time.time()
+                        ep, eo = eval_en_performance(representations, model)
+                        performance.setdefault(performance_name.format('ep'), []).append(ep)
+                        performance.setdefault(performance_name.format('eo'), []).append(eo)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_fr:
+                        print('Computing fragmentation and condition-number...', flush=True)
+                        start_eval = time.time()
+                        fr, co = eval_fr_performance(representations, type_eval2f)
+                        performance.setdefault(performance_name.format('fr'), []).append(fr)
+                        performance.setdefault(performance_name.format('co'), []).append(co)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():
                 if not v:

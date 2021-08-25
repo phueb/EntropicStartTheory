@@ -3,7 +3,7 @@ notes:
 
 age-order effect for AO-Newsela with dedicated semantic structure (created in August 2021)
 is most prominent with vocab size = 6K and 8K and disappears at 16K.
-the effect also disappears with num_parts=4
+the effect also disappears with num_parts=4, and num_parts=16, and num_iterations=(32,4), and num_iterations=(20, 20)
 """
 from dataclasses import dataclass
 from typing import Tuple, Union
@@ -14,10 +14,8 @@ param2requests = {
 
     # 'flavor': ['srn'],
 
-    # TODO try tuning num_iterations for aonewsela
-
-    'corpus': ['aonewsela'],
-    'num_parts': [16],
+    # 'corpus': ['aonewsela'],
+    # 'num_iterations': [(20, 20)],
     # 'num_types': [6_000],
 
     # 'start': ['entropic', 'singleton', 'none'],

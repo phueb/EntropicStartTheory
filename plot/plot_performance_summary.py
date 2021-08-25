@@ -10,7 +10,6 @@ from childesrnnlm.params import param2default, param2requests
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # configs.Dirs.runs if loading runs locally or None if loading data from ludwig
-PROBES_NAME: str = 'sem-2021'
 
 LABEL_N: bool = True                        # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
@@ -21,13 +20,27 @@ LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # 
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
-CONTEXT_TYPE = ['n', 'o'][0]
+
+# TODO naming convention
+STRUCTURE_NAME: str = 'sem-2021'
+DIRECTION = ['l',  # left-of-probe,
+             'c',  # center (probe)
+             'r',  # right-of-probe
+             ][0]
+LOCATION = ['inp',  # input layer
+            'out',  # output layer
+            ][0]
+CONTEXT_TYPE = ['n',  # no context
+                'o',  # ordered context
+                ][0]
+
 PERFORMANCE_NAME = ['ma',  # 0
-                    'ra',  # 1  # TODO test this
+                    'pr1',  # 1
+                    'pr2',  # 1
                     'ba',  # 2
                     'th',  # 3
                     'dp',  # 4
-                    'du',  # 5
+                    'cf',  # 5
                     'ws',  # 6
                     'as',  # 7
                     'ed',  # 8
@@ -42,9 +55,12 @@ PERFORMANCE_NAME = ['ma',  # 0
                     'fo',  # 17
                     'co',  # 18
                     'cc',  # 19
-                    ][1]
+                    ][5]
 
-param2requests = {'reverse': [True, False]}
+pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{STRUCTURE_NAME}'
+
+
+# param2requests = {'reverse': [True, False]}
 
 # collect summaries
 summaries = []
@@ -56,7 +72,6 @@ for param_path, label in gen_param_paths(project_name,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
 
-    pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{PROBES_NAME}'
     summary = make_summary(pattern, param_path, label, CONFIDENCE)
     summaries.append(summary)  # summary contains: x, mean_y, margin-of-error, label, job_id
 

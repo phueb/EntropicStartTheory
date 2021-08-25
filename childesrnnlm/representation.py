@@ -14,16 +14,16 @@ def get_weights(model):
     return {'ih': ih, 'hh': hh}
 
 
-def make_representations_without_context(model: RNN,
-                                         probes: List[str],
-                                         prep: Prep,
-                                         ):
+def make_inp_representations_without_context(model: RNN,
+                                             tokens: List[str],
+                                             prep: Prep,
+                                             ):
     """
     make word representations without context by retrieving embeddings
     """
     vocab_reps = model.embed.weight.detach().cpu().numpy()
 
-    w_ids = [prep.token2id[w] for w in probes]
+    w_ids = [prep.token2id[w] for w in tokens]
     res = vocab_reps[w_ids]
 
     # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
@@ -32,17 +32,17 @@ def make_representations_without_context(model: RNN,
     return res
 
 
-def make_representations_with_context(model: RNN,
-                                      probes: List[str],
-                                      prep: Prep,
-                                      verbose=False,
-                                      ) -> np.array:
+def make_inp_representations_with_context(model: RNN,
+                                          tokens: List[str],
+                                          prep: Prep,
+                                          verbose=False,
+                                          ) -> np.array:
     """
     make word representations by averaging over all contextualized representations
     """
     all_windows = prep.reordered_windows
 
-    w_ids = [prep.token2id[w] for w in probes]
+    w_ids = [prep.token2id[w] for w in tokens]
     num_words = len(w_ids)
     res = np.zeros((num_words, model.hidden_size))
     for n, token_id in enumerate(w_ids):
@@ -58,8 +58,8 @@ def make_representations_with_context(model: RNN,
         assert dim1 == prep.context_size, (inputs.shape, x.shape, prep.context_size)
         if verbose:
             print(f'Made {num_exemplars:>6} representations for {prep.types[token_id]:<12}')
-        probe_exemplar_reps = model(inputs)['last_encodings'].detach().cpu().numpy()  # [num exemplars, hidden_size]
-        res[n] = probe_exemplar_reps.mean(axis=0)
+        representations = model(inputs)['last_encodings'].detach().cpu().numpy()  # [num exemplars, hidden_size]
+        res[n] = representations.mean(axis=0)
 
     # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
     res = res.astype(np.float64)
@@ -67,16 +67,35 @@ def make_representations_with_context(model: RNN,
     return res
 
 
-def make_output_representations(model: RNN,
-                                probes: List[str],
-                                prep: Prep,
-                                ) -> np.array:
+def make_inp_representations(model: RNN,
+                             tokens: List[str],
+                             prep: Prep,
+                             context_type: str,
+                             ) -> np.array:
+    if context_type == 'n':
+        return make_inp_representations_without_context(model, tokens, prep)
+    elif context_type == 'o':
+        return make_inp_representations_with_context(model, tokens, prep)
+    else:
+        raise AttributeError('Invalid arg to context_type')
+
+
+def make_out_representations(model: RNN,
+                             tokens: List[str],
+                             prep: Prep,
+                             context_type: str,
+                             ) -> np.array:
 
     # feed-forward
-    w_ids = [prep.token2id[w] for w in probes]
-    x = np.expand_dims(np.array(w_ids), axis=1)
-    inputs = torch.LongTensor(x).cuda()
-    logits = model(inputs)['logits'].detach().cpu().numpy()
+    if context_type == 'n':
+        w_ids = [prep.token2id[w] for w in tokens]
+        x = np.expand_dims(np.array(w_ids), axis=1)
+        inputs = torch.LongTensor(x).cuda()
+        logits = model(inputs)['logits'].detach().cpu().numpy()
+    elif context_type == 'o':
+        raise NotImplementedError
+    else:
+        raise AttributeError('Invalid arg to context_type')
 
     # softmax (requires 2 dimensions)
     # if only one representation is requested, first dimension is lost in RNN output, so we add it again.

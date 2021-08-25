@@ -21,7 +21,7 @@ FIRST_NUM_STEPS = 100  # the number of first training steps (otherwise, script t
 METRIC = 'euclidean'
 DIM_ID = 0  # zero to use first singular dimension
 
-param2requests = {'reverse': [True, False]}
+# param2requests = {'reverse': [True, False]}
 
 # init collection
 param_name2y_mat = {}   # matrix has shape (num jobs, num steps)

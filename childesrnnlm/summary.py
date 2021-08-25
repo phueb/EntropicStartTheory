@@ -7,6 +7,7 @@ from scipy.stats import sem, t
 
 from childesrnnlm import configs
 from childesrnnlm.params import Params
+from childesrnnlm.io import load_probe2cat
 
 
 def save_summary_to_txt(summary: Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]],
@@ -62,10 +63,13 @@ def make_summary(pattern: str,
         param2val = yaml.load(f, Loader=yaml.FullLoader)
     params = Params.from_param2val(param2val)
 
-    # align curves to start of training corpus, not start of artificial pre-training data  # todo improve
+    # align curves to start of training corpus, not start of artificial pre-training data (created by entropic-start)
     if params.start != 'none':
-        # the calculation is not adjusted for pruning performed by preppy
-        num_probes = 699
+        num_probes = 0
+        for structure in configs.Eval.structures:
+            probe2cat = load_probe2cat(configs.Dirs.root, structure, params.corpus)
+            num_probes += len(probe2cat)
+        # TODO the calculation is not adjusted for pruning performed by preppy
         num_start_sequences = configs.Start.num_right_words * configs.Start.num_left_words * num_probes
         num_start_tokens = num_start_sequences * 3
         num_shifted_steps = num_start_tokens // params.batch_size * params.num_iterations[0]

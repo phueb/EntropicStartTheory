@@ -16,7 +16,7 @@ RUNS_PATH: Optional[Path] = None  # configs.Dirs.runs if loading runs locally or
 WHERE = ['input', 'output'][1]
 FIRST_NUM_STEPS = 100  # the number of first training steps (otherwise, script takes long)
 
-param2requests = {'reverse': [True, False]}
+# param2requests = {'reverse': [True, False]}
 
 # init collection
 param_name2results_mat = {}  # matrix has shape (num jobs, num steps)
