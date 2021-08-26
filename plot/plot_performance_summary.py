@@ -21,43 +21,38 @@ FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
 
-# TODO naming convention
 STRUCTURE_NAME: str = 'sem-2021'
+
 DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
              'r',  # right-of-probe
-             ][0]
+             ][1]
+
 LOCATION = ['inp',  # input layer
             'out',  # output layer
-            ][0]
+            ][1]
+
 CONTEXT_TYPE = ['n',  # no context
                 'o',  # ordered context
                 ][0]
 
-PERFORMANCE_NAME = ['ma',  # 0
-                    'pr1',  # 1
-                    'pr2',  # 1
-                    'ba',  # 2
-                    'th',  # 3
-                    'dp',  # 4
-                    'cf',  # 5
-                    'ws',  # 6
-                    'as',  # 7
-                    'ed',  # 8
-                    'cs',  # 9
-                    'si',  # 10
-                    'sd',  # 11
-                    'pi',  # 12
-                    'ep',  # 13
-                    'eo',  # 14
-                    'db',  # 15
-                    'fi',  # 16
-                    'fo',  # 17
-                    'co',  # 18
-                    'cc',  # 19
-                    ][5]
+PERFORMANCE_NAME = ['ba',  # 0
+                    'si',  # 1
+                    'sd',  # 2
+                    'ma',  # 3
+                    'pr1',  # 4
+                    'pr2',  # 5
+                    'pd',  # 6
+                    'cs',  # 7
+                    'cc',  # 8
+                    'op',  # 9
+                    'ep',  # 10
+                    'eo',  # 11
+                    'fr',  # 12
+                    'co',  # 13
+                    ][12]
 
-pattern = f'{PERFORMANCE_NAME}_{CONTEXT_TYPE}_{STRUCTURE_NAME}'
+pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 
 
 # param2requests = {'reverse': [True, False]}
@@ -84,6 +79,8 @@ summaries = sort_and_print_summaries(summaries)
 
 # plot
 y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME,
+                                       DIRECTION,
+                                       LOCATION,
                                        CONTEXT_TYPE,
                                        add_confidence_interval_to_label=True)
 fig = make_summary_fig(summaries,

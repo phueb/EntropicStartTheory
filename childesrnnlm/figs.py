@@ -161,6 +161,8 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
 
 
 def get_y_label_and_lims(performance_name: str,
+                         direction: str,
+                         location: str,
                          context_type: str,
                          add_confidence_interval_to_label: bool,
                          ) -> Tuple[str, List[float]]:
@@ -173,12 +175,6 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'pr':
         y_label = 'Divergence actual vs. theoretical prototype'
         y_lims = [0, 0.5]
-    elif performance_name == 'th':
-        y_label = 'Sim. Threshold at best Bal.Acc.'
-        if context_type == 'n':
-            y_lims = [0, 0.2]
-        else:
-            y_lims = [0.6, 1.0]
     elif performance_name == 'ba':
         y_label = 'Balanced Accuracy'
         y_lims = [0.5, 0.7]
@@ -218,25 +214,36 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'db':
         y_label = 'Divergence of Bias from Prototype'
         y_lims = [0, 0.70]
-    elif performance_name == 'fi':
-        y_label = 'Fragmentation at Input'
-        y_lims = [0.9, 1]
-    elif performance_name == 'fo':
-        y_label = 'Fragmentation at Output'
-        y_lims = [0, 1]
+    elif performance_name == 'fr':
+        y_label = 'Fragmentation'
+        y_lims = [0.8, 1.0] if location == 'out' else None
     elif performance_name == 'co':
         y_label = 'Condition Number'
-        y_lims = [0, 10_000]
+        y_lims = [0, 1e36]
     elif performance_name == 'cc':
         y_label = 'Within-Category Cosine Sim.'
         y_lims = None
     else:
         raise AttributeError
 
+    if direction == 'l':
+        y_label += '\nLeft Context Words'
+    elif direction == 'c':
+        y_label += '\nProbe Words'
+    else:
+        raise AttributeError('Invalid arg to direction')
+
+    if location == 'inp':
+        y_label += '\nInput Layer'
+    elif location == 'out':
+        y_label += '\nOutput Layer'
+    else:
+        raise AttributeError('Invalid arg to location')
+
     if context_type == 'n':
-        y_label += '\n(Non-contextualized Representations)'
+        y_label += '\nNon-contextualized'
     elif context_type == 'o':
-        y_label += '\n(Contextualized Representations)'
+        y_label += '\nContextualized'
     else:
         raise AttributeError('Invalid arg to context_type')
 
