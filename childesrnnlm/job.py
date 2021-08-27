@@ -26,8 +26,10 @@ from childesrnnlm.evaluation import eval_pr2_performance
 from childesrnnlm.evaluation import eval_ma_performance
 from childesrnnlm.evaluation import eval_pd_performance
 from childesrnnlm.evaluation import eval_cs_performance
+from childesrnnlm.evaluation import eval_cc_performance
 from childesrnnlm.evaluation import eval_op_performance
 from childesrnnlm.evaluation import eval_en_performance
+from childesrnnlm.evaluation import eval_eo_performance
 from childesrnnlm.evaluation import eval_fr_performance
 from childesrnnlm.evaluation import get_context2f
 from childesrnnlm.representation import make_inp_representations, make_out_representations
@@ -353,9 +355,15 @@ def main(param2val):
                     if configs.Eval.calc_cs:
                         print('Computing cosine similarity...', flush=True)
                         start_eval = time.time()
-                        cs, cc = eval_cs_performance(representations, probe2cat)
-                        performance.setdefault(performance_name.format('cs'), []).append(cs)
-                        performance.setdefault(performance_name.format('cc'), []).append(cc)
+                        res = eval_cs_performance(representations)
+                        performance.setdefault(performance_name.format('cs'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_cc:
+                        print('Computing cosine similarity within each category...', flush=True)
+                        start_eval = time.time()
+                        res = eval_cc_performance(representations, probe2cat)
+                        performance.setdefault(performance_name.format('cc'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
                     if configs.Eval.calc_op and location == 'inp':
@@ -366,11 +374,17 @@ def main(param2val):
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
                     if configs.Eval.calc_en and location == 'out':
-                        print('Computing entropy of representations and of origin...', flush=True)
+                        print('Computing entropy of representations...', flush=True)
                         start_eval = time.time()
-                        ep, eo = eval_en_performance(representations, model)
-                        performance.setdefault(performance_name.format('ep'), []).append(ep)
-                        performance.setdefault(performance_name.format('eo'), []).append(eo)
+                        res = eval_en_performance(representations)
+                        performance.setdefault(performance_name.format('en'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_eo and location == 'inp':
+                        print('Computing entropy of representations of origin...', flush=True)
+                        start_eval = time.time()
+                        res = eval_eo_performance(representations)
+                        performance.setdefault(performance_name.format('eo'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
                     if configs.Eval.calc_fr:

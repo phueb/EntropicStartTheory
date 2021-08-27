@@ -27,9 +27,9 @@ class Eval:
     ws_max_rows = 128
     as_max_rows = 128  # all 700 probes with 8K vocab takes 15min, but 128 probes require only 20 secs
 
-    directions = ['l', 'c']  # TODO test
-    locations = ['inp', 'out']  # TODO test
-    context_types = ['n']  # TODO test 'o'
+    directions = ['l', 'c', 'r']
+    locations = ['inp', 'out']
+    context_types = ['n', 'o']
 
     # set to True to perform an evaluation
     calc_ba = bool(1)  # balanced accuracy
@@ -39,9 +39,11 @@ class Eval:
     calc_pr1 = bool(1)  # divergence between actual and theoretical prototype
     calc_pr2 = bool(1)  # divergence between exemplars and theoretical prototype
     calc_pd = bool(1)  # pairwise divergences  - does not replicate findings from osf.io paper (2019)
-    calc_cs = bool(1)  # Euclidean and cosine distance
+    calc_cs = bool(1)  # cosine similarity
+    calc_cc = bool(1)  # cosine similarity within each category
     calc_op = bool(1)  # distance of prototype at input to origin
     calc_en = bool(1)  # entropy
+    calc_eo = bool(1)  # entropy of representation of origin
     calc_fr = bool(1)  # fragmentation
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect

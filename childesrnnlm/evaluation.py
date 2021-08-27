@@ -218,7 +218,6 @@ def eval_pd_performance(representations: np.array,
 
 
 def eval_cs_performance(representations: np.array,
-                        probe2cat: Dict[str, str]
                         ):
     """
     cosine similarity.
@@ -230,7 +229,17 @@ def eval_cs_performance(representations: np.array,
     # calc average cosine similarity off-diagonals (ignore 1s)
     sim = cosine_similarity(representations)
     masked = np.ma.masked_where(np.eye(*sim.shape), sim)
-    cs = masked.mean()
+    res = masked.mean()
+
+    return res
+
+
+def eval_cc_performance(representations: np.array,
+                        probe2cat: Dict[str, str]
+                        ):
+    """
+    cosine similarity averaged within each category
+    """
 
     # calc cosine similarity separately for same-category probes
     categories = sorted(set(probe2cat.values()))
@@ -244,9 +253,9 @@ def eval_cs_performance(representations: np.array,
         masked = np.ma.masked_where(np.eye(*sim.shape), sim)
         cc_cat = masked.mean()
         cc_total += cc_cat
-    cc = cc_total / len(categories)
+    res = cc_total / len(categories)
 
-    return cs, cc
+    return res
 
 
 def eval_op_performance(model: RNN,
@@ -254,7 +263,7 @@ def eval_op_performance(model: RNN,
                         types_eval: List[str]
                         ):
     """
-    divergence of origin from teh prototype.
+    divergence of origin from the prototype.
 
     do this by computing the output that results from a vector of zeros (origin),
     and computing its divergence from output distribution that corresponds to the prototype of types_eval
@@ -280,10 +289,20 @@ def eval_op_performance(model: RNN,
 
 
 def eval_en_performance(representations: np.array,
-                        model: RNN,
                         ):
     """
     entropy of probe representations at output layer and at origin.
+    """
+
+    res = drv.entropy_pmf(representations).mean()
+
+    return res
+
+
+def eval_eo_performance(model: RNN,
+                        ):
+    """
+    entropy of representation at output of origin.
     """
 
     # compute output that results at origin
@@ -296,13 +315,9 @@ def eval_en_performance(representations: np.array,
         logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
         representation_origin = softmax(logits[np.newaxis, :])  # softmax requires num dim = 2
 
-    # compute entropy of representations
-    ep = drv.entropy_pmf(representations).mean()
+    res = drv.entropy_pmf(representation_origin).mean()
 
-    # compute entropy of origin
-    eo = drv.entropy_pmf(representation_origin).mean()
-
-    return ep, eo
+    return res
 
 
 def eval_fr_performance(representations: np.array,
