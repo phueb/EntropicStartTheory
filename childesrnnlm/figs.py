@@ -167,61 +167,44 @@ def get_y_label_and_lims(performance_name: str,
                          add_confidence_interval_to_label: bool,
                          ) -> Tuple[str, List[float]]:
 
-    # TODO this function assumes that context_type = 'n' instead of 'o' - make this more explicit
-
-    if performance_name == 'ma':
-        y_label = 'Magnitude of Representations'
-        y_lims = [0.5, 1.8]
-    elif performance_name == 'pr':
-        y_label = 'Divergence actual vs. theoretical prototype'
-        y_lims = [0, 0.5]
-    elif performance_name == 'ba':
+    if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
         y_lims = [0.5, 0.7]
-    elif performance_name == 'dp':
-        y_label = 'Divergence from Prototype'
-        y_lims = [0.0, 1.0]
-    elif performance_name == 'cf':
-        y_label = 'Left-context Fragmentation'
-        y_lims = [0.8, 1.0]
-    elif performance_name == 'ws':
-        y_label = 'Within-Category Spread'
-        y_lims = [0.0, 0.6]
-    elif performance_name == 'as':
-        y_label = 'Across-Category Spread'
-        y_lims = [0, 0.7]
-    elif performance_name == 'ed':
-        y_label = 'Average Pairwise Euclidean Distance'
-        y_lims = [0.8, 3]
-    elif performance_name == 'cs':
-        y_label = 'Average Pairwise Cosine Similarity'
-        y_lims = None
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = [-0.1, 0.0]
     elif performance_name == 'sd':
         y_label = 'S_Dbw Score'
         y_lims = [0.9, 1.0]
-    elif performance_name == 'pi':
-        y_label = 'Prototype-Origin Distance'
-        y_lims = [0.2, 1.0]
+    elif performance_name == 'ma':
+        y_label = 'Magnitude of Representations'
+        y_lims = [0.5, 1.8]
+    elif performance_name == 'pr1':
+        y_label = 'Divergence actual vs. theoretical prototype'
+        y_lims = None
+    elif performance_name == 'pr2':
+        y_label = 'Divergence exemplars vs theoretical prototype'
+        y_lims = None
+    elif performance_name == 'pd':
+        y_label = 'Pairwise Divergence'
+        y_lims = None
+    elif performance_name == 'cs':
+        y_label = 'Cosine Similarity'
+        y_lims = None
+    elif performance_name == 'op':
+        y_label = 'Divergence origin vs. theoretical prototype'
+        y_lims = None
     elif performance_name == 'ep':
-        y_label = 'Entropy at Output'
-        y_lims = [0.0, 14.0]
+        y_label = 'Entropy of Representations'
+        y_lims = None
     elif performance_name == 'eo':
-        y_label = 'Entropy of Origin at Output'
-        y_lims = [0.0, 14.0]
-    elif performance_name == 'db':
-        y_label = 'Divergence of Bias from Prototype'
-        y_lims = [0, 0.70]
+        y_label = 'Entropy at Origin'
+        y_lims = None
     elif performance_name == 'fr':
         y_label = 'Fragmentation'
         y_lims = [0.8, 1.0] if location == 'out' else None
     elif performance_name == 'co':
         y_label = 'Condition Number'
-        y_lims = [0, 1e36]
-    elif performance_name == 'cc':
-        y_label = 'Within-Category Cosine Sim.'
         y_lims = None
     else:
         raise AttributeError
