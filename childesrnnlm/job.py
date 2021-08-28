@@ -25,6 +25,7 @@ from childesrnnlm.evaluation import eval_pr1_performance
 from childesrnnlm.evaluation import eval_pr2_performance
 from childesrnnlm.evaluation import eval_ma_performance
 from childesrnnlm.evaluation import eval_pd_performance
+from childesrnnlm.evaluation import eval_pe_performance
 from childesrnnlm.evaluation import eval_cs_performance
 from childesrnnlm.evaluation import eval_cc_performance
 from childesrnnlm.evaluation import eval_op_performance
@@ -352,6 +353,13 @@ def main(param2val):
                         performance.setdefault(performance_name.format('pd'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
+                    if configs.Eval.calc_pe and location == 'inp':
+                        print('Computing pairwise euclidean distances...', flush=True)
+                        start_eval = time.time()
+                        res = eval_pe_performance(representations)
+                        performance.setdefault(performance_name.format('pe'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
                     if configs.Eval.calc_cs:
                         print('Computing cosine similarity...', flush=True)
                         start_eval = time.time()
@@ -380,10 +388,10 @@ def main(param2val):
                         performance.setdefault(performance_name.format('en'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
-                    if configs.Eval.calc_eo and location == 'inp':
+                    if configs.Eval.calc_eo and location == 'inp' and context_type == 'n':
                         print('Computing entropy of representations of origin...', flush=True)
                         start_eval = time.time()
-                        res = eval_eo_performance(representations)
+                        res = eval_eo_performance(model)
                         performance.setdefault(performance_name.format('eo'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 

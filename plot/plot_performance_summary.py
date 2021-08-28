@@ -26,7 +26,7 @@ STRUCTURE_NAME: str = 'sem-2021'
 DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
              'r',  # right-of-probe
-             ][0]
+             ][2]
 
 LOCATION = ['inp',  # input layer
             'out',  # output layer
@@ -43,14 +43,15 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'pr1',  # 4
                     'pr2',  # 5
                     'pd',  # 6
-                    'cs',  # 7
-                    'cc',  # 8
-                    'op',  # 9
-                    'en',  # 10
-                    'eo',  # 11
-                    'fr',  # 12
-                    'co',  # 13
-                    ][5]
+                    'pe',  # 7
+                    'cs',  # 8
+                    'cc',  # 9
+                    'op',  # 10
+                    'en',  # 11
+                    'eo',  # 12
+                    'fr',  # 13
+                    'co',  # 14
+                    ][11]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 

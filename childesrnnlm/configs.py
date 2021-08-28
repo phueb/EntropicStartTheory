@@ -29,7 +29,7 @@ class Eval:
 
     directions = ['l', 'c', 'r']
     locations = ['inp', 'out']
-    context_types = ['n', 'o']
+    context_types = ['n']  # TODO implement 'o
 
     # set to True to perform an evaluation
     calc_ba = bool(1)  # balanced accuracy
@@ -39,6 +39,7 @@ class Eval:
     calc_pr1 = bool(1)  # divergence between actual and theoretical prototype
     calc_pr2 = bool(1)  # divergence between exemplars and theoretical prototype
     calc_pd = bool(1)  # pairwise divergences  - does not replicate findings from osf.io paper (2019)
+    calc_pe = bool(1)  # pairwise euclidean distances
     calc_cs = bool(1)  # cosine similarity
     calc_cc = bool(1)  # cosine similarity within each category
     calc_op = bool(1)  # distance of prototype at input to origin

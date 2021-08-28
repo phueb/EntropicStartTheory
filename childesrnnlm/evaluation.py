@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from typing import List, Optional, Dict
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from torch.nn import CrossEntropyLoss
 from pyitlib import discrete_random_variable as drv
 from sklearn.metrics.cluster import silhouette_score, calinski_harabasz_score
@@ -206,13 +206,24 @@ def eval_pr2_performance(representations: np.array,
 def eval_pd_performance(representations: np.array,
                         ):
     """
-    pairwise divergences.
+    pairwise divergence.
 
     """
     cs_scorer = CSScorer()
     res = cs_scorer.calc_score(representations,
                                representations,
                                max_rows=configs.Eval.as_max_rows)
+
+    return res
+
+
+def eval_pe_performance(representations: np.array,
+                        ):
+    """
+    pairwise euclidean distance.
+
+    """
+    res = np.asscalar(euclidean_distances(representations).mean())
 
     return res
 

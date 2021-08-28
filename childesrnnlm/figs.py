@@ -197,7 +197,7 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'op':
         y_label = 'Divergence origin vs. theoretical prototype'
         y_lims = None
-    elif performance_name == 'ep':
+    elif performance_name == 'en':
         y_label = 'Entropy of Representations'
         y_lims = None
     elif performance_name == 'eo':
@@ -216,6 +216,8 @@ def get_y_label_and_lims(performance_name: str,
         y_label += '\nLeft Context Words'
     elif direction == 'c':
         y_label += '\nProbe Words'
+    elif direction == 'r':
+        y_label += '\nRight Context Words'
     else:
         raise AttributeError('Invalid arg to direction')
 

@@ -93,7 +93,7 @@ def make_out_representations(model: RNN,
         inputs = torch.LongTensor(x).cuda()
         logits = model(inputs)['logits'].detach().cpu().numpy()
     elif context_type == 'o':
-        raise NotImplementedError
+        raise NotImplementedError  # TODO implement
     else:
         raise AttributeError('Invalid arg to context_type')
 
