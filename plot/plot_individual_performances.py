@@ -23,7 +23,7 @@ STRUCTURE_NAME: str = 'sem-2021'
 DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
              'r',  # right-of-probe
-             ][2]
+             ][1]
 
 LOCATION = ['inp',  # input layer
             'out',  # output layer
@@ -48,7 +48,7 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'eo',  # 12
                     'fr',  # 13
                     'co',  # 14
-                    ][11]
+                    ][13]
 
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}.csv'

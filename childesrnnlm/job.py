@@ -126,6 +126,10 @@ def main(param2val):
     if num_errors:
         raise RuntimeError(f'{num_errors} special tokens were not found in tokenized text.')
 
+    # reverse order of tokens
+    if params.reverse_tokens:
+        tokens = list(reversed(tokens))
+
     # prepare data for batching
     prep = Prep(tokens,
                 reverse=params.reverse,

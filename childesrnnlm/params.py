@@ -12,6 +12,8 @@ from typing import Tuple, Union
 param2requests = {
     'reverse': [True, False],
 
+    'reverse_tokens': [True],
+
     # 'flavor': ['srn'],
 
     # 'corpus': ['aonewsela'],
@@ -45,6 +47,7 @@ param2default = {
     'bias': True,
 
     'sliding': False,
+    'reverse_tokens': False,
     'reverse': False,
     'num_iterations': (12, 12),  # more or less than 12 is worse
     'batch_size': 64,
@@ -74,6 +77,7 @@ class Params:
     bias: bool
 
     reverse: bool
+    reverse_tokens: bool
     sliding: bool
     num_iterations: Tuple[int, int]
     batch_size: int

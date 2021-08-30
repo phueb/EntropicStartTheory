@@ -188,6 +188,9 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'pd':
         y_label = 'Pairwise Divergence'
         y_lims = None
+    elif performance_name == 'pe':
+        y_label = 'Pairwise Euclidean Distance'
+        y_lims = None
     elif performance_name == 'cs':
         y_label = 'Cosine Similarity'
         y_lims = None

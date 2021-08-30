@@ -23,10 +23,14 @@ TITLE = ''
 
 STRUCTURE_NAME: str = 'sem-2021'
 
+# CAREFUL: using DIRECTION='r' is not useful for analyzing fragmentation of mapping between probes and right contexts,
+# because this is measured by fragmentation of probe words.
+# (probe words predict right-contexts, but right-contexts don't predict probe words)
+
 DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
-             'r',  # right-of-probe
-             ][2]
+             'r',  # right-of-probe:
+             ][1]
 
 LOCATION = ['inp',  # input layer
             'out',  # output layer
@@ -51,7 +55,7 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'eo',  # 12
                     'fr',  # 13
                     'co',  # 14
-                    ][11]
+                    ][13]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 
