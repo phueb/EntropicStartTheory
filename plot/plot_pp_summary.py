@@ -20,7 +20,7 @@ PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
 LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
-Y_LIMS: List[float] = [70, 1_000]  #  [0.50, 0.60]
+Y_LIMS: List[float] = None  #  [0.50, 0.60]
 CONFIDENCE: float = 0.95
 TITLE = ''
 

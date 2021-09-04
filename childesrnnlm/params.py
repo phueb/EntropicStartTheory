@@ -10,15 +10,14 @@ from typing import Tuple, Union
 
 # specify params to submit here
 param2requests = {
-    'reverse': [True, False],
+    # 'reverse': [True, False],
 
-    'reverse_tokens': [True],
+    # 'reverse_tokens': [True, False],
 
-    # 'flavor': ['srn'],
+    # 'flavor': ['lstm'],
 
-    # 'corpus': ['aonewsela'],
-    # 'num_iterations': [(20, 20)],
-    # 'num_types': [6_000],
+    'corpus': ['yxb', 'axy'],
+    'context_size': [4],
 
     # 'start': ['entropic', 'singleton', 'none'],
 
@@ -26,7 +25,7 @@ param2requests = {
 
 param2debug = {
     # 'corpus': 'aonewsela',
-    'context_size': 2,
+    'context_size': 4,
     'num_iterations': (1, 1),
     'num_transcripts': 300,
 }

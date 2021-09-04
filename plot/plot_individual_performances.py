@@ -27,7 +27,7 @@ DIRECTION = ['l',  # left-of-probe,
 
 LOCATION = ['inp',  # input layer
             'out',  # output layer
-            ][1]
+            ][0]
 
 CONTEXT_TYPE = ['n',  # no context
                 'o',  # ordered context
@@ -47,8 +47,7 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'en',  # 11
                     'eo',  # 12
                     'fr',  # 13
-                    'co',  # 14
-                    ][13]
+                    ][0]
 
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}.csv'

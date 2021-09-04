@@ -45,7 +45,7 @@ class RNN(torch.nn.Module):
         print(f'Initialized {flavor} with input_size={input_size}')
 
     def forward(self,
-                inputs: torch.cuda.LongTensor
+                inputs: torch.LongTensor
                 ) -> Dict[str, Any]:
 
         embedded = self.embed(inputs)

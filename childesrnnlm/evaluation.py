@@ -350,9 +350,6 @@ def eval_fr_performance(representations: np.array,
 
     # compute fragmentation
     s = np.linalg.svd(mat, compute_uv=False)
-    fr = 1 - (s[0] / np.sum(s))
+    res = 1 - (s[0] / np.sum(s))
 
-    # also compute condition number (ratio between first and last singular value)
-    co = (s[0] / s[-1]) / np.sum(s)
-
-    return fr, co
+    return res

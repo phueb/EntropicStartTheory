@@ -17,6 +17,7 @@ from entropicstart.editor import Editor
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
+from childesrnnlm.axb import AXBDataSet
 from childesrnnlm.evaluation import calc_perplexity
 from childesrnnlm.evaluation import eval_ba_performance
 from childesrnnlm.evaluation import eval_si_performance
@@ -46,17 +47,27 @@ def main(param2val):
     project_path = Path(param2val['project_path'])
     save_path = Path(param2val['save_path'])
 
-    # in case, job is run locally, we must create save_path
+    # in case job is run locally, we must create save_path
     if not save_path.exists():
         save_path.mkdir(parents=True)
 
     # load corpus
     if params.corpus == 'aochildes':
+        corpus_name = params.corpus
         transcripts = ChildesDataSet().load_transcripts()
     elif params.corpus == 'aonewsela':
+        corpus_name = params.corpus
         transcripts = NewselaDataSet().load_transcripts()
+    elif params.corpus in {'axy', 'yxb'}:
+        configs.Eval.min_num_test_tokens = 0
+        configs.Eval.high_res_eval_steps = []
+        configs.Eval.num_steps_to_eval = 1_000
+        corpus_name = 'aochildes'
+        probe2cat = load_probe2cat(project_path, 'sem-2021', corpus_name)
+        transcripts = AXBDataSet(params.corpus, probe2cat).load_documents()
     else:
         raise AttributeError('Invalid corpus')
+
 
     # shuffle at transcript level
     if params.shuffle_transcripts:
@@ -75,12 +86,12 @@ def main(param2val):
     # using only 1 special token speeds tokenization - but we must re-populate probes after tokenization
     special_token = '<probe>'
 
-    # get probes for evaluation, and check they are in the corpus
+    # load only probes that are in the data
     probes_in_data = set()
     num_total = 0
     types_in_sentences = set(tokens_original)
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(project_path, structure, params.corpus)
+        probe2cat = load_probe2cat(project_path, structure, corpus_name)
         num_total += len(probe2cat)
         for probe in probe2cat.keys():
             if probe in types_in_sentences:
@@ -89,8 +100,6 @@ def main(param2val):
                 print(f'probe={probe:<24} not in original data. Excluded.')
         print(f'structure={structure:<24} | {len(probes_in_data)} of {num_total} total probes occur in original data')
     probes = list(probes_in_data)
-    for probe in probes:
-        assert probe in text_original
 
     # replace probes in corpus with special_token
     tokens_special = []
@@ -101,6 +110,11 @@ def main(param2val):
             replaced_probes.append(token)
         else:
             tokens_special.append(token)
+
+    # TODO in order to prevent prep.num_types > params.num_types:
+    #  replace probes in transcripts BEFORE training tokenizer.
+    #  currently, tokenizer is trained to split probes into sub-words,
+    #  and the probes are added as whole-words later into prep
 
     # tokenize text
     print(f'Tokenizing {len(transcripts)} transcripts..', flush=True)
@@ -148,8 +162,8 @@ def main(param2val):
         print(f'Adding {params.start} start', flush=True)
         editor = Editor(tokens, probes, num_parts=params.num_parts)
         tokens_start = editor.make_start_tokens(params.start,
-                                                num_left_words=configs.Start.num_left_words,
-                                                num_right_words=configs.Start.num_right_words)
+                                                num_left_words=configs.EntropicStart.num_left_words,
+                                                num_right_words=configs.EntropicStart.num_right_words)
         prep_start = Prep(tokens_start,
                           reverse=False,
                           sliding=False,
@@ -182,7 +196,7 @@ def main(param2val):
     counter_test_ = Counter(prep.tokens_test_)
     structure2probe2cat = defaultdict(dict)
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(project_path, structure, params.corpus)
+        probe2cat = load_probe2cat(project_path, structure, corpus_name)
         for probe, cat in probe2cat.items():
             if probe not in probes_in_data:
                 continue
@@ -195,10 +209,6 @@ def main(param2val):
 
             else:
                 structure2probe2cat[structure][probe] = cat
-
-    # TODO why is prep.num_types > params.num_types?
-    #  it's probably because tokenizer is trained to split probes into sub-words,
-    #  and the probes are added as whole-words later into prep
 
     # model
     model = RNN(
@@ -293,13 +303,12 @@ def main(param2val):
                     else:
                         raise AttributeError('Invalid arg for direction.')
 
-                    print(f'Found {len(types_eval):,} types for evaluation', flush=True)
-                    print(f'Evaluating representations '
-                          f'with direction={direction} location={location} context_type={context_type}', flush=True)
-
                     # make representations
                     if location == 'out':
-                        representations = make_out_representations(model, types_eval, prep, context_type)
+                        if context_type in {'m', 'o'}:  # TODO remove this constraint
+                            continue
+                        else:
+                            representations = make_out_representations(model, types_eval, prep, context_type)
                     elif location == 'inp':
                         representations = make_inp_representations(model, types_eval, prep, context_type)
                     else:
@@ -307,6 +316,11 @@ def main(param2val):
 
                     assert len(representations) > 0
                     assert np.ndim(representations) == 2
+
+                    print()
+                    print(f'Found {len(types_eval):,} types for evaluation', flush=True)
+                    print(f'Evaluating representations '
+                          f'with direction={direction} location={location} context_type={context_type}', flush=True)
 
                     if configs.Eval.calc_ba and direction == 'c':
                         print('Computing balanced accuracy...', flush=True)
@@ -371,7 +385,7 @@ def main(param2val):
                         performance.setdefault(performance_name.format('cs'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
-                    if configs.Eval.calc_cc:
+                    if configs.Eval.calc_cc and direction == 'c':
                         print('Computing cosine similarity within each category...', flush=True)
                         start_eval = time.time()
                         res = eval_cc_performance(representations, probe2cat)
@@ -400,11 +414,10 @@ def main(param2val):
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
                     if configs.Eval.calc_fr:
-                        print('Computing fragmentation and condition-number...', flush=True)
+                        print('Computing fragmentation...', flush=True)
                         start_eval = time.time()
-                        fr, co = eval_fr_performance(representations, type_eval2f)
-                        performance.setdefault(performance_name.format('fr'), []).append(fr)
-                        performance.setdefault(performance_name.format('co'), []).append(co)
+                        res = eval_fr_performance(representations, type_eval2f)
+                        performance.setdefault(performance_name.format('fr'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():

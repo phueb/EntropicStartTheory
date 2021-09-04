@@ -101,14 +101,16 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
 
         # if passing individual trajectories (not average trajectories), do not label all
         if 'reverse=True' in label and 'shuffle_sentences=True' not in label \
-                or 'start=none' in label:
+                or 'start=none' in label \
+                or 'corpus=yxb' in label:
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'
             else:
                 first_r = False
         elif 'reverse=False' in label and 'shuffle_sentences=True' not in label \
-                or 'start=entropic' in label:
+                or 'start=entropic' in label \
+                or 'corpus=axy' in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
@@ -170,6 +172,7 @@ def get_y_label_and_lims(performance_name: str,
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
         y_lims = [0.5, 0.7]
+        y_lims = None
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = None
@@ -208,10 +211,7 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = None
     elif performance_name == 'fr':
         y_label = 'Fragmentation'
-        y_lims = [0.8, 1.0] if location == 'out' else None
-    elif performance_name == 'co':
-        y_label = 'Condition Number'
-        y_lims = None
+        y_lims = [0.0, 1.0] if location == 'out' else None
     else:
         raise AttributeError
 
@@ -235,6 +235,11 @@ def get_y_label_and_lims(performance_name: str,
         y_label += '\nNon-contextualized'
     elif context_type == 'o':
         y_label += '\nContextualized'
+    elif context_type == 'm':
+        if direction == 'c':
+            y_label += '\nContext without Probe'
+        else:
+            raise NotImplementedError
     else:
         raise AttributeError('Invalid arg to context_type')
 

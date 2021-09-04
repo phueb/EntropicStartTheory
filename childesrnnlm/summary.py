@@ -70,7 +70,7 @@ def make_summary(pattern: str,
             probe2cat = load_probe2cat(configs.Dirs.root, structure, params.corpus)
             num_probes += len(probe2cat)
         # TODO the calculation is not adjusted for pruning performed by preppy
-        num_start_sequences = configs.Start.num_right_words * configs.Start.num_left_words * num_probes
+        num_start_sequences = configs.EntropicStart.num_right_words * configs.EntropicStart.num_left_words * num_probes
         num_start_tokens = num_start_sequences * 3
         num_shifted_steps = num_start_tokens // params.batch_size * params.num_iterations[0]
 
