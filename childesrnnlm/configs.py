@@ -27,26 +27,26 @@ class Eval:
     ws_max_rows = 128
     as_max_rows = 128  # all 700 probes with 8K vocab takes 15min, but 128 probes require only 20 secs
 
-    directions = ['l', 'c']  # 'r' is allowed but rarely useful,
+    directions = ['l', 'c', 'r']  # 'r' is allowed but rarely useful,
     # because right-context representations reflect distributions that come after right-contexts,
     # and thus have little to do with probes
-    locations = ['inp', 'out']
-    context_types = ['n']  #, 'm', 'o']
+    locations = ['out']
+    context_types = ['n', 'm', 'o']
 
     # set to True to perform an evaluation
     calc_ba = bool(1)  # balanced accuracy
-    calc_si = bool(1)  # silhouette score
-    calc_sd = bool(1)  # S-dbw score
-    calc_ma = bool(1)  # vector magnitude
-    calc_pr1 = bool(1)  # divergence between actual and theoretical prototype
-    calc_pr2 = bool(1)  # divergence between exemplars and theoretical prototype
-    calc_pd = bool(1)  # pairwise divergences  - does not replicate findings from osf.io paper (2019)
-    calc_pe = bool(1)  # pairwise euclidean distances
-    calc_cs = bool(1)  # cosine similarity
-    calc_cc = bool(1)  # cosine similarity within each category
-    calc_op = bool(1)  # distance of prototype at input to origin
-    calc_en = bool(1)  # entropy
-    calc_eo = bool(1)  # entropy of representation of origin
+    calc_si = bool(0)  # silhouette score
+    calc_sd = bool(0)  # S-dbw score
+    calc_ma = bool(0)  # vector magnitude
+    calc_pr1 = bool(0)  # divergence between actual and theoretical prototype
+    calc_pr2 = bool(0)  # divergence between exemplars and theoretical prototype
+    calc_pd = bool(0)  # pairwise divergences  - does not replicate findings from osf.io paper (2019)
+    calc_pe = bool(0)  # pairwise euclidean distances
+    calc_cs = bool(0)  # cosine similarity
+    calc_cc = bool(0)  # cosine similarity within each category
+    calc_op = bool(0)  # distance of prototype at input to origin
+    calc_en = bool(0)  # entropy
+    calc_eo = bool(0)  # entropy of representation of origin
     calc_fr = bool(1)  # fragmentation
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect

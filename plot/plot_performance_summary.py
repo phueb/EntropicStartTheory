@@ -30,7 +30,7 @@ STRUCTURE_NAME: str = 'sem-2021'
 DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
              'r',  # right-of-probe:
-             ][1]
+             ][2]
 LOCATION = ['inp',  # input layer
             'out',  # output layer
             ][1]
@@ -38,7 +38,7 @@ LOCATION = ['inp',  # input layer
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
                 'm',  # "minus 1" - this means ordered context up to probe (excluding probe)
-                ][0]
+                ][1]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1

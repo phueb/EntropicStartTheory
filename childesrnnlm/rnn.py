@@ -13,6 +13,7 @@ class RNN(torch.nn.Module):
                  ):
 
         super().__init__()
+        self.input_size = input_size
         self.hidden_size = hidden_size
 
         # define operations

@@ -144,6 +144,10 @@ def main(param2val):
     if params.reverse_tokens:
         tokens = list(reversed(tokens))
 
+    # bpe splits tokens in artificial corpus - do not use bpe tokenized artificial corpus
+    if params.corpus in {'axy', 'yxb'}:
+        tokens = tokens_original
+
     # prepare data for batching
     prep = Prep(tokens,
                 reverse=params.reverse,
@@ -305,10 +309,7 @@ def main(param2val):
 
                     # make representations
                     if location == 'out':
-                        if context_type in {'m', 'o'}:  # TODO remove this constraint
-                            continue
-                        else:
-                            representations = make_out_representations(model, types_eval, prep, context_type)
+                        representations = make_out_representations(model, types_eval, prep, context_type)
                     elif location == 'inp':
                         representations = make_inp_representations(model, types_eval, prep, context_type)
                     else:
