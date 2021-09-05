@@ -16,10 +16,16 @@ PLOT_MAX_LINE: bool = False                 # plot horizontal line at best perfo
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
 V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
-LABELS: Optional[List[str]] = None  # ['reverse age-ordered', 'age-ordered']  # custom labels for figure legend
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
+
+# replace sub strings of legend labels
+SUB_STRING_REPLACEMENTS = {
+    'probe_embeddings_param_name=rxy_param_001': 'pre-trained=rxy',
+    'probe_embeddings_param_name=axy_param_002': 'pre-trained=axy',
+    'probe_embeddings_param_name=yxy_param_003': 'pre-trained=yxy',
+}
 
 STRUCTURE_NAME: str = 'sem-2021'
 
@@ -30,15 +36,15 @@ STRUCTURE_NAME: str = 'sem-2021'
 DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
              'r',  # right-of-probe:
-             ][2]
+             ][1]
 LOCATION = ['inp',  # input layer
             'out',  # output layer
-            ][1]
+            ][0]
 
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
                 'm',  # "minus 1" - this means ordered context up to probe (excluding probe)
-                ][1]
+                ][0]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1
@@ -54,12 +60,15 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'en',  # 11
                     'eo',  # 12
                     'fr',  # 13
-                    ][13]
+                    ][0]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 
-
-# param2requests = {'reverse': [True, False]}
+# add horizontal lines to mark max ba of srn without pre-training on age-order aochildes
+if CONTEXT_TYPE == 'n':
+    H_LINES: Optional[List[float]] = [0.6425]
+elif CONTEXT_TYPE == 'o':
+    H_LINES: Optional[List[float]] = [0.6625]
 
 # collect summaries
 summaries = []
@@ -70,6 +79,10 @@ for param_path, label in gen_param_paths(project_name,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
                                          label_n=LABEL_N):
+
+    # change labels (for legend)
+    for s1, s2 in SUB_STRING_REPLACEMENTS.items():
+        label = label.replace(s1, s2)
 
     summary = make_summary(pattern, param_path, label, CONFIDENCE)
     summaries.append(summary)  # summary contains: x, mean_y, margin-of-error, label, job_id
@@ -93,8 +106,8 @@ fig = make_summary_fig(summaries,
                        palette_ids=PALETTE_IDS,
                        figsize=FIG_SIZE,
                        ylims=y_lims,
-                       legend_labels=LABELS,
                        vlines=V_LINES,
+                       hlines=H_LINES,
                        plot_max_lines=PLOT_MAX_LINES,
                        plot_max_line=PLOT_MAX_LINE,
                        )

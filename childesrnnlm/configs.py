@@ -27,11 +27,11 @@ class Eval:
     ws_max_rows = 128
     as_max_rows = 128  # all 700 probes with 8K vocab takes 15min, but 128 probes require only 20 secs
 
-    directions = ['l', 'c', 'r']  # 'r' is allowed but rarely useful,
+    directions = ['l', 'c']  # 'r' is allowed but rarely useful,
     # because right-context representations reflect distributions that come after right-contexts,
     # and thus have little to do with probes
-    locations = ['out']
-    context_types = ['n', 'm', 'o']
+    locations = ['inp', 'out']
+    context_types = ['n', 'o']
 
     # set to True to perform an evaluation
     calc_ba = bool(1)  # balanced accuracy

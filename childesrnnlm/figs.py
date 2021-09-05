@@ -29,6 +29,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      plot_max_lines: bool = False,
                      legend_labels: Union[None, list] = None,
                      vlines: List[int] = None,
+                     hlines: List[int] = None,
                      vline: int = None,
                      legend_loc: str = 'lower right',
                      annotate: bool = False,
@@ -102,7 +103,8 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         # if passing individual trajectories (not average trajectories), do not label all
         if 'reverse=True' in label and 'shuffle_sentences=True' not in label \
                 or 'start=none' in label \
-                or 'corpus=yxb' in label:
+                or 'yxb' in label \
+                or 'yxy' in label:
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'
@@ -110,12 +112,15 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                 first_r = False
         elif 'reverse=False' in label and 'shuffle_sentences=True' not in label \
                 or 'start=entropic' in label \
-                or 'corpus=axy' in label:
+                or 'axy' in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
             else:
                 first_c = False
+
+        elif 'rxy' in label:
+            color = 'C2'
 
         ax.plot(x, y_mean, '-',
                 linewidth=configs.Figs.lw,
@@ -148,12 +153,18 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             ax.axhline(y=max_y, color='grey', lw=1, linestyle='-', zorder=1)
             print('y max={}'.format(max_y))
 
+    # horizontal lines
+    if hlines:
+        for hline in hlines:
+            if hline == 0:
+                continue
+            ax.axhline(y=hline, color='grey', linestyle=':', zorder=1)
+
     # vertical lines
     if vlines:
         for vline in vlines:
             if vline == 0:
                 continue
-
             ax.axvline(x=x[-1] * (vline / len(vlines)), color='grey', linestyle=':', zorder=1)
     if vline:
         ax.axvline(x=vline, color='grey', linestyle=':', zorder=1)
@@ -171,8 +182,7 @@ def get_y_label_and_lims(performance_name: str,
 
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
-        y_lims = [0.5, 0.7]
-        y_lims = None
+        y_lims = [0.5, 1.0]
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = None
@@ -236,10 +246,12 @@ def get_y_label_and_lims(performance_name: str,
     elif context_type == 'o':
         y_label += '\nContextualized'
     elif context_type == 'm':
-        if direction == 'c':
+        if direction == 'l':
+            y_label += '\nLeft Context Word without Left Context'
+        elif direction == 'c':
             y_label += '\nContext without Probe'
-        else:
-            raise NotImplementedError
+        elif direction == 'r':
+            y_label += '\nRight Context Word without Right Context'
     else:
         raise AttributeError('Invalid arg to context_type')
 

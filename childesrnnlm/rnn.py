@@ -10,6 +10,7 @@ class RNN(torch.nn.Module):
                  hidden_size: int,
                  num_layers: int,
                  bias: bool,
+                 embeddings: np.array,
                  ):
 
         super().__init__()
@@ -36,10 +37,12 @@ class RNN(torch.nn.Module):
 
         # init weights - this is required to get good balanced accuracy
         max_w = np.sqrt(1 / hidden_size)
-        self.embed.weight.data.uniform_(-max_w, max_w)
+
         self.project.weight.data.uniform_(-max_w, max_w)
         if bias:
             self.project.bias.data.fill_(0.0)
+        # init embeddings (possible with pre-trained vectors)
+        self.embed.weight.data = torch.from_numpy(embeddings.astype(np.float32))
 
         self.cuda()
 

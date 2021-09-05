@@ -17,7 +17,7 @@ from entropicstart.editor import Editor
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
-from childesrnnlm.axb import AXBDataSet
+from childesrnnlm.axb import AXBDataSet, artificial_corpus_names
 from childesrnnlm.evaluation import calc_perplexity
 from childesrnnlm.evaluation import eval_ba_performance
 from childesrnnlm.evaluation import eval_si_performance
@@ -58,7 +58,7 @@ def main(param2val):
     elif params.corpus == 'aonewsela':
         corpus_name = params.corpus
         transcripts = NewselaDataSet().load_transcripts()
-    elif params.corpus in {'axy', 'yxb'}:
+    elif params.corpus in artificial_corpus_names:
         configs.Eval.min_num_test_tokens = 0
         configs.Eval.high_res_eval_steps = []
         configs.Eval.num_steps_to_eval = 1_000
@@ -67,7 +67,6 @@ def main(param2val):
         transcripts = AXBDataSet(params.corpus, probe2cat).load_documents()
     else:
         raise AttributeError('Invalid corpus')
-
 
     # shuffle at transcript level
     if params.shuffle_transcripts:
@@ -145,7 +144,8 @@ def main(param2val):
         tokens = list(reversed(tokens))
 
     # bpe splits tokens in artificial corpus - do not use bpe tokenized artificial corpus
-    if params.corpus in {'axy', 'yxb'}:
+    if params.corpus in artificial_corpus_names:
+        print('WARNING: Results of BPE tokenization are ignored. White-space tokenization is used.', flush=True)
         tokens = tokens_original
 
     # prepare data for batching
@@ -214,6 +214,36 @@ def main(param2val):
             else:
                 structure2probe2cat[structure][probe] = cat
 
+    # prepare embeddings for RNN
+    max_w = np.sqrt(1 / params.hidden_size)
+    embeddings = np.random.uniform(-max_w, max_w, size=(prep.num_types, params.hidden_size))
+    # over-write random embeddings for probe words with pretrained embeddings
+    if params.probe_embeddings_param_name != 'none':
+        structure_name = 'sem-2021'
+        step = '000000037000'
+        npz_file_name = f'{structure_name}_probe_reps_{step}.npz'
+        # find pre-trained embeddings (but for probes only, all others should be random)
+        param_path = Path(param2val['project_path']) / 'runs' / params.probe_embeddings_param_name
+        npz_paths = list(sorted(param_path.rglob(npz_file_name)))
+        if not npz_paths:
+            raise FileNotFoundError(f'Did not find {npz_file_name} in {param_path}')
+        else:
+            npz_path = random.choice(npz_paths)
+        # load embeddings
+        print(f'Loading probe representations from archive at {npz_path.relative_to(param_path.parent)}')
+        with np.load(str(npz_path), allow_pickle=True) as loaded:
+            probe_reps = loaded['probe_reps_inp']
+        # add probe embeddings to embeddings
+        probe2cat = structure2probe2cat[structure_name]
+        probes = sorted(probe2cat.keys())
+        expected_shape = (len(probes), params.hidden_size)
+        if probe_reps.shape != expected_shape:
+            raise ValueError(f'Loaded probe representations have shape {probe_reps.shape}'
+                             f'but expected shape {expected_shape}')
+        idx = [prep.token2id[probe] for probe in probes]
+        embeddings[idx] = probe_reps
+        print('Added pre-trained probe embeddings to embeddings')
+
     # model
     model = RNN(
         params.flavor,
@@ -221,6 +251,7 @@ def main(param2val):
         params.hidden_size,
         params.num_layers,
         params.bias,
+        embeddings,
     )
 
     # loss function
@@ -285,7 +316,7 @@ def main(param2val):
                 # save probe representations to shared drive (for offline clustering analysis)
                 probe_reps_inp = make_inp_representations(model, probes, prep, 'n')
                 probe_reps_out = make_out_representations(model, probes, prep, 'n')
-                np.savez_compressed(save_path / f'probe_reps_{step:0>12}',
+                np.savez_compressed(save_path / f'{structure_name}_probe_reps_{step:0>12}',
                                     probe_reps_inp=probe_reps_inp,
                                     probe_reps_out=probe_reps_out)
 

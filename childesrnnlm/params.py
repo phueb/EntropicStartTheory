@@ -16,8 +16,13 @@ param2requests = {
 
     # 'flavor': ['lstm'],
 
-    'corpus': ['yxb', 'axy'],
-    'context_size': [4],
+    # 'corpus': ['rxy', 'axy', 'yxy'],
+    # 'context_size': [4],
+
+    'probe_embeddings_param_name': ['rxy_param_001',  # rxy
+                                    'axy_param_002',  # axy
+                                    'yxy_param_003',  # yxy
+                                    ],
 
     # 'start': ['entropic', 'singleton', 'none'],
 
@@ -44,6 +49,7 @@ param2default = {
     'hidden_size': 512,
     'num_layers': 1,
     'bias': True,
+    'probe_embeddings_param_name': 'none',
 
     'sliding': False,
     'reverse_tokens': False,
@@ -74,6 +80,7 @@ class Params:
     hidden_size: int
     num_layers: int
     bias: bool
+    probe_embeddings_param_name: str
 
     reverse: bool
     reverse_tokens: bool
