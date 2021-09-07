@@ -22,14 +22,28 @@ param2requests = {
     # 'num_parts': [1],
     # 'num_iterations': [(40, 40)],
 
+    # paper 3 experiment 3a
     'num_parts': [1],
-    'num_iterations': [(30, 30), (40, 40)],
+    'num_iterations': [
+        (30, 30),
+        # (40, 40),
+    ],
     'probe_embeddings_info': [
-        ('param_001', 'sem-2021',  1_000_000),
-        (None, None, None),
-        ],  # param_001 trained with 40 iterations
+        ('axy', 'sem-2021',  37_000),
+        # (None, None, None),
+        ],
 
-    # 'start': ['entropic', 'singleton', 'none'],
+    # paper 3 experiment 3b
+    # 'num_parts': [1],
+    # 'num_iterations': [
+    # (30, 30),
+    # (40, 40),
+    # ],
+    # 'probe_embeddings_info': [
+    #     ('param_001', 'sem-2021',  1_000_000),
+    #     (None, None, None),
+    #     ],
+
 
 }
 

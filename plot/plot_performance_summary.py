@@ -23,9 +23,7 @@ TITLE = ''
 
 # replace sub strings of legend labels
 SUB_STRING_REPLACEMENTS = {
-    'probe_embeddings_info=rxy_param_001': 'pre-trained=rxy',
-    'probe_embeddings_info=axy_param_002': 'pre-trained=axy',
-    'probe_embeddings_info=yxy_param_003': 'pre-trained=yxy',
+    'probe_embeddings_info=': 'probe_embeddings=',
 }
 
 STRUCTURE_NAME: str = 'sem-2021'

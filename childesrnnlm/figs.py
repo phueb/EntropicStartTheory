@@ -182,7 +182,7 @@ def get_y_label_and_lims(performance_name: str,
 
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
-        y_lims = [0.5, 0.675]
+        y_lims = [0.5, 0.70]
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = None
