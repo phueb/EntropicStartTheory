@@ -6,7 +6,7 @@ is most prominent with vocab size = 6K and 8K and disappears at 16K.
 the effect also disappears with num_parts=4, and num_parts=16, and num_iterations=(32,4), and num_iterations=(20, 20)
 """
 from dataclasses import dataclass
-from typing import Tuple, Union
+from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
@@ -19,10 +19,15 @@ param2requests = {
     # 'corpus': ['rxy', 'axy', 'yxy'],
     # 'context_size': [4],
 
-    'probe_embeddings_param_name': ['rxy_param_001',  # rxy
-                                    'axy_param_002',  # axy
-                                    'yxy_param_003',  # yxy
-                                    ],
+    # 'num_parts': [1],
+    # 'num_iterations': [(40, 40)],
+
+    'num_parts': [1],
+    'num_iterations': [(30, 30), (40, 40)],
+    'probe_embeddings_info': [
+        ('param_001', 'sem-2021',  1_000_000),
+        (None, None, None),
+        ],  # param_001 trained with 40 iterations
 
     # 'start': ['entropic', 'singleton', 'none'],
 
@@ -49,7 +54,7 @@ param2default = {
     'hidden_size': 512,
     'num_layers': 1,
     'bias': True,
-    'probe_embeddings_param_name': 'none',
+    'probe_embeddings_info': (None, None, None),  # pram_name, structure_name, step (of type int)
 
     'sliding': False,
     'reverse_tokens': False,
@@ -80,7 +85,7 @@ class Params:
     hidden_size: int
     num_layers: int
     bias: bool
-    probe_embeddings_param_name: str
+    probe_embeddings_info: Dict[str, Any]
 
     reverse: bool
     reverse_tokens: bool

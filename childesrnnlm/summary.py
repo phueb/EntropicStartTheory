@@ -77,6 +77,12 @@ def make_summary(pattern: str,
         print(f'Shifting x axis by {num_shifted_steps}')
         x -= num_shifted_steps
 
+    # move curve to the right in figure if models were initialized with custom probe embeddings
+    if params.probe_embeddings_info[0] is not None:
+        # step during training of a previous model at which probe embeddings were saved
+        start_step = params.probe_embeddings_info[2]
+        x += start_step
+
     job_id = None  # this is useful only when a summary corresponds to an individual job
 
     return x, y_mean, h, label, job_id

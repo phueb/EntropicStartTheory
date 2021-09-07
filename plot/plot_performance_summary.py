@@ -1,5 +1,6 @@
 from typing import Optional, List, Tuple
 from pathlib import Path
+import numpy as np
 
 from ludwig.results import gen_param_paths
 
@@ -15,16 +16,16 @@ LABEL_N: bool = True                        # add information about number of re
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
-V_LINES: Optional[List[int]] = None       # add vertical lines to highlight time slices
+V_LINES: Optional[List[int]] = [1_000_000]       # add vertical lines to highlight time slices
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
 
 # replace sub strings of legend labels
 SUB_STRING_REPLACEMENTS = {
-    'probe_embeddings_param_name=rxy_param_001': 'pre-trained=rxy',
-    'probe_embeddings_param_name=axy_param_002': 'pre-trained=axy',
-    'probe_embeddings_param_name=yxy_param_003': 'pre-trained=yxy',
+    'probe_embeddings_info=rxy_param_001': 'pre-trained=rxy',
+    'probe_embeddings_info=axy_param_002': 'pre-trained=axy',
+    'probe_embeddings_info=yxy_param_003': 'pre-trained=yxy',
 }
 
 STRUCTURE_NAME: str = 'sem-2021'
@@ -66,9 +67,11 @@ pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_
 
 # add horizontal lines to mark max ba of srn without pre-training on age-order aochildes
 if CONTEXT_TYPE == 'n':
-    H_LINES: Optional[List[float]] = [0.6425]
+    H_LINES: Optional[List[float]] = None
 elif CONTEXT_TYPE == 'o':
-    H_LINES: Optional[List[float]] = [0.6625]
+    H_LINES: Optional[List[float]] = None
+else:
+    raise AttributeError('Invalid arg to CONTEXT_TYPE')
 
 # collect summaries
 summaries = []
@@ -78,7 +81,9 @@ for param_path, label in gen_param_paths(project_name,
                                          param2default,
                                          runs_path=RUNS_PATH,
                                          ludwig_data_path=LUDWIG_DATA_PATH,
-                                         label_n=LABEL_N):
+                                         label_n=LABEL_N,
+                                         require_all_found=False,
+                                         ):
 
     # change labels (for legend)
     for s1, s2 in SUB_STRING_REPLACEMENTS.items():

@@ -31,7 +31,7 @@ LOCATION = ['inp',  # input layer
 
 CONTEXT_TYPE = ['n',  # no context
                 'o',  # ordered context
-                ][0]
+                ][1]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1

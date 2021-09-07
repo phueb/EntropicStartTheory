@@ -24,7 +24,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                      xlims: List[float] = None,
                      log_y: bool = False,
                      start_x_at_zero: bool = False,
-                     y_grid: bool = False,
+                     y_grid: bool = True,
                      plot_max_line: bool = False,
                      plot_max_lines: bool = False,
                      legend_labels: Union[None, list] = None,
@@ -165,7 +165,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         for vline in vlines:
             if vline == 0:
                 continue
-            ax.axvline(x=x[-1] * (vline / len(vlines)), color='grey', linestyle=':', zorder=1)
+            ax.axvline(x=vline, color='grey', linestyle=':', zorder=1)
     if vline:
         ax.axvline(x=vline, color='grey', linestyle=':', zorder=1)
 
@@ -182,7 +182,7 @@ def get_y_label_and_lims(performance_name: str,
 
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
-        y_lims = [0.5, 1.0]
+        y_lims = [0.5, 0.675]
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = None

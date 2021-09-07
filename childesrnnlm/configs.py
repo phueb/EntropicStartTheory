@@ -19,18 +19,19 @@ class Eval:
     train_pp = False  # extremely slow if True
     structures = ['sem-2021']
     num_steps_to_eval = 100_000
-    high_res_eval_steps = [0, 1_000, 10_000, 20_000, 30_000, 40_000, 50_000, 60_000, 70_000, 80_000, 90_000,
-                           100_000, 110_000, 120_000, 130_000, 150_000, 160_000, 170_000, 180_000, 190_000]
+    # high_res_eval_steps = [0, 1_000, 10_000, 20_000, 30_000, 40_000, 50_000, 60_000, 70_000, 80_000, 90_000,
+    #                        100_000, 110_000, 120_000, 130_000, 150_000, 160_000, 170_000, 180_000, 190_000]
+    high_res_eval_steps = []
 
     frequency_weighting = True  # TODO try False
     min_num_test_tokens = 100_000
     ws_max_rows = 128
     as_max_rows = 128  # all 700 probes with 8K vocab takes 15min, but 128 probes require only 20 secs
 
-    directions = ['l', 'c']  # 'r' is allowed but rarely useful,
+    directions = ['c']  # 'r' is allowed but rarely useful,
     # because right-context representations reflect distributions that come after right-contexts,
     # and thus have little to do with probes
-    locations = ['inp', 'out']
+    locations = ['inp']
     context_types = ['n', 'o']
 
     # set to True to perform an evaluation
@@ -47,7 +48,7 @@ class Eval:
     calc_op = bool(0)  # distance of prototype at input to origin
     calc_en = bool(0)  # entropy
     calc_eo = bool(0)  # entropy of representation of origin
-    calc_fr = bool(1)  # fragmentation
+    calc_fr = bool(0)  # fragmentation
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 

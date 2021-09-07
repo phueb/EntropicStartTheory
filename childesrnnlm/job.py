@@ -218,12 +218,13 @@ def main(param2val):
     max_w = np.sqrt(1 / params.hidden_size)
     embeddings = np.random.uniform(-max_w, max_w, size=(prep.num_types, params.hidden_size))
     # over-write random embeddings for probe words with pretrained embeddings
-    if params.probe_embeddings_param_name != 'none':
-        structure_name = 'sem-2021'
-        step = '000000037000'
-        npz_file_name = f'{structure_name}_probe_reps_{step}.npz'
+    if params.probe_embeddings_info[0] is not None:
+        param_name = params.probe_embeddings_info['param_name']
+        structure_name = params.probe_embeddings_info['structure_name']
+        npz_file_step = f'{params.probe_embeddings_info["step"]:0>12}'
+        npz_file_name = f'{structure_name}_probe_reps_{npz_file_step}.npz'
         # find pre-trained embeddings (but for probes only, all others should be random)
-        param_path = Path(param2val['project_path']) / 'runs' / params.probe_embeddings_param_name
+        param_path = Path(param2val['project_path']) / 'runs' / param_name
         npz_paths = list(sorted(param_path.rglob(npz_file_name)))
         if not npz_paths:
             raise FileNotFoundError(f'Did not find {npz_file_name} in {param_path}')
@@ -455,7 +456,7 @@ def main(param2val):
             for k, v in performance.items():
                 if not v:
                     continue
-                print(f'{k: <12}={v[-1]:.2f}')
+                print(f'{k: <12}={v[-1]:.3f}')
             print(flush=True)
 
             # print progress to console
