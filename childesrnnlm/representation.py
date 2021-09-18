@@ -37,7 +37,7 @@ def make_representations_with_context(model: RNN,
                                       prep: Prep,
                                       exclude_last: bool,
                                       location: str,
-                                      verbose=False,
+                                      verbose: bool = False,
                                       ) -> np.array:
     """
     make word representations by averaging over all contextualized representations
@@ -75,7 +75,7 @@ def make_representations_with_context(model: RNN,
         inputs = torch.LongTensor(x).cuda()
         num_exemplars = len(inputs)
         if verbose:
-            print(f'Made {num_exemplars:>6} representations for {prep.types[token_id]:<12}')
+            print(f'Will use {num_exemplars:>6} windows with {prep.types[token_id]:<12} as input to RNN')
         representations = model(inputs)[layer_name].detach().cpu().numpy()  # [num exemplars, hidden_size or logit size]
         res[n] = representations.mean(axis=0)
 
@@ -113,15 +113,15 @@ def make_out_representations(model: RNN,
         inputs = torch.LongTensor(x).cuda()
         logits = model(inputs)['logits'].detach().cpu().numpy()
     elif context_type == 'o':
-        return make_representations_with_context(model, types_eval, prep, location='out', exclude_last=False)
+        logits = make_representations_with_context(model, types_eval, prep, location='out', exclude_last=False)
     elif context_type == 'm':
-        return make_representations_with_context(model, types_eval, prep, location='out', exclude_last=True)
+        logits = make_representations_with_context(model, types_eval, prep, location='out', exclude_last=True)
     else:
         raise AttributeError('Invalid arg to context_type')
 
     # softmax (requires 2 dimensions)
     # if only one representation is requested, first dimension is lost in RNN output, so we add it again.
-    if len(x) == 1:
+    if len(logits) == 1:
         logits = logits[np.newaxis, :]
     res = softmax(logits)
 

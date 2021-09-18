@@ -353,3 +353,21 @@ def eval_fr_performance(representations: np.array,
     res = 1 - (s[0] / np.sum(s))
 
     return res
+
+
+def eval_ec_performance(p_n: np.array,  # without context
+                        p_o: np.array,  # with context
+                        ):
+    """
+    entropy change in output layer predictions (before vs. after adding context information to a probe)
+    """
+
+    e_n = drv.entropy_pmf(p_n).mean()
+    e_o = drv.entropy_pmf(p_o).mean()  # TODO does this have to be done probe-by-probe?
+
+    res = e_n - e_o
+
+    print(f'e_n={e_n}', flush=True)
+    print(f'e_o={e_o}', flush=True)
+
+    return res

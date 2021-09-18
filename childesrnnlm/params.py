@@ -10,39 +10,32 @@ from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
-    # 'reverse': [True, False],
+    'reverse': [True, False],
 
     # 'reverse_tokens': [True, False],
 
     # 'flavor': ['lstm'],
 
-    # 'corpus': ['rxy', 'axy', 'yxy'],
-    # 'context_size': [4],
-
-    # 'num_parts': [1],
-    # 'num_iterations': [(40, 40)],
-
     # paper 3 experiment 3a
-    'num_parts': [1],
-    'num_iterations': [
-        (30, 30),
-        # (40, 40),
-    ],
-    'probe_embeddings_info': [
-        ('axy', 'sem-2021',  37_000),
-        # (None, None, None),
-        ],
+    # 'num_parts': [1],
+    # 'num_iterations': [
+    #     (40, 40),
+    # ],
+    # 'probe_embeddings_info': [
+    #     ('axy', 'sem-2021',  37_000),
+    #     (None, None, None),
+    #     ],
 
     # paper 3 experiment 3b
     # 'num_parts': [1],
     # 'num_iterations': [
-    # (30, 30),
-    # (40, 40),
+    #     (30, 30),
+    #     (40, 40),
     # ],
     # 'probe_embeddings_info': [
     #     ('param_001', 'sem-2021',  1_000_000),
     #     (None, None, None),
-    #     ],
+    # ],
 
 
 }
@@ -73,7 +66,7 @@ param2default = {
     'sliding': False,
     'reverse_tokens': False,
     'reverse': False,
-    'num_iterations': (12, 12),  # more or less than 12 is worse
+    'num_iterations': (12, 12),  # more or less than 12 is worse when num_parts approx 8
     'batch_size': 64,
     'lr': 0.01,
     'optimizer': 'adagrad',

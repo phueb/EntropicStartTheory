@@ -86,8 +86,10 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             raise ValueError('Not enough values in PALETTE_IDS')
 
         if verbose:
-            for mean_i, std_i in zip(y_mean, h):
-                print(f'mean={mean_i:>6.2f} h={std_i:>6.2f}')
+            print()
+            print(label)
+            for mean_i, h_i in zip(y_mean, h):
+                print(f'mean={mean_i:>6.4f} h={h_i:>6.4f}')
 
         # add annotations which are helpful to distinguish individual trajectories
         if annotate and 'reverse=False' in label:
@@ -182,7 +184,7 @@ def get_y_label_and_lims(performance_name: str,
 
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
-        y_lims = [0.5, 0.70]
+        y_lims = [0.5, 0.7]
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = None
@@ -222,6 +224,9 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'fr':
         y_label = 'Fragmentation'
         y_lims = [0.0, 1.0] if location == 'out' else None
+    elif performance_name == 'ec':
+        y_label = 'Entropy Change'
+        y_lims = None if location == 'out' else None
     else:
         raise AttributeError
 

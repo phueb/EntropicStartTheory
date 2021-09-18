@@ -16,7 +16,7 @@ LABEL_N: bool = True                        # add information about number of re
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
-V_LINES: Optional[List[int]] = [1_000_000]       # add vertical lines to highlight time slices
+V_LINES: Optional[List[int]] = []       # add vertical lines to highlight time slices
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
@@ -38,7 +38,7 @@ DIRECTION = ['l',  # left-of-probe,
              ][1]
 LOCATION = ['inp',  # input layer
             'out',  # output layer
-            ][0]
+            ][1]
 
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
@@ -59,7 +59,8 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'en',  # 11
                     'eo',  # 12
                     'fr',  # 13
-                    ][0]
+                    'ec',  # 14  # TOdo test
+                    ][14]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 
@@ -113,5 +114,6 @@ fig = make_summary_fig(summaries,
                        hlines=H_LINES,
                        plot_max_lines=PLOT_MAX_LINES,
                        plot_max_line=PLOT_MAX_LINE,
+                       verbose=True,
                        )
 fig.show()

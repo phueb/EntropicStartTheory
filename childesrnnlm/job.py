@@ -33,6 +33,7 @@ from childesrnnlm.evaluation import eval_op_performance
 from childesrnnlm.evaluation import eval_en_performance
 from childesrnnlm.evaluation import eval_eo_performance
 from childesrnnlm.evaluation import eval_fr_performance
+from childesrnnlm.evaluation import eval_ec_performance
 from childesrnnlm.evaluation import get_context2f
 from childesrnnlm.representation import make_inp_representations, make_out_representations
 from childesrnnlm.params import Params
@@ -339,6 +340,11 @@ def main(param2val):
                     else:
                         raise AttributeError('Invalid arg for direction.')
 
+                    print()
+                    print(f'Found {len(types_eval):,} types for evaluation', flush=True)
+                    print(f'Evaluating representations '
+                          f'with direction={direction} location={location} context_type={context_type}', flush=True)
+
                     # make representations
                     if location == 'out':
                         representations = make_out_representations(model, types_eval, prep, context_type)
@@ -349,11 +355,6 @@ def main(param2val):
 
                     assert len(representations) > 0
                     assert np.ndim(representations) == 2
-
-                    print()
-                    print(f'Found {len(types_eval):,} types for evaluation', flush=True)
-                    print(f'Evaluating representations '
-                          f'with direction={direction} location={location} context_type={context_type}', flush=True)
 
                     if configs.Eval.calc_ba and direction == 'c':
                         print('Computing balanced accuracy...', flush=True)
@@ -451,6 +452,15 @@ def main(param2val):
                         start_eval = time.time()
                         res = eval_fr_performance(representations, type_eval2f)
                         performance.setdefault(performance_name.format('fr'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_ec and location == 'out' and direction == 'c' and context_type == 'n':
+                        print('Computing entropy change...', flush=True)
+                        start_eval = time.time()
+                        representations_n = representations
+                        representations_o = make_out_representations(model, types_eval, prep, 'o')
+                        res = eval_ec_performance(representations_n, representations_o)
+                        performance.setdefault(performance_name.format('ec'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():
