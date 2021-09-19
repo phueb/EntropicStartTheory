@@ -33,7 +33,7 @@ from childesrnnlm.evaluation import eval_op_performance
 from childesrnnlm.evaluation import eval_en_performance
 from childesrnnlm.evaluation import eval_eo_performance
 from childesrnnlm.evaluation import eval_fr_performance
-from childesrnnlm.evaluation import eval_ec_performance
+from childesrnnlm.evaluation import eval_cd_performance
 from childesrnnlm.evaluation import get_context2f
 from childesrnnlm.representation import make_inp_representations, make_out_representations
 from childesrnnlm.params import Params
@@ -356,7 +356,7 @@ def main(param2val):
                     assert len(representations) > 0
                     assert np.ndim(representations) == 2
 
-                    if configs.Eval.calc_ba and direction == 'c':
+                    if configs.Eval.calc_ba and direction == 'c' and location == 'inp':
                         print('Computing balanced accuracy...', flush=True)
                         start_eval = time.time()
                         res = eval_ba_performance(representations, probe2cat)
@@ -454,13 +454,11 @@ def main(param2val):
                         performance.setdefault(performance_name.format('fr'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
-                    if configs.Eval.calc_ec and location == 'out' and direction == 'c' and context_type == 'n':
-                        print('Computing entropy change...', flush=True)
+                    if configs.Eval.calc_cd and location == 'out' and direction == 'c' and context_type == 'o':
+                        print('Computing within-probe context divergence...', flush=True)
                         start_eval = time.time()
-                        representations_n = representations
-                        representations_o = make_out_representations(model, types_eval, prep, 'o')
-                        res = eval_ec_performance(representations_n, representations_o)
-                        performance.setdefault(performance_name.format('ec'), []).append(res)
+                        res = eval_cd_performance(model, prep, types_eval)
+                        performance.setdefault(performance_name.format('cd'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():

@@ -355,19 +355,51 @@ def eval_fr_performance(representations: np.array,
     return res
 
 
-def eval_ec_performance(p_n: np.array,  # without context
-                        p_o: np.array,  # with context
+def eval_cd_performance(model: RNN,
+                        prep: Prep,
+                        types_eval: List[str],
+                        max_num_exemplars: int = 128,
                         ):
     """
-    entropy change in output layer predictions (before vs. after adding context information to a probe)
+    divergence between different probability distributions for the same probe
     """
 
-    e_n = drv.entropy_pmf(p_n).mean()
-    e_o = drv.entropy_pmf(p_o).mean()  # TODO does this have to be done probe-by-probe?
+    # TODO test
 
-    res = e_n - e_o
+    all_windows = prep.reordered_windows
 
-    print(f'e_n={e_n}', flush=True)
-    print(f'e_o={e_o}', flush=True)
+    kls = []
+    w_ids = [prep.token2id[w] for w in types_eval]
+    for n, token_id in enumerate(w_ids):
+        bool_idx = np.isin(all_windows[:, -2], token_id)
+        x = all_windows[bool_idx][:, :-1]
+
+        # skip if probe occurs once only - divergence = 0 in such cases
+        if len(x) == 1:
+            continue
+
+        # feed-forward
+        inputs = torch.LongTensor(x).cuda()
+        logits = model(inputs)['logits'].detach().cpu().numpy()
+        last_encodings = model(inputs)['last_encodings']
+
+        # make q
+        q = softmax(logits)
+
+        # make p
+        prototype = torch.mean(last_encodings, dim=0, keepdim=True)  # [1, hidden_size]
+        logits = model.project(prototype).detach().cpu().numpy()  # 2D is preserved
+        p = softmax(logits)
+
+        # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+        p = p.astype(np.float64)
+        q = q.astype(np.float64)
+
+        # print(p.shape, q.shape, flush=True)
+
+        kl_i = drv.divergence_kullbackleibler_pmf(p, q, cartesian_product=True).mean()
+        kls.append(kl_i)
+
+    res = np.mean(kls)
 
     return res

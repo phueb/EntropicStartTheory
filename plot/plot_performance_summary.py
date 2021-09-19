@@ -59,7 +59,7 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'en',  # 11
                     'eo',  # 12
                     'fr',  # 13
-                    'ec',  # 14  # TOdo test
+                    'cd',  # 14  # TOdo test
                     ][14]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'

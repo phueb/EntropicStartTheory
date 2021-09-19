@@ -31,7 +31,7 @@ class Eval:
     # because right-context representations reflect distributions that come after right-contexts,
     # and thus have little to do with probes
     locations = ['inp', 'out']
-    context_types = ['n']
+    context_types = ['n', 'o']
 
     # set to True to perform an evaluation
     calc_ba = bool(1)  # balanced accuracy
@@ -45,10 +45,10 @@ class Eval:
     calc_cs = bool(0)  # cosine similarity
     calc_cc = bool(0)  # cosine similarity within each category
     calc_op = bool(0)  # distance of prototype at input to origin
-    calc_en = bool(1)  # entropy
+    calc_en = bool(0)  # entropy
     calc_eo = bool(0)  # entropy of representation of origin
     calc_fr = bool(0)  # fragmentation
-    calc_ec = bool(1)  # entropy-change
+    calc_cd = bool(1)  # within-probe divergence of contextualized representations
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 
