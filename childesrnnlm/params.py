@@ -12,6 +12,8 @@ from typing import Tuple, Union, Dict, Any
 param2requests = {
     'reverse': [True, False],
 
+    'shuffle_at_start': [True],
+
     # 'reverse_tokens': [True, False],
 
     # 'flavor': ['lstm'],
@@ -56,6 +58,7 @@ param2default = {
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'start': 'none',
+    'shuffle_at_start': False,
 
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,
@@ -87,6 +90,7 @@ class Params:
     num_parts: int
     context_size: int
     start: str
+    shuffle_at_start: bool
 
     flavor: str
     hidden_size: int

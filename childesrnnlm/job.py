@@ -186,11 +186,12 @@ def main(param2val):
 
     # combine start sequences and regular sequences
     if prep_start:
-        batch_generator = chain(prep_start.generate_batches(), prep.generate_batches())
+        batch_generator = chain(prep_start.generate_batches(),
+                                prep.generate_batches(shuffle_at_start=params.shuffle_at_start))
         high_resolution_eval_steps = list(range(0, prep_start.num_mbs, prep_start.num_mbs // 10))
         num_train_mbs = prep_start.num_mbs + prep.num_mbs
     else:
-        batch_generator = prep.generate_batches()
+        batch_generator = prep.generate_batches(shuffle_at_start=params.shuffle_at_start)
         high_resolution_eval_steps = configs.Eval.high_res_eval_steps
         num_train_mbs = prep.num_mbs
 
