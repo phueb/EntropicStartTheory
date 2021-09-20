@@ -45,7 +45,7 @@ def make_representations_with_context(model: RNN,
     all_windows = prep.reordered_windows
 
     if location == 'inp':  # get hidden representation
-        layer_name = 'last_encodings'
+        layer_name = 'last_output'
         dim1 = model.hidden_size
     elif location == 'out':
         layer_name = 'logits'

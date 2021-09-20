@@ -12,11 +12,11 @@ from typing import Tuple, Union, Dict, Any
 param2requests = {
     'reverse': [True, False],
 
-    'shuffle_at_start': [True],
+    # 'shuffle_at_start': [False],
 
     # 'reverse_tokens': [True, False],
 
-    # 'flavor': ['lstm'],
+    'flavor': ['lstm'],
 
     # paper 3 experiment 3a
     # 'num_parts': [1],

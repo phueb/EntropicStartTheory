@@ -15,7 +15,7 @@ from preppy import Prep
 from childesrnnlm import configs
 from childesrnnlm.s_dbw import S_Dbw
 from childesrnnlm.rnn import RNN
-from childesrnnlm.representation import softmax
+from childesrnnlm.representation import softmax, make_inp_representations_without_context
 
 
 def get_context2f(prep: Prep,
@@ -175,8 +175,8 @@ def eval_pr1_performance(representations: np.array,
     with torch.no_grad():
         embedded = torch.from_numpy(reshaped).cuda()
         encoded, _ = model.encode(embedded)
-        last_encodings = torch.squeeze(encoded[:, -1])
-        logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
+        last_output = torch.squeeze(encoded[:, -1])
+        logits = model.project(last_output).cpu().numpy().astype(np.float64)
         prototype_actual_out = softmax(logits[np.newaxis, :])  # softmax requires num dim = 2
 
     res = dp_scorer.score(prototype_actual_out)
@@ -290,8 +290,8 @@ def eval_op_performance(model: RNN,
     with torch.no_grad():
         embedded = torch.from_numpy(reshaped).cuda()
         encoded, _ = model.encode(embedded)
-        last_encodings = torch.squeeze(encoded[:, -1])
-        logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
+        last_output = torch.squeeze(encoded[:, -1])
+        logits = model.project(last_output).cpu().numpy().astype(np.float64)
         q = softmax(logits[np.newaxis, :])  # softmax requires num dim = 2
 
     res = np.asscalar(drv.divergence_jensenshannon_pmf(p, q))
@@ -322,8 +322,8 @@ def eval_eo_performance(model: RNN,
     with torch.no_grad():
         embedded = torch.from_numpy(reshaped).cuda()
         encoded, _ = model.encode(embedded)
-        last_encodings = torch.squeeze(encoded[:, -1])
-        logits = model.project(last_encodings).cpu().numpy().astype(np.float64)
+        last_output = torch.squeeze(encoded[:, -1])
+        logits = model.project(last_output).cpu().numpy().astype(np.float64)
         representation_origin = softmax(logits[np.newaxis, :])  # softmax requires num dim = 2
 
     res = drv.entropy_pmf(representation_origin).mean()
@@ -361,10 +361,9 @@ def eval_cd_performance(model: RNN,
                         max_num_exemplars: int = 128,
                         ):
     """
-    divergence between different probability distributions for the same probe
+    context divergence.
+    divergence between outputs produce by the same probe + different contexts and contextualized probe prototype.
     """
-
-    # TODO test
 
     all_windows = prep.reordered_windows
 
@@ -372,6 +371,7 @@ def eval_cd_performance(model: RNN,
     w_ids = [prep.token2id[w] for w in types_eval]
     for n, token_id in enumerate(w_ids):
         bool_idx = np.isin(all_windows[:, -2], token_id)
+
         x = all_windows[bool_idx][:, :-1]
 
         # skip if probe occurs once only - divergence = 0 in such cases
@@ -381,13 +381,13 @@ def eval_cd_performance(model: RNN,
         # feed-forward
         inputs = torch.LongTensor(x).cuda()
         logits = model(inputs)['logits'].detach().cpu().numpy()
-        last_encodings = model(inputs)['last_encodings']
+        last_output = model(inputs)['last_output']
 
         # make q
         q = softmax(logits)
 
         # make p
-        prototype = torch.mean(last_encodings, dim=0, keepdim=True)  # [1, hidden_size]
+        prototype = torch.mean(last_output, dim=0, keepdim=True)  # [1, hidden_size]
         logits = model.project(prototype).detach().cpu().numpy()  # 2D is preserved
         p = softmax(logits)
 
@@ -398,6 +398,106 @@ def eval_cd_performance(model: RNN,
         # print(p.shape, q.shape, flush=True)
 
         kl_i = drv.divergence_kullbackleibler_pmf(p, q, cartesian_product=True).mean()
+        kls.append(kl_i)
+
+    res = np.mean(kls)
+
+    return res
+
+
+def eval_ds_performance(model: RNN,
+                        prep: Prep,
+                        types_eval: List[str],
+                        max_num_exemplars: int = 128,
+                        ):
+    """
+    divergence from superordinate.
+    divergence between outputs produced by probe + different context and contextualized superordinate prototype
+
+    Notes:
+        p and q contain rows of probability distributions.
+        because each p is paired with one q, the total number of comparisons = len(p) = len(q).
+        p contains probabilities given a prototype in last position of the input sequence..
+        q contains probabilities given an actual probe in last position of the input sequence.
+    """
+
+    all_windows = prep.reordered_windows
+
+    embeddings_probe = make_inp_representations_without_context(model, types_eval, prep)
+    superordinate_prototype = embeddings_probe.mean(axis=0)
+
+    probes = types_eval
+
+    kls = []
+    for type_eval in types_eval:
+        token_id = prep.token2id[type_eval]
+        bool_idx = np.isin(all_windows[:, -2], token_id)
+
+        # exclude y, and also exclude probe - equivalent to context_type='m'
+        x = all_windows[bool_idx][:, :-2]
+
+        # skip if probe occurs once only - divergence = 0 in such cases
+        if len(x) == 1:
+            continue
+
+        # feed-forward without probe
+        inputs = torch.LongTensor(x).cuda()
+        model_output_dict = model(inputs)
+
+        # make p and q
+        if model.flavor == 'rnn':
+
+            last_output = model_output_dict['last_output']
+
+            # make p (by adding the prototype at the last step)
+            inputs_p = np.repeat(superordinate_prototype[np.newaxis, :],
+                                 len(x), 0)
+            hiddens_p, _ = model.encode(torch.from_numpy(inputs_p[:, np.newaxis, :].astype(np.float32)).cuda(),
+                                        torch.unsqueeze(last_output, 0))
+            logits_p = model.project(torch.squeeze(hiddens_p[:, -1])).detach().cpu().numpy()  # 2D preserved
+            p = softmax(logits_p)  # [num exemplars, hidden_size]
+
+            # make q (by adding the probe to the last step)
+            probe_id = probes.index(type_eval)
+            inputs_q = np.repeat(embeddings_probe[probe_id][np.newaxis, :],
+                                 len(inputs), 0)
+            hiddens_q, _ = model.encode(torch.from_numpy(inputs_q[:, np.newaxis, :].astype(np.float32)).cuda(),
+                                        torch.unsqueeze(last_output, 0))
+            logits_q = model.project(torch.squeeze(hiddens_q[:, -1])).detach().cpu().numpy()  # 2D preserved
+            q = softmax(logits_q)  # [num exemplars, hidden_size]
+
+        # TODO test
+        elif model.flavor == 'lstm':   # we need both h_n and c_n, not just h_n in the case of the RNN
+
+            h_previous = model_output_dict['h_n']
+            c_previous = model_output_dict['c_n']
+
+            # make p (by adding the prototype at the last step)
+            inputs_p = np.repeat(superordinate_prototype[np.newaxis, :],
+                                 len(x), 0)
+            hiddens_p, _ = model.encode(torch.from_numpy(inputs_p[:, np.newaxis, :].astype(np.float32)).cuda(),
+                                        (h_previous, c_previous))
+            logits_p = model.project(torch.squeeze(hiddens_p[:, -1])).detach().cpu().numpy()  # 2D preserved
+            p = softmax(logits_p)  # [num exemplars, hidden_size]
+
+            # make q (by adding the probe to the last step)
+            probe_id = probes.index(type_eval)
+            inputs_q = np.repeat(embeddings_probe[probe_id][np.newaxis, :],
+                                 len(inputs), 0)
+            hiddens_q, _ = model.encode(torch.from_numpy(inputs_q[:, np.newaxis, :].astype(np.float32)).cuda(),
+                                        (h_previous, c_previous))
+            logits_q = model.project(torch.squeeze(hiddens_q[:, -1])).detach().cpu().numpy()  # 2D preserved
+            q = softmax(logits_q)  # [num exemplars, hidden_size]
+        else:
+            raise AttributeError(f'Invalid arg to "flavor"')
+
+        # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+        p = p.astype(np.float64)
+        q = q.astype(np.float64)
+
+        # print(p.shape, q.shape, flush=True)  # should be the same size - we evaluate each row with one paired row
+
+        kl_i = drv.divergence_kullbackleibler_pmf(p, q, cartesian_product=False).mean()
         kls.append(kl_i)
 
     res = np.mean(kls)

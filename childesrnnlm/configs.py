@@ -49,6 +49,7 @@ class Eval:
     calc_eo = bool(0)  # entropy of representation of origin
     calc_fr = bool(0)  # fragmentation
     calc_cd = bool(1)  # within-probe divergence of contextualized representations
+    calc_ds = bool(1)  # divergence from superordinate
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 

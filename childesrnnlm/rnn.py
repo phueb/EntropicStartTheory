@@ -14,6 +14,7 @@ class RNN(torch.nn.Module):
                  ):
 
         super().__init__()
+        self.flavor = flavor
         self.input_size = input_size
         self.hidden_size = hidden_size
 
@@ -52,9 +53,20 @@ class RNN(torch.nn.Module):
                 inputs: torch.LongTensor
                 ) -> Dict[str, Any]:
 
-        embedded = self.embed(inputs)
-        encoded, _ = self.encode(embedded)  # returns all time steps [batch_size, context_size, hidden_size]
-        last_encodings = torch.squeeze(encoded[:, -1])  # [batch_size, hidden_size]
-        logits = self.project(last_encodings)  # [batch_size, input_size]
+        embedded = self.embed(inputs)  # [batch_size, context_size, hidden_size]
+        output_at_all_steps, hidden_at_last_step = self.encode(embedded)
+        # note: when num_layers=1, output and hidden state are identical
+        # state_at_all_steps has shape [batch_size, context_size, hidden_size]
+        last_output = torch.squeeze(output_at_all_steps[:, -1])  # [batch_size, hidden_size]
+        logits = self.project(last_output)  # [batch_size, input_size]
 
-        return {'last_encodings': last_encodings, 'logits': logits}
+        res = {'last_output': last_output, 'logits': logits}
+
+        if self.flavor == 'lstm':
+            h_n, c_n = hidden_at_last_step
+            res['h_n'] = h_n
+            res['c_n'] = c_n
+        elif self.flavor == 'rnn':
+            res['h_n'] = hidden_at_last_step
+
+        return res

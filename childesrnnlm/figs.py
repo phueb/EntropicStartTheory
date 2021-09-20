@@ -226,7 +226,10 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = [0.0, 1.0] if location == 'out' else None
     elif performance_name == 'cd':
         y_label = 'Within-probe Context Divergence'
-        y_lims = None if location == 'out' else None
+        y_lims = [0, 0.6]
+    elif performance_name == 'ds':
+        y_label = ' Divergence from superordinate'
+        y_lims = [0, 0.6]
     else:
         raise AttributeError
 

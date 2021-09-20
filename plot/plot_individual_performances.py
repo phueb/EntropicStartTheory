@@ -27,11 +27,11 @@ DIRECTION = ['l',  # left-of-probe,
 
 LOCATION = ['inp',  # input layer
             'out',  # output layer
-            ][1]
+            ][0]
 
 CONTEXT_TYPE = ['n',  # no context
                 'o',  # ordered context
-                ][0]
+                ][1]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1
@@ -48,7 +48,8 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'eo',  # 12
                     'fr',  # 13
                     'cd',  # 14
-                    ][14]
+                    'ds',  # 15
+                    ][0]
 
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}.csv'
@@ -84,6 +85,6 @@ fig = make_summary_fig(summaries,
                        title=TITLE,
                        ylims=y_lims,
                        figsize=FIG_SIZE,
-                       annotate=True,
+                       annotate=False,
                        )
 fig.show()
