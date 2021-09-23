@@ -445,7 +445,7 @@ def eval_ds_performance(model: RNN,
         model_output_dict = model(inputs)
 
         # make p and q
-        if model.flavor == 'rnn':
+        if model.flavor == 'srn':
 
             last_output = model_output_dict['last_output']
 

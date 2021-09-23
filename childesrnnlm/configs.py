@@ -27,7 +27,7 @@ class Eval:
     ws_max_rows = 128
     as_max_rows = 128  # all 700 probes with 8K vocab takes 15min, but 128 probes require only 20 secs
 
-    directions = ['c']  # 'r' is allowed but rarely useful,
+    directions = ['l', 'c']  # 'r' is allowed but rarely useful,
     # because right-context representations reflect distributions that come after right-contexts,
     # and thus have little to do with probes
     locations = ['inp', 'out']
@@ -47,8 +47,8 @@ class Eval:
     calc_op = bool(0)  # distance of prototype at input to origin
     calc_en = bool(0)  # entropy
     calc_eo = bool(0)  # entropy of representation of origin
-    calc_fr = bool(0)  # fragmentation
-    calc_cd = bool(1)  # within-probe divergence of contextualized representations
+    calc_fr = bool(1)  # fragmentation
+    calc_cd = bool(0)  # within-probe divergence of contextualized representations
     calc_ds = bool(1)  # divergence from superordinate
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect

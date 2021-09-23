@@ -16,7 +16,7 @@ param2requests = {
 
     # 'reverse_tokens': [True, False],
 
-    'flavor': ['lstm'],
+    # 'flavor': ['srn'],
 
     # paper 3 experiment 3a
     # 'num_parts': [1],
@@ -58,7 +58,7 @@ param2default = {
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
     'context_size': 7,  # number of backprop-through-time steps, 7 is better than lower or higher
     'start': 'none',
-    'shuffle_at_start': False,
+    'shuffle_at_start': True,
 
     'flavor': 'srn',  # simple-recurrent
     'hidden_size': 512,

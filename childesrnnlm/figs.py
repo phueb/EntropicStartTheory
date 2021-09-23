@@ -223,7 +223,7 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = None
     elif performance_name == 'fr':
         y_label = 'Fragmentation'
-        y_lims = [0.0, 1.0] if location == 'out' else None
+        y_lims = None if location == 'out' else None
     elif performance_name == 'cd':
         y_label = 'Within-probe Context Divergence'
         y_lims = [0, 0.6]
