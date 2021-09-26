@@ -103,18 +103,22 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                         )
 
         # if passing individual trajectories (not average trajectories), do not label all
-        if 'reverse=True' in label and 'shuffle_sentences=True' not in label \
-                or 'start=none' in label \
-                or 'yxb' in label \
-                or 'yxy' in label:
+        if 'shuffle_sentences=True' not in label and len(summaries) == 2 \
+                and ('reverse=True' in label
+                     or 'start=none' in label
+                     or 'yxb' in label
+                     or 'yxy' in label
+        ):
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'
             else:
                 first_r = False
-        elif 'reverse=False' in label and 'shuffle_sentences=True' not in label \
-                or 'start=entropic' in label \
-                or 'axy' in label:
+        elif 'shuffle_sentences=True' not in label and len(summaries) ==2 \
+                and ('reverse=False' in label
+                     or 'start=entropic' in label
+                     or 'axy' in label
+        ):
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
@@ -144,7 +148,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                    fontsize=configs.Figs.leg_fs,
                    frameon=False,
                    loc='lower center',
-                   ncol=3,
+                   ncol=4,
                    )
 
     # max line
@@ -181,7 +185,6 @@ def get_y_label_and_lims(performance_name: str,
                          context_type: str,
                          add_confidence_interval_to_label: bool,
                          ) -> Tuple[str, List[float]]:
-
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
         y_lims = [0.5, 0.7]
@@ -223,13 +226,13 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = None
     elif performance_name == 'fr':
         y_label = 'Fragmentation'
-        y_lims = None if location == 'out' else None
+        y_lims = [0.7, 0.9] if location == 'out' else None
     elif performance_name == 'cd':
         y_label = 'Within-probe Context Divergence'
         y_lims = [0, 0.6]
     elif performance_name == 'ds':
         y_label = ' Divergence from superordinate'
-        y_lims = [0, 0.6]
+        y_lims = [0, 0.7]
     else:
         raise AttributeError
 

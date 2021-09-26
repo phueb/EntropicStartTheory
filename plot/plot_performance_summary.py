@@ -70,6 +70,8 @@ if CONTEXT_TYPE == 'n':
     H_LINES: Optional[List[float]] = None
 elif CONTEXT_TYPE == 'o':
     H_LINES: Optional[List[float]] = None
+elif CONTEXT_TYPE == 'm':
+    H_LINES: Optional[List[float]] = None
 else:
     raise AttributeError('Invalid arg to CONTEXT_TYPE')
 

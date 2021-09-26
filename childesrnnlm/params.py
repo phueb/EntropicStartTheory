@@ -16,7 +16,7 @@ param2requests = {
 
     # 'reverse_tokens': [True, False],
 
-    # 'flavor': ['srn'],
+    'flavor': ['srn', 'lstm'],
 
     # paper 3 experiment 3a
     # 'num_parts': [1],
