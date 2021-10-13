@@ -132,13 +132,13 @@ class AXBDataSet:
                     bi = random.choice(self.xi2b_fragment[xi])
 
             elif self.corpus_structure == 'rxy':
-                if random.random() > float(self.axb_params.redundancy):
+                if random.random() < float(self.axb_params.redundancy):
                     ai = self.xi2ai[xi]
                 bi = random.choice(self.xi2b_fragment[xi])
 
             elif self.corpus_structure == 'yxr':
                 ai = random.choice(self.xi2a_fragment[xi])
-                if random.random() > float(self.axb_params.redundancy):
+                if random.random() < float(self.axb_params.redundancy):
                     bi = self.xi2bi[xi]
 
             else:
