@@ -16,7 +16,7 @@ LABEL_N: bool = True                        # add information about number of re
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
 PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
-V_LINES: Optional[List[int]] = [900_000 // 8]       # add vertical lines to highlight time slices
+V_LINES: Optional[List[int]] = []       # add vertical lines to highlight time slices
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
@@ -43,7 +43,7 @@ LOCATION = ['inp',  # input layer
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
                 'm',  # "minus 1" - this means ordered context up to probe (excluding probe)
-                ][1]
+                ][0]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1

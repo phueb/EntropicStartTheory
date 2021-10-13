@@ -187,7 +187,7 @@ def get_y_label_and_lims(performance_name: str,
                          ) -> Tuple[str, List[float]]:
     if performance_name == 'ba':
         y_label = 'Balanced Accuracy'
-        y_lims = [0.5, 0.7]
+        y_lims = [0.5, 1.0]
     elif performance_name == 'si':
         y_label = 'Silhouette Score'
         y_lims = None

@@ -1,12 +1,20 @@
 import random
 from typing import Dict, Optional, List
+import re
+from dataclasses import dataclass
 
 
-artificial_corpus_names = {'axy',  # semantic category signal is in right neighbor,
-                           'yxb',  # semantic category signal is in left neighbor,
-                           'rxy',  # semantic category signal is in right neighbor + lexically redundant left neighbor,
-                           'yxy',  # semantic category signal is in right neighbor + left neighbor,
-                           }
+artificial_corpus_structures = {'axy',  # semantic category signal is in right neighbor,
+                                'yxb',  # semantic category signal is in left neighbor,
+                                'rxy',  # semantic category signal is in right neighbor + lexical redundant left,
+                                'yxy',  # semantic category signal is in right neighbor AND or OR left neighbor,
+                                }
+
+
+@dataclass
+class AXBParams:
+    rule: Optional[str] = None
+    redundancy: Optional[float] = None
 
 
 class AXBDataSet:
@@ -18,17 +26,32 @@ class AXBDataSet:
     """
 
     def __init__(self,
-                 dependency_type: str,
+                 corpus_name: str,
                  probe2cat: Dict[str, str],
                  num_docs: int = 1,
                  num_tokens_per_doc: int = 200_000,
                  seed: Optional[int] = None,
                  ) -> None:
 
-        if dependency_type not in artificial_corpus_names:
-            raise AttributeError('Invalid arg to dependency_type')
+        self.corpus_structure = corpus_name.split('-')[0]
+        if self.corpus_structure not in artificial_corpus_structures:
+            raise AttributeError(f'Did not recognize corpus structure "{self.corpus_structure}".')
 
-        self.dependency_type = dependency_type
+        self.a_rule = self.corpus_structure[0]
+        self.b_rule = self.corpus_structure[2]
+
+        # parse corpus name to get rules for generating corpus
+        params_kwargs = {}
+        for substring in corpus_name.split('-')[1:]:
+            pattern = re.compile(r'(?P<key>\w+):(?P<value>.+)')  # 2 groups, called "key" and "value"
+            match = pattern.match(substring)
+            k = match.group('key')
+            v = match.group('value')
+            params_kwargs[k] = v
+        self.axb_params = AXBParams(**params_kwargs)
+
+        print(f'Initializing AXB corpus with:\n{self.axb_params}')
+
         self.num_docs = num_docs
         self.num_tokens_per_doc = num_tokens_per_doc
 
@@ -85,17 +108,41 @@ class AXBDataSet:
             ai = random.choice(self.a)
             bi = random.choice(self.b)
 
-            # make ai or bi semantically related to xi
-            if self.dependency_type in {'axy', 'rxy', 'yxy'}:
+            # make ai and/or bi semantically related to xi
+            if self.corpus_structure == 'axy':
+                ai = ai
                 bi = random.choice(self.xi2b_fragment[xi])
-                if self.dependency_type == 'rxy':  # in addition, we create redundancy at left neighbor
-                    ai = self.xi2ai[xi]
-                elif self.dependency_type == 'yxy':
-                    ai = random.choice(self.xi2a_fragment[xi])
-            elif self.dependency_type == 'yxb':
+
+            elif self.corpus_structure == 'yxb':
                 ai = random.choice(self.xi2a_fragment[xi])
+                bi = bi
+
+            elif self.corpus_structure == 'yxy':
+                if self.axb_params.rule == 'or':
+                    modify_a = random.choice([True, False])
+                    modify_b = not modify_a
+                elif self.axb_params.rule == 'and':
+                    modify_a = True
+                    modify_b = True
+                else:
+                    raise AttributeError('Invalid arg to "rule".')
+                if modify_a:
+                    ai = random.choice(self.xi2a_fragment[xi])
+                if modify_b:
+                    bi = random.choice(self.xi2b_fragment[xi])
+
+            elif self.corpus_structure == 'rxy':
+                if random.random() > float(self.axb_params.redundancy):
+                    ai = self.xi2ai[xi]
+                bi = random.choice(self.xi2b_fragment[xi])
+
+            elif self.corpus_structure == 'yxr':
+                ai = random.choice(self.xi2a_fragment[xi])
+                if random.random() > float(self.axb_params.redundancy):
+                    bi = self.xi2bi[xi]
+
             else:
-                raise AttributeError('Invalid arg to dependency_type')
+                raise AttributeError('Invalid arg to "corpus_structure".')
 
             # collect
             res += f'{ai} {xi} {bi} . '  # whitespace after each

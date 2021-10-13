@@ -17,7 +17,7 @@ from entropicstart.editor import Editor
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
 from childesrnnlm.io import load_probe2cat
-from childesrnnlm.axb import AXBDataSet, artificial_corpus_names
+from childesrnnlm.axb import AXBDataSet, artificial_corpus_structures
 from childesrnnlm.evaluation import calc_perplexity
 from childesrnnlm.evaluation import eval_ba_performance
 from childesrnnlm.evaluation import eval_si_performance
@@ -60,7 +60,7 @@ def main(param2val):
     elif params.corpus == 'aonewsela':
         corpus_name = params.corpus
         transcripts = NewselaDataSet().load_transcripts()
-    elif params.corpus in artificial_corpus_names:
+    elif params.corpus.split('-')[0] in artificial_corpus_structures:
         configs.Eval.min_num_test_tokens = 0
         configs.Eval.high_res_eval_steps = []
         configs.Eval.num_steps_to_eval = 1_000
@@ -146,7 +146,7 @@ def main(param2val):
         tokens = list(reversed(tokens))
 
     # bpe splits tokens in artificial corpus - do not use bpe tokenized artificial corpus
-    if params.corpus in artificial_corpus_names:
+    if params.corpus in artificial_corpus_structures:
         print('WARNING: Results of BPE tokenization are ignored. White-space tokenization is used.', flush=True)
         tokens = tokens_original
 

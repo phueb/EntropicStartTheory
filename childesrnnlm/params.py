@@ -10,13 +10,22 @@ from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
-    'reverse': [True, False],
+    # 'reverse': [False],
 
     # 'shuffle_at_start': [False],
 
     # 'reverse_tokens': [True, False],
 
-    'flavor': ['srn', 'lstm'],
+    'flavor': ['srn'],
+
+    'corpus': [
+        'rxy-redundancy:0.0',
+        'rxy-redundancy:0.2',
+        'rxy-redundancy:0.4',
+        'rxy-redundancy:0.6',
+        'rxy-redundancy:0.8',
+        'rxy-redundancy:1.0',
+    ]
 
     # paper 3 experiment 3a
     # 'num_parts': [1],
@@ -52,7 +61,7 @@ param2debug = {
 # default params
 param2default = {
     'shuffle_transcripts': False,
-    'corpus': 'aochildes',  # or aonewsela
+    'corpus': 'aochildes',  # or aonewsela, or
     'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
     'num_transcripts': None,  # useful for debugging only
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
