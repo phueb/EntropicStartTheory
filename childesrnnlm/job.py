@@ -12,7 +12,6 @@ import random
 from aochildes.dataset import ChildesDataSet
 from aonewsela.dataset import NewselaDataSet
 from preppy import Prep
-from entropicstart.editor import Editor
 
 from childesrnnlm import configs
 from childesrnnlm.bpe import train_bpe_tokenizer
@@ -166,10 +165,8 @@ def main(param2val):
     # prepare artificially generated start sequences for batching
     if params.start != 'none':
         print(f'Adding {params.start} start', flush=True)
-        editor = Editor(tokens, probes, num_parts=params.num_parts)
-        tokens_start = editor.make_start_tokens(params.start,
-                                                num_left_words=configs.EntropicStart.num_left_words,
-                                                num_right_words=configs.EntropicStart.num_right_words)
+        tokens_start = []
+        assert tokens_start  # currently, params.start is unused.
         prep_start = Prep(tokens_start,
                           reverse=False,
                           sliding=False,

@@ -105,7 +105,6 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
         # if passing individual trajectories (not average trajectories), do not label all
         if 'shuffle_sentences=True' not in label and len(summaries) == 2 \
                 and ('reverse=True' in label
-                     or 'start=none' in label
                      or 'yxb' in label
                      or 'yxy' in label
         ):
@@ -116,7 +115,6 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                 first_r = False
         elif 'shuffle_sentences=True' not in label and len(summaries) ==2 \
                 and ('reverse=False' in label
-                     or 'start=entropic' in label
                      or 'axy' in label
         ):
             color = 'C0'

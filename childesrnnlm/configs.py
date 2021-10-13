@@ -10,11 +10,6 @@ class Dirs:
     animations = root / 'animations'
 
 
-class EntropicStart:
-    num_left_words = 5
-    num_right_words = 1
-
-
 class Eval:
     train_pp = False  # extremely slow if True
     structures = ['sem-2021']
