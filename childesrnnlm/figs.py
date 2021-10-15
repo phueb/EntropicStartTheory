@@ -123,8 +123,8 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
             else:
                 first_c = False
 
-        elif 'rxy' in label:
-            color = 'C2'
+        # elif 'rxy' in label:
+        #     color = 'C2'
 
         ax.plot(x, y_mean, '-',
                 linewidth=configs.Figs.lw,
@@ -146,7 +146,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                    fontsize=configs.Figs.leg_fs,
                    frameon=False,
                    loc='lower center',
-                   ncol=4,
+                   ncol=3,
                    )
 
     # max line
@@ -224,13 +224,13 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = None
     elif performance_name == 'fr':
         y_label = 'Fragmentation'
-        y_lims = [0.7, 0.9] if location == 'out' else None
+        y_lims = None if location == 'out' else None
     elif performance_name == 'cd':
         y_label = 'Within-probe Context Divergence'
         y_lims = [0, 0.6]
     elif performance_name == 'ds':
         y_label = ' Divergence from superordinate'
-        y_lims = [0, 0.7]
+        y_lims = None
     else:
         raise AttributeError
 

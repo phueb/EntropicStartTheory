@@ -70,9 +70,6 @@ class AXBDataSet:
 
         self.a = [f'{self.slots[0]}{i:0>6}' for i in range(self.num_a)]
         self.b = [f'{self.slots[2]}{i:0>6}' for i in range(self.num_b)]
-        self.y = ['.']
-
-        self.types = self.a + self.b + self.x + self.y  # order alphabetically
 
         # map xi to category-relevant a and b subset
         a_subsets = [self.a[offset::self.num_categories] for offset in range(self.num_categories)]
@@ -84,6 +81,10 @@ class AXBDataSet:
         # make each xi redundant with one ai, bi
         self.xi2ai = {xi: ai for xi, ai in zip(self.x, self.a)}
         self.xi2bi = {xi: bi for xi, bi in zip(self.x, self.b)}
+
+        # make each ai redundant with one bi and vice versa
+        self.ai2bi = {ai: bi for ai, bi in zip(self.a, self.b)}
+        self.bi2ai = {bi: ai for ai, bi in zip(self.a, self.b)}
 
         if seed is not None:
             random.seed(seed)
@@ -131,15 +132,15 @@ class AXBDataSet:
                 if modify_b:
                     bi = random.choice(self.xi2b_fragment[xi])
 
-            elif self.corpus_structure == 'rxy':
-                if random.random() < float(self.axb_params.redundancy):
-                    ai = self.xi2ai[xi]
+            elif self.corpus_structure == 'rxy':  # ai is lexically redundant with yi (not xi)
                 bi = random.choice(self.xi2b_fragment[xi])
+                if random.random() < float(self.axb_params.redundancy):
+                    ai = self.bi2ai[bi]
 
-            elif self.corpus_structure == 'yxr':
+            elif self.corpus_structure == 'yxr':   # bi is lexically redundant with yi (not xi)
                 ai = random.choice(self.xi2a_fragment[xi])
                 if random.random() < float(self.axb_params.redundancy):
-                    bi = self.xi2bi[xi]
+                    bi = self.ai2bi[ai]
 
             else:
                 raise AttributeError('Invalid arg to "corpus_structure".')

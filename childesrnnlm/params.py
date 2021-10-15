@@ -16,8 +16,6 @@ param2requests = {
 
     # 'reverse_tokens': [True, False],
 
-    'flavor': ['srn'],
-
     'corpus': [
         'rxy-redundancy:0.0',
         'rxy-redundancy:0.2',
@@ -26,6 +24,11 @@ param2requests = {
         'rxy-redundancy:0.8',
         'rxy-redundancy:1.0',
     ]
+
+    # 'corpus': [
+    #     'axy',
+    #     'yxb',
+    # ]
 
     # paper 3 experiment 3a
     # 'num_parts': [1],
