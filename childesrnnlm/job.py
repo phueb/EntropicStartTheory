@@ -145,7 +145,7 @@ def main(param2val):
         tokens = list(reversed(tokens))
 
     # bpe splits tokens in artificial corpus - do not use bpe tokenized artificial corpus
-    if params.corpus in artificial_corpus_structures:
+    if params.corpus.split('-')[0] in artificial_corpus_structures:
         print('WARNING: Results of BPE tokenization are ignored. White-space tokenization is used.', flush=True)
         tokens = tokens_original
 

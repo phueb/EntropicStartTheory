@@ -29,16 +29,13 @@ class AXBDataSet:
                  corpus_name: str,
                  probe2cat: Dict[str, str],
                  num_docs: int = 1,
-                 num_tokens_per_doc: int = 200_000,
+                 num_tokens_per_doc: int = 400_000,
                  seed: Optional[int] = None,
                  ) -> None:
 
         self.corpus_structure = corpus_name.split('-')[0]
         if self.corpus_structure not in artificial_corpus_structures:
             raise AttributeError(f'Did not recognize corpus structure "{self.corpus_structure}".')
-
-        self.a_rule = self.corpus_structure[0]
-        self.b_rule = self.corpus_structure[2]
 
         # parse corpus name to get rules for generating corpus
         params_kwargs = {}
@@ -147,5 +144,7 @@ class AXBDataSet:
 
             # collect
             res += f'{ai} {xi} {bi} . '  # whitespace after each
+
+        print(f'Generated {len(res.split())} tokens in AXBCorpus')
 
         return res
