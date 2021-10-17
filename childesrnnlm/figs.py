@@ -145,7 +145,7 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                    fontsize=configs.Figs.leg_fs,
                    frameon=False,
                    loc='lower center',
-                   ncol=3,
+                   ncol=2,
                    )
 
     # max line
@@ -229,6 +229,12 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = [0, 0.6]
     elif performance_name == 'ds':
         y_label = ' Divergence from superordinate'
+        y_lims = None
+    elif performance_name == 'dt':
+        y_label = ' Divergence from target category'
+        y_lims = None
+    elif performance_name == 'dn':
+        y_label = ' Divergence from\nnon-contextualized representation'
         y_lims = None
     else:
         raise AttributeError

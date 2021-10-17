@@ -23,12 +23,23 @@ param2requests = {
         'rxy-redundancy:0.6',
         'rxy-redundancy:0.8',
         'rxy-redundancy:1.0',
-    ]
+    ],
 
     # 'corpus': [
-    #     'axy',
-    #     'yxb',
-    # ]
+    #     'rxy-prop_y_fully_determined:0.0',
+    #     'rxy-prop_y_fully_determined:0.2',
+    #     'rxy-prop_y_fully_determined:0.4',
+    #     'rxy-prop_y_fully_determined:0.6',
+    #     'rxy-prop_y_fully_determined:0.8',
+    #     'rxy-prop_y_fully_determined:1.0',
+    # ],
+
+    # 'corpus': [
+        # 'axy',
+        # 'yxb',
+        # 'yxy-rule:and',
+        # 'yxy-rule:or',
+    # ],
 
     # paper 3 experiment 3a
     # 'num_parts': [1],

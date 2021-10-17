@@ -43,7 +43,7 @@ LOCATION = ['inp',  # input layer
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
                 'm',  # "minus 1" - this means ordered context up to probe (excluding probe)
-                ][1]
+                ][0]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1
@@ -59,8 +59,10 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'en',  # 11
                     'eo',  # 12
                     'fr',  # 13
-                    'cd',  # 14  variation WITHIN TYPES
-                    'ds',  # 15  variation BETWEEN TYPES
+                    'cd',  # 14
+                    'ds',  # 15
+                    'dt',  # 16
+                    'dn',  # 17
                     ][0]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'

@@ -15,6 +15,7 @@ artificial_corpus_structures = {'axy',  # semantic category signal is in right n
 class AXBParams:
     rule: Optional[str] = None
     redundancy: Optional[float] = None
+    prop_y_fully_determined: Optional[float] = None  # the proportion of Y types that are perfectly determined by A
 
 
 class AXBDataSet:
@@ -46,6 +47,10 @@ class AXBDataSet:
             v = match.group('value')
             params_kwargs[k] = v
         self.axb_params = AXBParams(**params_kwargs)
+
+        if self.axb_params.prop_y_fully_determined is not None:
+            if self.axb_params.redundancy is not None:
+                raise AttributeError('When "prop_y_determined_by_a" is not None, "redundancy" must be None.')
 
         print(f'Initializing AXB corpus with:\n{self.axb_params}')
 
@@ -82,6 +87,15 @@ class AXBDataSet:
         # make each ai redundant with one bi and vice versa
         self.ai2bi = {ai: bi for ai, bi in zip(self.a, self.b)}
         self.bi2ai = {bi: ai for ai, bi in zip(self.a, self.b)}
+
+        # make some proportion of word types always perfectly predicted by another word type
+        self.fully_determined_b = {}
+        if self.axb_params.prop_y_fully_determined is not None:
+            if self.corpus_structure[0] == 'y':
+                raise NotImplementedError
+            if self.corpus_structure[2] == 'y':
+                self.fully_determined_b = {bi for bi in self.b
+                                           if random.random() < float(self.axb_params.prop_y_fully_determined)}
 
         if seed is not None:
             random.seed(seed)
@@ -131,7 +145,10 @@ class AXBDataSet:
 
             elif self.corpus_structure == 'rxy':  # ai is lexically redundant with yi (not xi)
                 bi = random.choice(self.xi2b_fragment[xi])
-                if random.random() < float(self.axb_params.redundancy):
+                if self.axb_params.redundancy is not None:
+                    if random.random() < float(self.axb_params.redundancy):
+                        ai = self.bi2ai[bi]
+                elif bi in self.fully_determined_b:
                     ai = self.bi2ai[bi]
 
             elif self.corpus_structure == 'yxr':   # bi is lexically redundant with yi (not xi)
@@ -144,7 +161,5 @@ class AXBDataSet:
 
             # collect
             res += f'{ai} {xi} {bi} . '  # whitespace after each
-
-        print(f'Generated {len(res.split())} tokens in AXBCorpus')
 
         return res

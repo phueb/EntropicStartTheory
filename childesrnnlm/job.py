@@ -34,6 +34,8 @@ from childesrnnlm.evaluation import eval_eo_performance
 from childesrnnlm.evaluation import eval_fr_performance
 from childesrnnlm.evaluation import eval_cd_performance
 from childesrnnlm.evaluation import eval_ds_performance
+from childesrnnlm.evaluation import eval_dt_performance
+from childesrnnlm.evaluation import eval_dn_performance
 from childesrnnlm.evaluation import get_context2f
 from childesrnnlm.representation import make_inp_representations, make_out_representations
 from childesrnnlm.params import Params
@@ -465,6 +467,20 @@ def main(param2val):
                         start_eval = time.time()
                         res = eval_ds_performance(model, prep, types_eval)
                         performance.setdefault(performance_name.format('ds'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_dt and location == 'out' and direction == 'c' and context_type == 'o':
+                        print('Computing divergence from target semantic category...', flush=True)
+                        start_eval = time.time()
+                        res = eval_dt_performance(model, prep, types_eval, probe2cat)
+                        performance.setdefault(performance_name.format('dt'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_dn and location == 'out' and direction == 'c' and context_type == 'o':
+                        print('Computing divergence from non-contextualized output...', flush=True)
+                        start_eval = time.time()
+                        res = eval_dn_performance(model, prep, types_eval)
+                        performance.setdefault(performance_name.format('dn'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():

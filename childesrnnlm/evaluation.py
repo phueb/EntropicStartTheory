@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from torch.nn import CrossEntropyLoss
 from pyitlib import discrete_random_variable as drv
@@ -15,7 +15,9 @@ from preppy import Prep
 from childesrnnlm import configs
 from childesrnnlm.s_dbw import S_Dbw
 from childesrnnlm.rnn import RNN
-from childesrnnlm.representation import softmax, make_inp_representations_without_context
+from childesrnnlm.representation import softmax
+from childesrnnlm.representation import make_inp_representations_without_context
+from childesrnnlm.representation import make_out_representations
 
 
 def get_context2f(prep: Prep,
@@ -413,7 +415,7 @@ def eval_ds_performance(model: RNN,
     """
     divergence from superordinate.
     divergence between:
-    - outputs produced by probe + different context
+    - outputs produced by probe + context
     - contextualized superordinate prototype
 
     Notes:
@@ -509,13 +511,13 @@ def eval_ds_performance(model: RNN,
 
 def eval_dt_performance(model: RNN,
                         prep: Prep,
-                        types_eval: List[str],
-                        max_num_exemplars: int = 128,
+                        types_eval: List[str],  # these types must be probes (so that target categories are defined)
+                        probe2cat: Dict[str, str]
                         ):
     """
     divergence from target-level category.
     divergence between:
-    - outputs produced by probe + different context
+    - outputs produced by probe + context
     - contextualized target semantic category prototype
 
     Notes:
@@ -523,18 +525,18 @@ def eval_dt_performance(model: RNN,
         because each p is paired with one q, the total number of comparisons = len(p) = len(q).
         p contains probabilities given a prototype in last position of the input sequence.
         q contains probabilities given an actual probe in last position of the input sequence.
+
+        The only difference to "ds" is that the computation of the prototype is different. all else is the same.
     """
 
     all_windows = prep.reordered_windows
 
-    embeddings_probe = make_inp_representations_without_context(model, types_eval, prep)
-    superordinate_prototype = embeddings_probe.mean(axis=0)
-
-
-    semantic_category_prototype = None
-    assert semantic_category_prototype  # TODO implement
-
-    probes = types_eval
+    # make prototype for each target category
+    embeddings = make_inp_representations_without_context(model, types_eval, prep)
+    categories = list(set(probe2cat.values()))
+    cat2target_category_prototype = {cat: np.mean(
+        [e for probe, e in zip(types_eval, embeddings) if probe2cat[probe] == cat], axis=0)  # todo test
+        for cat in categories}
 
     kls = []
     for type_eval in types_eval:
@@ -552,13 +554,17 @@ def eval_dt_performance(model: RNN,
         inputs = torch.LongTensor(x).cuda()
         model_output_dict = model(inputs)
 
+        # get prototype
+        cat = probe2cat[type_eval]
+        target_category_prototype = cat2target_category_prototype[cat]
+
         # make p and q
         if model.flavor == 'srn':
 
             last_output = model_output_dict['last_output']
 
             # make p (by adding the prototype at the last step)
-            inputs_p = np.repeat(superordinate_prototype[np.newaxis, :],
+            inputs_p = np.repeat(target_category_prototype[np.newaxis, :],
                                  len(x), 0)
             hiddens_p, _ = model.encode(torch.from_numpy(inputs_p[:, np.newaxis, :].astype(np.float32)).cuda(),
                                         torch.unsqueeze(last_output, 0))
@@ -566,8 +572,8 @@ def eval_dt_performance(model: RNN,
             p = softmax(logits_p)  # [num exemplars, hidden_size]
 
             # make q (by adding the probe to the last step)
-            probe_id = probes.index(type_eval)
-            inputs_q = np.repeat(embeddings_probe[probe_id][np.newaxis, :],
+            embeddings_id = types_eval.index(type_eval)
+            inputs_q = np.repeat(embeddings[embeddings_id][np.newaxis, :],
                                  len(inputs), 0)
             hiddens_q, _ = model.encode(torch.from_numpy(inputs_q[:, np.newaxis, :].astype(np.float32)).cuda(),
                                         torch.unsqueeze(last_output, 0))
@@ -581,7 +587,7 @@ def eval_dt_performance(model: RNN,
             c_previous = model_output_dict['c_n']
 
             # make p (by adding the prototype at the last step)
-            inputs_p = np.repeat(superordinate_prototype[np.newaxis, :],
+            inputs_p = np.repeat(target_category_prototype[np.newaxis, :],
                                  len(x), 0)
             hiddens_p, _ = model.encode(torch.from_numpy(inputs_p[:, np.newaxis, :].astype(np.float32)).cuda(),
                                         (h_previous, c_previous))
@@ -589,8 +595,8 @@ def eval_dt_performance(model: RNN,
             p = softmax(logits_p)  # [num exemplars, hidden_size]
 
             # make q (by adding the probe to the last step)
-            probe_id = probes.index(type_eval)
-            inputs_q = np.repeat(embeddings_probe[probe_id][np.newaxis, :],
+            embeddings_id = types_eval.index(type_eval)
+            inputs_q = np.repeat(embeddings[embeddings_id][np.newaxis, :],
                                  len(inputs), 0)
             hiddens_q, _ = model.encode(torch.from_numpy(inputs_q[:, np.newaxis, :].astype(np.float32)).cuda(),
                                         (h_previous, c_previous))
@@ -606,6 +612,54 @@ def eval_dt_performance(model: RNN,
         # print(p.shape, q.shape, flush=True)  # should be the same size - we evaluate each row with one paired row
 
         kl_i = drv.divergence_kullbackleibler_pmf(p, q, cartesian_product=False).mean()
+        kls.append(kl_i)
+
+    res = np.mean(kls)
+
+    return res
+
+
+def eval_dn_performance(model: RNN,
+                        prep: Prep,
+                        types_eval: List[str],  # these types must be probes (so that target categories are defined)
+                        ):
+    """
+    divergence from non-contextualized representation.
+    divergence between:
+    - outputs produced by probe + context
+    - probe without context
+
+
+    """
+
+    all_windows = prep.reordered_windows
+
+    # make a single non-contextualized output representation for each probe
+    ps = make_out_representations(model, types_eval, prep, context_type='n')
+
+    kls = []
+    for n, type_eval in enumerate(types_eval):
+        token_id = prep.token2id[type_eval]
+        bool_idx = np.isin(all_windows[:, -2], token_id)
+        x = all_windows[bool_idx][:, :-1]
+
+        # skip if probe occurs once only - divergence = 0 in such cases
+        if len(x) == 1:
+            continue
+
+        # make q: feed-forward all sequences ending in probe
+        inputs = torch.LongTensor(x).cuda()
+        logits_q = model(inputs)['logits'].detach().cpu().numpy()
+        q = softmax(logits_q)  # [num exemplars, hidden_size]
+
+        # make p
+        p = ps[n][np.newaxis, :]
+
+        # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+        p = p.astype(np.float64)
+        q = q.astype(np.float64)
+
+        kl_i = drv.divergence_kullbackleibler_pmf(p, q, cartesian_product=True).mean()
         kls.append(kl_i)
 
     res = np.mean(kls)
