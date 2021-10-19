@@ -10,20 +10,20 @@ from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
-    # 'reverse': [False],
+    'reverse': [False, True],
 
     # 'shuffle_at_start': [False],
 
     # 'reverse_tokens': [True, False],
 
-    'corpus': [
-        'rxy-redundancy:0.0',
-        'rxy-redundancy:0.2',
-        'rxy-redundancy:0.4',
-        'rxy-redundancy:0.6',
-        'rxy-redundancy:0.8',
-        'rxy-redundancy:1.0',
-    ],
+    # 'corpus': [
+    #     'rxy-redundancy:0.0',
+    #     'rxy-redundancy:0.2',
+    #     'rxy-redundancy:0.4',
+    #     'rxy-redundancy:0.6',
+    #     'rxy-redundancy:0.8',
+    #     'rxy-redundancy:1.0',
+    # ],
 
     # 'corpus': [
     #     'rxy-prop_y_fully_determined:0.0',

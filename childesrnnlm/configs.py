@@ -14,6 +14,9 @@ class Eval:
     train_pp = False  # extremely slow if True
     structures = ['sem-2021']
     num_steps_to_eval = 100_000
+    # num_steps_to_eval = 1_000_000  # TODO remove
+    max_step = None  # todo set to None
+
     high_res_eval_steps = [0, 1_000, 10_000, 20_000, 30_000, 40_000, 50_000, 60_000, 70_000, 80_000, 90_000,
                            100_000, 110_000, 120_000, 130_000, 150_000, 160_000, 170_000, 180_000, 190_000]
 
@@ -26,7 +29,7 @@ class Eval:
     # because right-context representations reflect distributions that come after right-contexts,
     # and thus have little to do with probes
     locations = ['inp', 'out']
-    context_types = ['n', 'o', 'm']
+    context_types = ['n', 'o']
 
     # set to True to perform an evaluation
     calc_ba = bool(1)  # balanced accuracy
@@ -44,9 +47,10 @@ class Eval:
     calc_eo = bool(0)  # entropy of representation of origin
     calc_fr = bool(0)  # fragmentation
     calc_cd = bool(0)  # within-probe divergence of contextualized representations
-    calc_ds = bool(1)  # divergence from superordinate
-    calc_dt = bool(1)  # divergence from target (semantic) category
-    calc_dn = bool(1)  # divergence from non-contextualized output
+    calc_ds = bool(0)  # divergence from superordinate
+    calc_dt = bool(0)  # divergence from target (semantic) category
+    calc_dn = bool(0)  # divergence from non-contextualized output
+    calc_dc = bool(1)  # divergence with cartesian product = true
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 

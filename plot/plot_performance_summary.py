@@ -38,12 +38,12 @@ DIRECTION = ['l',  # left-of-probe,
              ][1]
 LOCATION = ['inp',  # input layer
             'out',  # output layer
-            ][0]
+            ][1]
 
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
                 'm',  # "minus 1" - this means ordered context up to probe (excluding probe)
-                ][0]
+                ][1]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1
@@ -59,11 +59,12 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'en',  # 11
                     'eo',  # 12
                     'fr',  # 13
-                    'cd',  # 14
-                    'ds',  # 15
-                    'dt',  # 16
-                    'dn',  # 17
-                    ][0]
+                    'cd',  # 14  defined for LOCATION='out' and CONTEXT='o' only
+                    'ds',  # 15  defined for LOCATION='out' and CONTEXT='o' only
+                    'dt',  # 16  defined for LOCATION='out' and CONTEXT='o' only
+                    'dn',  # 17  defined for LOCATION='out' and CONTEXT='o' only
+                    'dc',  # 18  defined for LOCATION='out' and CONTEXT='o' only
+                    ][18]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 

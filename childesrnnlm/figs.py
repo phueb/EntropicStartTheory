@@ -103,19 +103,13 @@ def make_summary_fig(summaries: List[Tuple[np.ndarray, np.ndarray, np.ndarray, s
                         )
 
         # if passing individual trajectories (not average trajectories), do not label all
-        if 'shuffle_sentences=True' not in label and len(summaries) == 2 \
-                and ('reverse=True' in label
-                     or 'reverse=True' in label
-        ):
+        if 'shuffle_sentences=True' not in label and 'reverse=True' in label:
             color = 'C1'
             if not first_r:
                 label = '__nolegend__'
             else:
                 first_r = False
-        elif 'shuffle_sentences=True' not in label and len(summaries) ==2 \
-                and ('reverse=False' in label
-                     or 'reverse=False' in label
-        ):
+        elif 'shuffle_sentences=True' not in label and 'reverse=False' in label:
             color = 'C0'
             if not first_c:
                 label = '__nolegend__'
@@ -235,6 +229,9 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = None
     elif performance_name == 'dn':
         y_label = ' Divergence from\nnon-contextualized representation'
+        y_lims = [0, 4]
+    elif performance_name == 'dc':
+        y_label = ' Divergence\ncartesian_product=True'
         y_lims = None
     else:
         raise AttributeError

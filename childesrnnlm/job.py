@@ -36,6 +36,7 @@ from childesrnnlm.evaluation import eval_cd_performance
 from childesrnnlm.evaluation import eval_ds_performance
 from childesrnnlm.evaluation import eval_dt_performance
 from childesrnnlm.evaluation import eval_dn_performance
+from childesrnnlm.evaluation import eval_dc_performance
 from childesrnnlm.evaluation import get_context2f
 from childesrnnlm.representation import make_inp_representations, make_out_representations
 from childesrnnlm.params import Params
@@ -483,6 +484,13 @@ def main(param2val):
                         performance.setdefault(performance_name.format('dn'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
+                    if configs.Eval.calc_dc and location == 'out' and direction == 'c' and context_type == 'o':
+                        print('Computing divergence with cartesian-product...', flush=True)
+                        start_eval = time.time()
+                        res = eval_dc_performance(model, prep, types_eval)
+                        performance.setdefault(performance_name.format('dc'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
             for k, v in performance.items():
                 if not v:
                     continue
@@ -494,6 +502,13 @@ def main(param2val):
             print(f'completed step={step:>12,}/{num_train_mbs:>12,}')
             print(f'minutes elapsed={minutes_elapsed}')
             print(flush=True)
+
+        # exit?
+        if configs.Eval.max_step is not None:
+            if step > configs.Eval.max_step:
+                print('Reached max_step. Exiting training loop', flush=True)
+                break
+
 
     # collect performance in list of pandas series
     res = []

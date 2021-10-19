@@ -364,7 +364,9 @@ def eval_cd_performance(model: RNN,
                         ):
     """
     context divergence.
-    divergence between outputs produce by the same probe + different contexts and contextualized probe prototype.
+    divergence between:
+     outputs produced by the same probe + different contexts, and
+      contextualized probe prototype.
     """
 
     all_windows = prep.reordered_windows
@@ -663,5 +665,64 @@ def eval_dn_performance(model: RNN,
         kls.append(kl_i)
 
     res = np.mean(kls)
+
+    return res
+
+
+def eval_dc_performance(model: RNN,
+                        prep: Prep,
+                        types_eval: List[str],
+                        max_num_exemplars: Optional[int] = None,
+                        ):
+    """
+    divergence with cartesian product.
+
+    a variant of "ds" where contextualized outputs are compared to each other in pairwise fashion,
+    rather than to a prototype.
+    this addresses the problem that a higher score can be interpreted not just as
+     "a probe behaves differently given different contexts", but also as
+     "a probe behaves similarly given different contexts, but differently from the prototype".
+    a high score on this measure can only be interpreted as the former.
+    """
+
+    all_windows = prep.reordered_windows
+
+    tmp = []
+    for n, type_eval in enumerate(types_eval):
+        token_id = prep.token2id[type_eval]
+        bool_idx = np.isin(all_windows[:, -2], token_id)
+        x = all_windows[bool_idx][:, :-1]
+
+        # skip if probe occurs once only - divergence = 0 in such cases
+        if len(x) == 1:
+            continue
+
+        # sub-sample
+        if max_num_exemplars is not None:
+            if len(x) > max_num_exemplars:
+                x = x[:max_num_exemplars]
+
+        # make q: feed-forward all sequences ending in probe
+        inputs = torch.LongTensor(x).cuda()
+        logits_q = model(inputs)['logits'].detach().cpu().numpy()
+        q = softmax(logits_q)  # [num exemplars, hidden_size]
+
+        # TODO test faster ideas - like np.var, or frag or MSE
+
+        res_i = np.var(q, axis=0).mean()
+
+        # ################################ extremely slow
+
+        #
+        # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
+        # q = q.astype(np.float64)
+        #
+        # res_i = drv.divergence_kullbackleibler_pmf(q, q, cartesian_product=True).mean()
+
+        # ################################ extremely slow
+
+        tmp.append(res_i)
+
+    res = np.mean(tmp)
 
     return res
