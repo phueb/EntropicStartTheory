@@ -15,7 +15,8 @@ artificial_corpus_structures = {'axy',  # semantic category signal is in right n
 class AXBParams:
     rule: Optional[str] = None
     redundancy: Optional[float] = None
-    prop_y_fully_determined: Optional[float] = None  # the proportion of Y types that are perfectly determined by A
+    prop_fully_determined: Optional[float] = None  # the proportion of Y types that are perfectly determined by A
+    redundant_with: Optional[str] = None
 
 
 class AXBDataSet:
@@ -48,7 +49,7 @@ class AXBDataSet:
             params_kwargs[k] = v
         self.axb_params = AXBParams(**params_kwargs)
 
-        if self.axb_params.prop_y_fully_determined is not None:
+        if self.axb_params.prop_fully_determined is not None:
             if self.axb_params.redundancy is not None:
                 raise AttributeError('When "prop_y_determined_by_a" is not None, "redundancy" must be None.')
 
@@ -89,13 +90,24 @@ class AXBDataSet:
         self.bi2ai = {bi: ai for ai, bi in zip(self.a, self.b)}
 
         # make some proportion of word types always perfectly predicted by another word type
+        self.fully_determined_a = {}
+        self.fully_determined_x = {}
         self.fully_determined_b = {}
-        if self.axb_params.prop_y_fully_determined is not None:
-            if self.corpus_structure[0] == 'y':
-                raise NotImplementedError
-            if self.corpus_structure[2] == 'y':
-                self.fully_determined_b = {bi for bi in self.b
-                                           if random.random() < float(self.axb_params.prop_y_fully_determined)}
+        if self.axb_params.prop_fully_determined is not None:
+            if self.axb_params.redundant_with == 'x':
+                self.fully_determined_x = {xi for xi in self.x
+                                           if random.random() < float(self.axb_params.prop_fully_determined)}
+            elif self.axb_params.redundant_with == 'y':
+                if self.corpus_structure == 'yxy':
+                    raise NotImplementedError
+                if self.corpus_structure[0] == 'y':
+                    self.fully_determined_a = {ai for ai in self.a
+                                               if random.random() < float(self.axb_params.prop_fully_determined)}
+                elif self.corpus_structure[2] == 'y':
+                    self.fully_determined_b = {bi for bi in self.b
+                                               if random.random() < float(self.axb_params.prop_fully_determined)}
+            else:
+                raise AttributeError('redundant_with must be "x" or "y".')
 
         if seed is not None:
             random.seed(seed)
@@ -143,18 +155,22 @@ class AXBDataSet:
                 if modify_b:
                     bi = random.choice(self.xi2b_fragment[xi])
 
-            elif self.corpus_structure == 'rxy':  # ai is lexically redundant with yi (not xi)
+            elif self.corpus_structure == 'rxy':
                 bi = random.choice(self.xi2b_fragment[xi])
+                # probabilistic redundancy
                 if self.axb_params.redundancy is not None:
                     if random.random() < float(self.axb_params.redundancy):
-                        ai = self.bi2ai[bi]
-                elif bi in self.fully_determined_b:
+                        if self.axb_params.redundant_with == 'x':  # ai is lexically redundant with xi
+                            ai = self.xi2ai[xi]
+                        elif self.axb_params.redundant_with == 'y':  # ai is lexically redundant with bi
+                            ai = self.bi2ai[bi]
+                        else:
+                            raise AttributeError('redundant_with must be "x" or "y".')
+                # deterministic redundancy
+                elif xi in self.fully_determined_x:  # ai is lexically redundant with xi
+                    ai = self.xi2ai[xi]
+                elif bi in self.fully_determined_b:  # ai is lexically redundant with bi
                     ai = self.bi2ai[bi]
-
-            elif self.corpus_structure == 'yxr':   # bi is lexically redundant with yi (not xi)
-                ai = random.choice(self.xi2a_fragment[xi])
-                if random.random() < float(self.axb_params.redundancy):
-                    bi = self.ai2bi[ai]
 
             else:
                 raise AttributeError('Invalid arg to "corpus_structure".')

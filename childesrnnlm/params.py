@@ -10,36 +10,48 @@ from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
-    'reverse': [False, True],
-
-    # 'shuffle_at_start': [False],
+    # 'reverse': [False, True],
 
     # 'reverse_tokens': [True, False],
 
-    # 'corpus': [
-    #     'rxy-redundancy:0.0',
-    #     'rxy-redundancy:0.2',
-    #     'rxy-redundancy:0.4',
-    #     'rxy-redundancy:0.6',
-    #     'rxy-redundancy:0.8',
-    #     'rxy-redundancy:1.0',
-    # ],
-
-    # 'corpus': [
-    #     'rxy-prop_y_fully_determined:0.0',
-    #     'rxy-prop_y_fully_determined:0.2',
-    #     'rxy-prop_y_fully_determined:0.4',
-    #     'rxy-prop_y_fully_determined:0.6',
-    #     'rxy-prop_y_fully_determined:0.8',
-    #     'rxy-prop_y_fully_determined:1.0',
-    # ],
-
+    # paper 2 exp1a
     # 'corpus': [
         # 'axy',
         # 'yxb',
         # 'yxy-rule:and',
         # 'yxy-rule:or',
     # ],
+
+    # paper 2 exp1b language PAY
+    # 'corpus': [
+    #     'rxy-redundant_with:y-redundancy:0.0',
+    #     'rxy-redundant_with:y-redundancy:0.2',
+    #     'rxy-redundant_with:y-redundancy:0.4',
+    #     'rxy-redundant_with:y-redundancy:0.6',
+    #     'rxy-redundant_with:y-redundancy:0.8',
+    #     'rxy-redundant_with:y-redundancy:1.0',
+    # ],
+
+    # paper 2 exp1b language DAX
+    'corpus': [
+        'rxy-redundant_with:x-prop_fully_determined:0.0',
+        'rxy-redundant_with:x-prop_fully_determined:0.2',
+        'rxy-redundant_with:x-prop_fully_determined:0.4',
+        'rxy-redundant_with:x-prop_fully_determined:0.6',
+        'rxy-redundant_with:x-prop_fully_determined:0.8',
+        'rxy-redundant_with:x-prop_fully_determined:1.0',
+    ],
+
+    # paper 2 exp1b language DAY
+    # 'corpus': [
+    #     'rxy-redundant_with:y-prop_fully_determined:0.0',
+    #     'rxy-redundant_with:y-prop_fully_determined:0.2',
+    #     'rxy-redundant_with:y-prop_fully_determined:0.4',
+    #     'rxy-redundant_with:y-prop_fully_determined:0.6',
+    #     'rxy-redundant_with:y-prop_fully_determined:0.8',
+    #     'rxy-redundant_with:y-prop_fully_determined:1.0',
+    # ],
+
 
     # paper 3 experiment 3a
     # 'num_parts': [1],

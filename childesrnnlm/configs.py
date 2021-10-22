@@ -50,7 +50,7 @@ class Eval:
     calc_ds = bool(0)  # divergence from superordinate
     calc_dt = bool(0)  # divergence from target (semantic) category
     calc_dn = bool(0)  # divergence from non-contextualized output
-    calc_dc = bool(1)  # divergence with cartesian product = true
+    calc_dc = bool(0)  # divergence with cartesian product = true
 
     max_num_exemplars = 8192  # keep this as large as possible to reproduce age-order effect
 

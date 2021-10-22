@@ -672,7 +672,7 @@ def eval_dn_performance(model: RNN,
 def eval_dc_performance(model: RNN,
                         prep: Prep,
                         types_eval: List[str],
-                        max_num_exemplars: Optional[int] = None,
+                        max_num_exemplars: Optional[int] = 32,
                         ):
     """
     divergence with cartesian product.
@@ -705,19 +705,17 @@ def eval_dc_performance(model: RNN,
         # make q: feed-forward all sequences ending in probe
         inputs = torch.LongTensor(x).cuda()
         logits_q = model(inputs)['logits'].detach().cpu().numpy()
-        q = softmax(logits_q)  # [num exemplars, hidden_size]
 
-        # TODO test faster ideas - like np.var, or frag or MSE
-
-        res_i = np.var(q, axis=0).mean()
+        # note: when using fragmentation or column-variance (instead of kl divergence), there is no age-related effect
 
         # ################################ extremely slow
 
-        #
+        q = softmax(logits_q)  # [num exemplars, hidden_size]
+
         # need to cast from float32 to float64 to avoid very slow check for NaNs in drv.divergence_jensenshannon_pmf
-        # q = q.astype(np.float64)
-        #
-        # res_i = drv.divergence_kullbackleibler_pmf(q, q, cartesian_product=True).mean()
+        q = q.astype(np.float64)
+
+        res_i = drv.divergence_kullbackleibler_pmf(q, q, cartesian_product=True).mean()
 
         # ################################ extremely slow
 
