@@ -37,6 +37,7 @@ from childesrnnlm.evaluation import eval_ds_performance
 from childesrnnlm.evaluation import eval_dt_performance
 from childesrnnlm.evaluation import eval_dn_performance
 from childesrnnlm.evaluation import eval_dc_performance
+from childesrnnlm.evaluation import eval_ed_performance
 from childesrnnlm.evaluation import get_context2f
 from childesrnnlm.representation import make_inp_representations, make_out_representations
 from childesrnnlm.params import Params
@@ -489,6 +490,13 @@ def main(param2val):
                         start_eval = time.time()
                         res = eval_dc_performance(model, prep, types_eval)
                         performance.setdefault(performance_name.format('dc'), []).append(res)
+                        print(f'Elapsed={time.time() - start_eval}secs', flush=True)
+
+                    if configs.Eval.calc_ed:
+                        print('Computing effective dimensionality...', flush=True)
+                        start_eval = time.time()
+                        res = eval_ed_performance(representations, type_eval2f)
+                        performance.setdefault(performance_name.format('ed'), []).append(res)
                         print(f'Elapsed={time.time() - start_eval}secs', flush=True)
 
             for k, v in performance.items():

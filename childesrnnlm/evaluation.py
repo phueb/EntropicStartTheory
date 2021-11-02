@@ -724,3 +724,30 @@ def eval_dc_performance(model: RNN,
     res = np.mean(tmp)
 
     return res
+
+
+def eval_ed_performance(representations: np.array,
+                        type_eval2f: Optional[Dict[str, int]]
+                        ):
+    """
+    effective dimensionality, as defined by Farrell et al. 2019
+    https://doi.org/10.1101/564476
+
+    ED = sum of eigenvalues **2 / sum of squared eigenvalues
+    """
+
+    # repeat each context-word representation by the number of times it occurs with a probe word.
+    # note: this considers the frequency of context words
+    if configs.Eval.frequency_weighting and type_eval2f:
+        repeats = [f for t, f in type_eval2f.items()]
+        assert len(repeats) == len(representations)
+        mat = np.repeat(representations, repeats, axis=0)
+        assert mat.shape[1] == representations.shape[1]
+    else:
+        mat = representations
+
+    # compute ed
+    s = np.linalg.svd(mat, compute_uv=False)
+    res = np.sum(s) ** 2 / np.sum(np.square(s))  # TODO test
+
+    return res

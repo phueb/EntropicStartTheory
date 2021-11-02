@@ -233,6 +233,9 @@ def get_y_label_and_lims(performance_name: str,
     elif performance_name == 'dc':
         y_label = ' Divergence\ncartesian_product=True'
         y_lims = None
+    elif performance_name == 'ed':
+        y_label = ' Effective Dimensionality'
+        y_lims = None
     else:
         raise AttributeError
 

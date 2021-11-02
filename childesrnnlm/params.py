@@ -10,7 +10,7 @@ from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
-    # 'reverse': [False, True],
+    'reverse': [False, True],
 
     # 'reverse_tokens': [True, False],
 
@@ -20,6 +20,16 @@ param2requests = {
         # 'yxb',
         # 'yxy-rule:and',
         # 'yxy-rule:or',
+    # ],
+
+    # paper 2 exp1b language PAX
+    # 'corpus': [
+    #     'rxy-redundant_with:x-redundancy:0.0',
+    #     'rxy-redundant_with:x-redundancy:0.2',
+    #     'rxy-redundant_with:x-redundancy:0.4',
+    #     'rxy-redundant_with:x-redundancy:0.6',
+    #     'rxy-redundant_with:x-redundancy:0.8',
+    #     'rxy-redundant_with:x-redundancy:1.0',
     # ],
 
     # paper 2 exp1b language PAY
@@ -33,14 +43,14 @@ param2requests = {
     # ],
 
     # paper 2 exp1b language DAX
-    'corpus': [
-        'rxy-redundant_with:x-prop_fully_determined:0.0',
-        'rxy-redundant_with:x-prop_fully_determined:0.2',
-        'rxy-redundant_with:x-prop_fully_determined:0.4',
-        'rxy-redundant_with:x-prop_fully_determined:0.6',
-        'rxy-redundant_with:x-prop_fully_determined:0.8',
-        'rxy-redundant_with:x-prop_fully_determined:1.0',
-    ],
+    # 'corpus': [
+    #     'rxy-redundant_with:x-prop_fully_determined:0.0',
+    #     'rxy-redundant_with:x-prop_fully_determined:0.2',
+    #     'rxy-redundant_with:x-prop_fully_determined:0.4',
+    #     'rxy-redundant_with:x-prop_fully_determined:0.6',
+    #     'rxy-redundant_with:x-prop_fully_determined:0.8',
+    #     'rxy-redundant_with:x-prop_fully_determined:1.0',
+    # ],
 
     # paper 2 exp1b language DAY
     # 'corpus': [
