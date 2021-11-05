@@ -1,4 +1,4 @@
-# ChildesRNNLM
+# EntropicStartTheory
 
 Research code. Under active development.
 
@@ -30,7 +30,7 @@ learning semantic category distinctions between common nouns.
 First, create a new virtual environment for Python 3.7. Then:
 
 ```
-pip install git+https://github.com/phueb/ChildesRNNLM
+pip install git+https://github.com/phueb/EntropicStartTheory
 ```
 
 ## Dependencies
