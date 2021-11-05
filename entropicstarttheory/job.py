@@ -13,35 +13,35 @@ from aochildes.dataset import ChildesDataSet
 from aonewsela.dataset import NewselaDataSet
 from preppy import Prep
 
-from childesrnnlm import configs
-from childesrnnlm.bpe import train_bpe_tokenizer
-from childesrnnlm.io import load_probe2cat
-from childesrnnlm.axb import AXBDataSet, artificial_corpus_structures
-from childesrnnlm.evaluation import calc_perplexity
-from childesrnnlm.evaluation import eval_ba_performance
-from childesrnnlm.evaluation import eval_si_performance
-from childesrnnlm.evaluation import eval_sd_performance
-from childesrnnlm.evaluation import eval_pr1_performance
-from childesrnnlm.evaluation import eval_pr2_performance
-from childesrnnlm.evaluation import eval_ma_performance
-from childesrnnlm.evaluation import eval_pd_performance
-from childesrnnlm.evaluation import eval_pe_performance
-from childesrnnlm.evaluation import eval_cs_performance
-from childesrnnlm.evaluation import eval_cc_performance
-from childesrnnlm.evaluation import eval_op_performance
-from childesrnnlm.evaluation import eval_en_performance
-from childesrnnlm.evaluation import eval_eo_performance
-from childesrnnlm.evaluation import eval_fr_performance
-from childesrnnlm.evaluation import eval_cd_performance
-from childesrnnlm.evaluation import eval_ds_performance
-from childesrnnlm.evaluation import eval_dt_performance
-from childesrnnlm.evaluation import eval_dn_performance
-from childesrnnlm.evaluation import eval_dc_performance
-from childesrnnlm.evaluation import eval_ed_performance
-from childesrnnlm.evaluation import get_context2f
-from childesrnnlm.representation import make_inp_representations, make_out_representations
-from childesrnnlm.params import Params
-from childesrnnlm.rnn import RNN
+from entropicstarttheory import configs
+from entropicstarttheory.bpe import train_bpe_tokenizer
+from entropicstarttheory.io import load_probe2cat
+from entropicstarttheory.axb import AXBDataSet, artificial_corpus_structures
+from entropicstarttheory.evaluation import calc_perplexity
+from entropicstarttheory.evaluation import eval_ba_performance
+from entropicstarttheory.evaluation import eval_si_performance
+from entropicstarttheory.evaluation import eval_sd_performance
+from entropicstarttheory.evaluation import eval_pr1_performance
+from entropicstarttheory.evaluation import eval_pr2_performance
+from entropicstarttheory.evaluation import eval_ma_performance
+from entropicstarttheory.evaluation import eval_pd_performance
+from entropicstarttheory.evaluation import eval_pe_performance
+from entropicstarttheory.evaluation import eval_cs_performance
+from entropicstarttheory.evaluation import eval_cc_performance
+from entropicstarttheory.evaluation import eval_op_performance
+from entropicstarttheory.evaluation import eval_en_performance
+from entropicstarttheory.evaluation import eval_eo_performance
+from entropicstarttheory.evaluation import eval_fr_performance
+from entropicstarttheory.evaluation import eval_cd_performance
+from entropicstarttheory.evaluation import eval_ds_performance
+from entropicstarttheory.evaluation import eval_dt_performance
+from entropicstarttheory.evaluation import eval_dn_performance
+from entropicstarttheory.evaluation import eval_dc_performance
+from entropicstarttheory.evaluation import eval_ed_performance
+from entropicstarttheory.evaluation import get_context2f
+from entropicstarttheory.representation import make_inp_representations, make_out_representations
+from entropicstarttheory.params import Params
+from entropicstarttheory.rnn import RNN
 
 
 def main(param2val):

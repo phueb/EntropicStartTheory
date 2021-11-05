@@ -9,10 +9,10 @@ from ludwig.results import gen_param_paths
 from categoryeval.ba import BAScorer
 
 
-from childesrnnlm import __name__, configs
-from childesrnnlm.io import load_probe2cat
-from childesrnnlm.params import param2default, param2requests
-from childesrnnlm.figs import make_summary_fig
+from entropicstarttheory import __name__, configs
+from entropicstarttheory.io import load_probe2cat
+from entropicstarttheory.params import param2default, param2requests
+from entropicstarttheory.figs import make_summary_fig
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH: Optional[Path] = None  # configs.Dirs.runs if loading runs locally or None if from ludwig

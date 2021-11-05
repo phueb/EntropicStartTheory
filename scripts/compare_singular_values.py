@@ -10,8 +10,8 @@ from celluloid import Camera
 
 from ludwig.results import gen_param_paths
 
-from childesrnnlm import __name__, configs
-from childesrnnlm.params import param2default, param2requests
+from entropicstarttheory import __name__, configs
+from entropicstarttheory.params import param2default, param2requests
 
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')

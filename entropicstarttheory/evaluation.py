@@ -12,12 +12,12 @@ from categoryeval.cs import CSScorer
 
 from preppy import Prep
 
-from childesrnnlm import configs
-from childesrnnlm.s_dbw import S_Dbw
-from childesrnnlm.rnn import RNN
-from childesrnnlm.representation import softmax
-from childesrnnlm.representation import make_inp_representations_without_context
-from childesrnnlm.representation import make_out_representations
+from entropicstarttheory import configs
+from entropicstarttheory.s_dbw import S_Dbw
+from entropicstarttheory.rnn import RNN
+from entropicstarttheory.representation import softmax
+from entropicstarttheory.representation import make_inp_representations_without_context
+from entropicstarttheory.representation import make_out_representations
 
 
 def get_context2f(prep: Prep,

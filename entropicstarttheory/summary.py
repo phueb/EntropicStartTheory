@@ -5,9 +5,9 @@ import yaml
 import pandas as pd
 from scipy.stats import sem, t
 
-from childesrnnlm import configs
-from childesrnnlm.params import Params
-from childesrnnlm.io import load_probe2cat
+from entropicstarttheory import configs
+from entropicstarttheory.params import Params
+from entropicstarttheory.io import load_probe2cat
 
 
 def save_summary_to_txt(summary: Tuple[np.ndarray, np.ndarray, np.ndarray, str, Union[int, None]],

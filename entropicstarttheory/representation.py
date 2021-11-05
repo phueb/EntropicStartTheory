@@ -4,8 +4,8 @@ from typing import List
 
 from preppy import Prep
 
-from childesrnnlm import configs
-from childesrnnlm.rnn import RNN
+from entropicstarttheory import configs
+from entropicstarttheory.rnn import RNN
 
 
 def get_weights(model):
