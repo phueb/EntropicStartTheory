@@ -38,7 +38,6 @@ class RNN(torch.nn.Module):
 
         # init weights - this is required to get good balanced accuracy
         max_w = np.sqrt(1 / hidden_size)
-
         self.project.weight.data.uniform_(-max_w, max_w)
         if bias:
             self.project.bias.data.fill_(0.0)

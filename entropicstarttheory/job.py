@@ -73,7 +73,7 @@ def main(param2val):
     else:
         raise AttributeError('Invalid corpus')
 
-    # shuffle at transcript level
+    # shuffle at transcript-level
     if params.shuffle_transcripts:
         random.shuffle(transcripts)
 
@@ -128,6 +128,10 @@ def main(param2val):
                          if t not in {'Ġ', '', ' '}]
     print(f'{len(set(tokens)):,} types in tokenized text', flush=True)
     print(f'Tokenized text has {len(tokens) - len(tokens_original):,} more tokens than before tokenization')
+
+    # TODO tokenization produces tokens that resemble probes, but should not be considered probes:
+    # TODO ('Ġadv', 'ice',), ('Ġpleas', 'ant')
+    # TODO how to differentiate this "incidental" probes from real probes?
 
     # replace special token with original probes
     replaced_probes_it = iter(replaced_probes)
@@ -204,7 +208,7 @@ def main(param2val):
     counter_test_ = Counter(prep.tokens_test_)
     structure2probe2cat = defaultdict(dict)
     for structure in configs.Eval.structures:
-        probe2cat = load_probe2cat(project_path, structure, corpus_name)
+
         for probe, cat in probe2cat.items():
             if probe not in probes_in_data:
                 continue
@@ -281,7 +285,7 @@ def main(param2val):
             context_size = windows.shape[1] - 1  # different depending on whether input is from prep_start
             x, y = np.split(windows, [context_size], axis=1)
             inputs = torch.LongTensor(x).cuda()
-            targets = torch.LongTensor(np.squeeze(y)).cuda()
+            labels = torch.LongTensor(np.squeeze(y)).cuda()
 
             # forward step
             model.batch_size = len(windows)  # dynamic batch size
@@ -290,7 +294,7 @@ def main(param2val):
 
             # backward step
             optimizer.zero_grad()  # sets all gradients to zero
-            loss = criterion(logits, targets)
+            loss = criterion(logits, labels)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
@@ -517,14 +521,13 @@ def main(param2val):
                 print('Reached max_step. Exiting training loop', flush=True)
                 break
 
-
     # collect performance in list of pandas series
     res = []
     for k, v in performance.items():
         if not v:
             continue
-        transcript = pd.Series(v, index=eval_steps)
-        transcript.name = k
-        res.append(transcript)
+        df = pd.Series(v, index=eval_steps)
+        df.name = k
+        res.append(df)
 
     return res
