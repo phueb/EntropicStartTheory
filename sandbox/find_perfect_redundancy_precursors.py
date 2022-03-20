@@ -56,11 +56,11 @@ tokens = [token if token != special_token else next(replaced_probes_it) for toke
 assert len(list(replaced_probes_it)) == 0
 
 
-def gen_pr_left_contexts_by_partition(toks: List[str]) -> Generator[List[str], None, None]:
+def gen_ftp1s_by_partition(toks: List[str]) -> Generator[List[str], None, None]:
     """
-    find perfect-redundancy left-contexts of probe words.
+    find perfect-redundancy precursors (ftp1s)
 
-    such left-contexts are those which only precede one probe word and do not occur anywhere else in the same partition
+    ftp1s are left-contexts which only precede one probe word and do not occur anywhere else in the same partition
     """
 
     num_ts_in_part = len(toks) // NUM_PARTS
@@ -86,7 +86,7 @@ def gen_pr_left_contexts_by_partition(toks: List[str]) -> Generator[List[str], N
 
             t2f = Counter(tokens_in_part)  # count only in a partition
 
-            # find num perfect-redundancy contexts
+            # find ftp1s
             for lc, p in pairs:
                 lc_f = 0
                 for j, tj in enumerate(tokens_in_part):
@@ -98,7 +98,7 @@ def gen_pr_left_contexts_by_partition(toks: List[str]) -> Generator[List[str], N
                 else:
 
                     p_f = t2f[p]
-                    prop = lc_f / p_f  # what is the proportion of times a probe is preceded by pr left-context
+                    prop = lc_f / p_f  # what is the proportion of times a probe is preceded by left-context
                     res.append((lc, p, lc_f, p_f, prop))
 
             yield res
@@ -108,7 +108,7 @@ def gen_pr_left_contexts_by_partition(toks: List[str]) -> Generator[List[str], N
 
 
 print(f'Looping over {len(tokens)} tokens')
-for part_id, data in enumerate(gen_pr_left_contexts_by_partition(tokens)):
+for part_id, data in enumerate(gen_ftp1s_by_partition(tokens)):
 
     name2col = defaultdict(list)
     props = []

@@ -21,7 +21,8 @@ num_cats_in_table = num_cats // NUM_TABLES
 
 for table_id in range(NUM_TABLES):
 
-    cats_in_table = list(cat2probes)[:num_cats_in_table]
+    start = num_cats_in_table * table_id
+    cats_in_table = list(cat2probes)[start:start + num_cats_in_table]
 
     # padding
     data = {}

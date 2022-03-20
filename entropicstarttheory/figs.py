@@ -229,7 +229,7 @@ def get_y_label_and_lims(performance_name: str,
         y_lims = None
     elif performance_name == 'dn':
         y_label = ' Divergence from\nnon-contextualized representation'
-        y_lims = [0, 4]
+        y_lims = None
     elif performance_name == 'dc':
         y_label = ' Divergence\ncartesian_product=True'
         y_lims = None

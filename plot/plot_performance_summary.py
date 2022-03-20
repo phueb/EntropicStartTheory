@@ -65,7 +65,7 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'dn',  # 17  defined for LOCATION='out' and CONTEXT='o' only
                     'dc',  # 18  defined for LOCATION='out' and CONTEXT='o' only
                     'ed',  # 19
-                    ][19]
+                    ][17]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 
@@ -116,6 +116,7 @@ fig = make_summary_fig(summaries,
                        title=TITLE,
                        palette_ids=PALETTE_IDS,
                        figsize=FIG_SIZE,
+                       xlims=[0, 10_000],
                        ylims=y_lims,
                        vlines=V_LINES,
                        hlines=H_LINES,

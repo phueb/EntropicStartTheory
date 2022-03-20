@@ -208,7 +208,7 @@ def main(param2val):
     counter_test_ = Counter(prep.tokens_test_)
     structure2probe2cat = defaultdict(dict)
     for structure in configs.Eval.structures:
-
+        probe2cat = load_probe2cat(project_path, structure, corpus_name)
         for probe, cat in probe2cat.items():
             if probe not in probes_in_data:
                 continue
