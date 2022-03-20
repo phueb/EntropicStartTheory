@@ -15,11 +15,12 @@ RUNS_PATH = None  # configs.Dirs.runs if loading runs locally or None if loading
 LABEL_N: bool = True                        # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
-PALETTE_IDS: Optional[List[int]] = None   # re-assign colors to each line
+PALETTE_IDS: Optional[List[int]] = [1, 0]   # re-assign colors to each line
 V_LINES: Optional[List[int]] = []       # add vertical lines to highlight time slices
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95
 TITLE = ''
+X_LIMS: Optional[List[int]] = None  # [0, 10_000]
 
 # replace sub strings of legend labels
 SUB_STRING_REPLACEMENTS = {
@@ -36,14 +37,14 @@ DIRECTION = ['l',  # left-of-probe,
              'c',  # center (probe)
              'r',  # right-of-probe:
              ][1]
-LOCATION = ['inp',  # input layer
+LOCATION = ['inp',  # input/hidden layer
             'out',  # output layer
-            ][1]
+            ][0]
 
 CONTEXT_TYPE = ['n',  # no context + probe
                 'o',  # ordered context + probe
                 'm',  # "minus 1" - this means ordered context up to probe (excluding probe)
-                ][1]
+                ][0]
 
 PERFORMANCE_NAME = ['ba',  # 0
                     'si',  # 1
@@ -65,7 +66,7 @@ PERFORMANCE_NAME = ['ba',  # 0
                     'dn',  # 17  defined for LOCATION='out' and CONTEXT='o' only
                     'dc',  # 18  defined for LOCATION='out' and CONTEXT='o' only
                     'ed',  # 19
-                    ][17]
+                    ][0]
 
 pattern = f'{PERFORMANCE_NAME}_{STRUCTURE_NAME}_{DIRECTION}_{LOCATION}_{CONTEXT_TYPE}'
 
@@ -111,12 +112,13 @@ y_label, y_lims = get_y_label_and_lims(PERFORMANCE_NAME,
                                        LOCATION,
                                        CONTEXT_TYPE,
                                        add_confidence_interval_to_label=True)
+
 fig = make_summary_fig(summaries,
                        ylabel=y_label,
                        title=TITLE,
                        palette_ids=PALETTE_IDS,
                        figsize=FIG_SIZE,
-                       xlims=[0, 10_000],
+                       xlims=X_LIMS,
                        ylims=y_lims,
                        vlines=V_LINES,
                        hlines=H_LINES,
