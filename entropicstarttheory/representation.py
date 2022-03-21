@@ -4,8 +4,8 @@ from typing import Union
 
 from preppy import Prep
 
-from childesrnnlm import configs
-from childesrnnlm.rnn import RNN
+from entropicstarttheory import configs
+from entropicstarttheory.rnn import RNN
 
 
 def make_representations_without_context(model, word_ids):

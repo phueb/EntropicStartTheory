@@ -31,4 +31,9 @@ def make_summary(pattern: str,
         print(f'Shifting x axis by {shift_x}')
         x -= shift_x
 
+    s = concatenated_df.mean(axis=1)
+    s.name = 'balanced accuracy'
+    s.index.name = 'training step'
+    s.to_csv(label.replace('\n', '-') + '.csv')
+
     return x, y_mean, h, label, n

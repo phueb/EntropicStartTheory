@@ -8,13 +8,13 @@ from pathlib import Path
 
 from preppy import Prep
 
-from childesrnnlm import configs
-from childesrnnlm.io import load_probe2cat
-from childesrnnlm.evaluation import update_ba_performance
-from childesrnnlm.evaluation import update_pp_performance
+from entropicstarttheory import configs
+from entropicstarttheory.io import load_probe2cat
+from entropicstarttheory.evaluation import update_ba_performance
+from entropicstarttheory.evaluation import update_pp_performance
 
-from childesrnnlm.params import Params
-from childesrnnlm.rnn import RNN
+from entropicstarttheory.params import Params
+from entropicstarttheory.rnn import RNN
 
 
 def main(param2val):

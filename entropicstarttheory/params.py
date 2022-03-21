@@ -4,11 +4,12 @@ from typing import Tuple
 # specify params to submit here
 param2requests = {
 
-    'corpus': ['original',
-               'cleaned',
-               'parsed',
-               'cleanedparsed',
-               ],
+    'corpus': [
+        # 'original',
+        'cleaned',
+        'parsed',
+        # 'cleanedparsed',
+    ],
 
 }
 

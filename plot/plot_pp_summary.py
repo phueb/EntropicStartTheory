@@ -4,10 +4,10 @@ from pathlib import Path
 
 from ludwig.results import gen_param_paths
 
-from childesrnnlm import __name__
-from childesrnnlm.figs import make_summary_fig
-from childesrnnlm.params import param2default, param2requests
-from childesrnnlm.summary import make_summary
+from entropicstarttheory import __name__
+from entropicstarttheory.figs import make_summary_fig
+from entropicstarttheory.params import param2default, param2requests
+from entropicstarttheory.summary import make_summary
 
 LUDWIG_DATA_PATH: Optional[Path] = Path('/media/ludwig_data')
 RUNS_PATH = None  # config.Dirs.runs  # config.Dirs.runs if using local plot or None if using plot form Ludwig

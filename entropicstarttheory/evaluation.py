@@ -11,10 +11,10 @@ from categoryeval.ba import BAScorer
 
 from preppy import Prep
 
-from childesrnnlm import configs
-from childesrnnlm.rnn import RNN
-from childesrnnlm.representation import make_representations_without_context
-from childesrnnlm.representation import make_representations_with_context
+from entropicstarttheory import configs
+from entropicstarttheory.rnn import RNN
+from entropicstarttheory.representation import make_representations_without_context
+from entropicstarttheory.representation import make_representations_with_context
 
 
 def calc_perplexity(model: RNN,
