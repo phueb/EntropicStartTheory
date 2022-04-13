@@ -1,6 +1,5 @@
 from typing import Optional, List, Tuple
 from pathlib import Path
-import numpy as np
 
 from ludwig.results import gen_param_paths
 
@@ -15,7 +14,7 @@ RUNS_PATH = None  # configs.Dirs.runs if loading runs locally or None if loading
 LABEL_N: bool = True                        # add information about number of replications to legend
 PLOT_MAX_LINE: bool = False                 # plot horizontal line at best performance for each param
 PLOT_MAX_LINES: bool = False                # plot horizontal line at best overall performance
-PALETTE_IDS: Optional[List[int]] = [1, 0]   # re-assign colors to each line
+PALETTE_IDS: Optional[List[int]] = None    # re-assign colors to each line
 V_LINES: Optional[List[int]] = []       # add vertical lines to highlight time slices
 FIG_SIZE: Tuple[int, int] = (6, 4)  # in inches
 CONFIDENCE: float = 0.95

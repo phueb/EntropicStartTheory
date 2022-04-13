@@ -10,8 +10,8 @@ pyprind
 torch==1.6
 numpy==1.18.1
 tokenizers==0.10.1
-https://github.com/phueb/Ludwig/archive/v4.0.2.tar.gz
-https://github.com/phueb/Preppy/archive/v3.1.0.tar.gz
+https://github.com/phueb/Ludwig/archive/v4.0.7.tar.gz
+https://github.com/phueb/Preppy/archive/v3.1.1.tar.gz
 https://github.com/phueb/CategoryEval/archive/v5.0.0.tar.gz
-https://github.com/UIUCLearningLanguageLab/AOCHILDES/archive/v2.1.1.tar.gz
+https://github.com/UIUCLearningLanguageLab/AOCHILDES/archive/v3.0.0.tar.gz
 https://github.com/UIUCLearningLanguageLab/AONewsela/archive/v1.1.0.tar.gz

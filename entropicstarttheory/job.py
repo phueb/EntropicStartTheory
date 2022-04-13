@@ -9,7 +9,7 @@ from itertools import chain, product
 from typing import List
 import random
 
-from aochildes.dataset import ChildesDataSet
+from aochildes.dataset import AOChildesDataSet
 from aonewsela.dataset import NewselaDataSet
 from preppy import Prep
 
@@ -59,7 +59,7 @@ def main(param2val):
     # load corpus
     if params.corpus == 'aochildes':
         corpus_name = params.corpus
-        transcripts = ChildesDataSet().load_transcripts()
+        transcripts = AOChildesDataSet().load_transcripts()
     elif params.corpus == 'aonewsela':
         corpus_name = params.corpus
         transcripts = NewselaDataSet().load_transcripts()
