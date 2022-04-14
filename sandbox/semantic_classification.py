@@ -9,7 +9,9 @@ also, these accuracies are obtained when tokens are collapsed to types,
 and this makes each data point much more informative than individual tokens
 
 
-It takes about 600 of the most frequent contexts to get above 95% accuracy and about 1000 to get 99% accuracy
+It takes about 600 of the most frequent contexts to get above 95% accuracy and about 1000 to get 99% accuracy.
+This is only true when contexts must not be shared across the 2 partitions.
+When context sharing is enforced, it takes more than 900 contexts just to get above 90%
 
 """
 from typing import List, Optional
@@ -29,7 +31,7 @@ RANDOM_LABELS = False
 NUM_PARTITIONS = 2
 BPE_VOCAB_SIZE = 8_000  # this number includes 256 reserved latin and non-latin characters
 N_COMPONENTS = 27  # should be number of categories - 1
-MIN_CONTEXT_FREQ = 10
+MIN_CONTEXT_FREQ = 200  # 300 < 250 < 200 > 150> 40 > 35 > 30 > 25 > 20 > 10 for generalization
 STRUCTURE_NAME = 'sem-all'
 
 VERBOSE = False
