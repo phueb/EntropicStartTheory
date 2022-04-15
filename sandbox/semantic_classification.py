@@ -33,7 +33,7 @@ from entropicstarttheory.bpe import train_bpe_tokenizer
 
 BPE_VOCAB_SIZE = 8_000  # this number includes 256 reserved latin and non-latin characters
 N_COMPONENTS = 27  # should be number of categories - 1
-NUM_X = 20  # the more, the smoother the lines in the figure
+NUM_X = 5  # the more, the smoother the lines in the figure
 STRUCTURE_NAME = 'sem-all'
 
 VERBOSE_COEF = False
@@ -46,7 +46,7 @@ if BPE_VOCAB_SIZE < 256:
 np.set_printoptions(suppress=True)
 
 num_parts = 2
-min_num_contexts = [int(i) for i in np.linspace(10, 500, NUM_X)]  # approx 100-200
+num_contexts_levels = [int(i) for i in np.linspace(10, 500, NUM_X)]  # approx 100-200
 
 
 def train_clf(x_: np.array,
@@ -79,8 +79,6 @@ def make_x_y(df_: pd.DataFrame,
     df_x = dummies.groupby('probe').sum()
 
     # get only features that are shared
-    print(len(contexts_shared_))
-    print(len(df_x.columns))
     df_x = df_x[contexts_shared_]
 
     assert df_x.columns.values.tolist() == contexts_shared_
@@ -265,12 +263,15 @@ for part_id in range(num_parts):
 
 @dataclass
 class Fit:
-    df: pd.DataFrame
     clf: LinearDiscriminantAnalysis
     context_dir: str
-    min_num_c: int
+    num_contexts: int
     part_id: int
     shuffled_labels: bool
+
+    # collecting the already processed data speeds evaluation
+    x: np.array
+    y: np.array
 
 
 fits = []
@@ -280,89 +281,139 @@ for context_dir in context_directions:
 
     for part_id in range(num_parts):
 
-        for min_num_c in min_num_contexts:
+        for num_contexts in num_contexts_levels:
 
             context2f: Counter = cd2context2f[context_dir]
-            contexts_shared = [c for c, f in context2f.most_common(min_num_c)]
+            contexts_shared = [c for c, f in context2f.most_common(num_contexts)]
 
             for shuffled_labels in shuffled_labels_levels:
 
                 # train
-                clf = train_clf(*make_x_y(df, contexts_shared, context_dir, part_id),
-                                shuffled_labels)
+                x, y = make_x_y(df, contexts_shared, context_dir, part_id)
+                clf = train_clf(x, y, shuffled_labels)
 
                 # collect classifier, data, and information about condition
-                fits.append(Fit(df=df,
-                                clf=clf,
+                fits.append(Fit(clf=clf,
                                 context_dir=context_dir,
-                                min_num_c=min_num_c,
+                                num_contexts=num_contexts,
                                 part_id=part_id,
                                 shuffled_labels=shuffled_labels,
+                                x=x,
+                                y=y
                                 ))
 
 # ############################################################## evaluate classifiers
 
 
-def get_condition(cd: str,
-                  td: str,
-                  sl: bool
-                  ) -> str:
+def get_train_condition(cd: str,
+                        pi: int,
+                        sl: bool
+                        ) -> str:
+    """ there are 4 conditions, one for each curve that is plotted. the design is 2x2x1"""
+    return '-'.join([cd, f'partition{pi+1}', 'shuffled' if sl else ''])
+
+
+def get_test_condition(cd: str,
+                       td: str,
+                       sl: bool
+                       ) -> str:
     """ there are 4 conditions, one for each curve that is plotted. the design is 2x2x1"""
     return '-'.join([cd, td, 'shuffled' if sl else ''])
 
 
-condition2curve = {get_condition(cd, td, sl): [] for cd, td, sl in product(context_directions,
-                                                                           transfer_directions,
-                                                                           shuffled_labels_levels)}
+train_condition2curve = {get_train_condition(cd, pi, sl): [] for cd, pi, sl in product(context_directions,
+                                                                                       range(num_parts),
+                                                                                       shuffled_labels_levels)}
 
-# evaluate classifiers
+test_condition2curve = {get_test_condition(cd, td, sl): [] for cd, td, sl in product(context_directions,
+                                                                                     transfer_directions,
+                                                                                     shuffled_labels_levels)}
+
+# evaluate classifiers on in-sample data
+for fit in fits:
+
+    acc = eval_clf(fit.clf,
+                   fit.x,
+                   fit.y
+                   )
+
+    # collect accuracy in one of 8 curves
+    condition = get_train_condition(fit.context_dir, fit.part_id, fit.shuffled_labels)
+    train_condition2curve[condition].append(acc)
+
+
+# evaluate classifiers on out-of-sample data
 for fit in fits:
 
     part_id = {0: 1, 1: 0}[fit.part_id]  # use opposite partition during evaluation
 
     context2f: Counter = cd2context2f[fit.context_dir]
-    contexts_shared = [c for c, f in context2f.most_common(fit.min_num_c)]
+    contexts_shared = [c for c, f in context2f.most_common(fit.num_contexts)]
 
     acc = eval_clf(fit.clf,
                    *make_x_y(df, contexts_shared, fit.context_dir, part_id)
                    )
 
-    # collect accuracy in on of 4 curves
+    # collect accuracy in one of 8 curves
     transfer_dir = 'f' if part_id == 1 else 'b'
-    condition = get_condition(fit.context_dir, transfer_dir, fit.shuffled_labels)
-    condition2curve[condition].append(acc)
+    condition = get_test_condition(fit.context_dir, transfer_dir, fit.shuffled_labels)
+    test_condition2curve[condition].append(acc)
 
+# note: top-left has context_dir=left and in-sample accuracy
+# note: top-right has context_dir=right and in-sample accuracy
+# note: bottom-left has context_dir=left and out-of-sample accuracy
+# note: bottom-right has context_dir=right and out-of-sample accuracy
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8, 4), dpi=configs.Figs.dpi)
 
-# fig
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 4), dpi=configs.Figs.dpi)
-plt.title('')
-for ax, context_dir in zip(axes, context_directions):
-    ax.set_xlabel('Number of Context Words', fontsize=configs.Figs.axlabel_fs)
-    ax.set_ylabel('Out-of-Sample Classification Accuracy', fontsize=configs.Figs.axlabel_fs)
+# plot in-sample accuracy in top row of figure
+for ax, context_dir in zip(axes[0], context_directions):
+    if context_dir == context_directions[0]:
+        ax.set_ylabel('In-Sample\nClassification Accuracy',
+                      fontsize=10)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.tick_params(axis='both', which='both', top=False, right=False)
     ax.yaxis.grid(True)
     ax.set_title(f'context direction = {context_dir}')
+    ax.set_ylim([0, 1.0])
+    for part_id in range(num_parts):
+        for shuffled_labels in shuffled_labels_levels:
+            condition = get_train_condition(context_dir, part_id, shuffled_labels)
+            curve = train_condition2curve[condition]
+            ax.plot(num_contexts_levels,
+                    curve,
+                    color=f'C{part_id}',
+                    linestyle='--' if shuffled_labels else '-',
+                    label=condition,
+                    )
+# plot out-of-sample accuracy in bottom row of figure
+for ax, context_dir in zip(axes[1], context_directions):
+    ax.set_xlabel('Number of Context Words',
+                  fontsize=10)
+    if context_dir == context_directions[0]:
+        ax.set_ylabel('Out-of-Sample\nClassification Accuracy',
+                      fontsize=10)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.tick_params(axis='both', which='both', top=False, right=False)
+    ax.yaxis.grid(True)
     ax.set_ylim([0, 0.4])
-    # plot
     for transfer_dir in transfer_directions:
         for shuffled_labels in shuffled_labels_levels:
-            condition = get_condition(context_dir, transfer_dir, shuffled_labels)
-            curve = condition2curve[condition]
-            ax.plot(min_num_contexts,
+            condition = get_test_condition(context_dir, transfer_dir, shuffled_labels)
+            curve = test_condition2curve[condition]
+            ax.plot(num_contexts_levels,
                     curve,
                     color=f'C{transfer_directions.index(transfer_dir)}',
-                    linestyle=':' if shuffled_labels else '-',
+                    linestyle='--' if shuffled_labels else '-',
                     label=condition,
                     )
 
+# plt.legend(fontsize=10,
+#            frameon=False,
+#            # loc='lower center',
+#            # ncol=2,
+#            )
 
-plt.legend(bbox_to_anchor=(0.0, 1.0),
-           borderaxespad=1.0,
-           fontsize=8,
-           frameon=False,
-           loc='lower center',
-           ncol=2,
-           )
+
 plt.show()
