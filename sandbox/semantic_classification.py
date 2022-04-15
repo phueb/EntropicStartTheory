@@ -31,7 +31,7 @@ RANDOM_LABELS = False
 NUM_PARTITIONS = 2
 BPE_VOCAB_SIZE = 8_000  # this number includes 256 reserved latin and non-latin characters
 N_COMPONENTS = 27  # should be number of categories - 1
-MIN_CONTEXT_FREQ = 200  # 300 < 250 < 200 > 150> 40 > 35 > 30 > 25 > 20 > 10 for generalization
+MIN_CONTEXT_FREQ = 100  # 200 < 150 < 100 > 70 > 40 > 35 > 30 > 25 > 20 > 10 for generalization
 STRUCTURE_NAME = 'sem-all'
 
 VERBOSE = False
@@ -59,11 +59,17 @@ def train_and_eval(df_: pd.DataFrame,
 
     # get only features that are shared
     df_x = df_x[contexts_shared_]
-    # print(df_x)
+    # print(df_x.columns)
+    # print(contexts_shared_)
+    assert df_x.columns.values.tolist() == contexts_shared_
+    assert len(df_x.columns.values.tolist()) == len(contexts_shared_)
 
     # convert data to numeric
-    X_ = df_x.values.astype(np.int64)
+    X_ = df_x.values
     y_ = np.array([cat2id[probe2cat[p]] for p in df_x.index])
+
+    # scale
+    X_ = (X_ + 1) / (X_.sum(1)[:, np.newaxis] + 1)
 
     # train classifier
     if clf_ is None:
@@ -92,6 +98,16 @@ def train_and_eval(df_: pd.DataFrame,
                                   reverse=True):
         if VERBOSE:
             print(f'{cat:<12} auc={auc(fpr, tpr)}')
+
+    # print most diagnostic contexts for each category
+    for cat, coefficient_in_class in zip(cat2id, clf_.coef_):
+        assert len(contexts_shared_) == len(coefficient_in_class), (len(contexts_shared_), len(coefficient_in_class))
+        max_context_ids = np.argsort(coefficient_in_class)[-10:]
+        max_contexts = [contexts_shared_[i] for i in max_context_ids]
+        if VERBOSE:
+            print(cat)
+            print(' '.join([f'{c:<12}' for c in max_contexts]))
+            print(' '.join([f'{coefficient_in_class[i]:<12.2f}' for i in max_context_ids]))
 
     return clf_  # for testing on another partition
 
@@ -187,8 +203,8 @@ for part_id in range(NUM_PARTITIONS):
 dir2contexts_shared['l'] = [c for c in dir2contexts_shared['l'] if counter_l[c] > MIN_CONTEXT_FREQ]
 dir2contexts_shared['r'] = [c for c in dir2contexts_shared['r'] if counter_r[c] > MIN_CONTEXT_FREQ]
 
-for direction, contexts_shared in dir2contexts_shared.items():
-    print(f'direction={direction} num contexts={len(contexts_shared)}')
+for direction, c_shared in dir2contexts_shared.items():
+    print(f'direction={direction} num contexts={len(c_shared)}')
 
 # collect data, train, and evaluate on train data
 part_id2classifiers = {part_id: [] for part_id in range(NUM_PARTITIONS)}
