@@ -14,12 +14,16 @@ This is only true when contexts must not be shared across the 2 partitions.
 When context sharing is enforced, it takes more than 900 contexts just to get above 90%
 
 """
+from dataclasses import dataclass
 from typing import List, Optional
+from itertools import product
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import defaultdict, Counter
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import roc_curve, auc
+from pyitlib import discrete_random_variable as drv
 
 from aochildes.dataset import AOChildesDataSet
 
@@ -27,65 +31,82 @@ from entropicstarttheory import configs
 from entropicstarttheory.io import load_probe2cat
 from entropicstarttheory.bpe import train_bpe_tokenizer
 
-RANDOM_LABELS = False
-NUM_PARTITIONS = 2
 BPE_VOCAB_SIZE = 8_000  # this number includes 256 reserved latin and non-latin characters
 N_COMPONENTS = 27  # should be number of categories - 1
-MIN_CONTEXT_FREQ = 100  # 200 < 150 < 100 > 70 > 40 > 35 > 30 > 25 > 20 > 10 for generalization
+NUM_X = 20  # the more, the smoother the lines in the figure
 STRUCTURE_NAME = 'sem-all'
 
-VERBOSE = False
+VERBOSE_COEF = False
+VERBOSE_AUC = False
+VERBOSE_MUTUAL_INFO = False
 
 if BPE_VOCAB_SIZE < 256:
     raise AttributeError('BPE_VOCAB_SIZE must be greater than 256.')
 
-if MIN_CONTEXT_FREQ > BPE_VOCAB_SIZE:
-    raise AttributeError('NUM_MOST_FREQUENT_CONTEXTS must be greater than BPE_VOCAB_SIZE.')
-
 np.set_printoptions(suppress=True)
 
+num_parts = 2
+min_num_contexts = [int(i) for i in np.linspace(10, 500, NUM_X)]  # approx 100-200
 
-def train_and_eval(df_: pd.DataFrame,
-                   direction_: str,
-                   contexts_shared_: List[str],
-                   clf_: Optional = None,  # trained classifier
-                   ):
+
+def train_clf(x_: np.array,
+              y_: np.array,
+              shuffled_labels_: bool,
+              ):
+
+    clf_ = LinearDiscriminantAnalysis(n_components=N_COMPONENTS)
+    if shuffled_labels_:
+        clf_.fit(x_, np.random.permutation(y_))
+    else:
+        clf_.fit(x_, y_)
+
+    return clf_  # for testing on another partition
+
+
+def make_x_y(df_: pd.DataFrame,
+             contexts_shared_: List[str],
+             direction_: str,
+             part_id_: int,
+             ):
+
+    # get only features in a given partition
+    df_part = df_[df_['part_id'] == part_id_]
 
     # transform data so that columns are contexts, rows are probes, and values are frequencies
-    dummies = pd.get_dummies(df_[direction_])
-    dummies['probe'] = df_['probe']
+    dummies = pd.get_dummies(df_part[direction_])
+    dummies['probe'] = df_part['probe']
     dummies.set_index('probe', inplace=True)
     df_x = dummies.groupby('probe').sum()
 
     # get only features that are shared
+    print(len(contexts_shared_))
+    print(len(df_x.columns))
     df_x = df_x[contexts_shared_]
-    # print(df_x.columns)
-    # print(contexts_shared_)
+
     assert df_x.columns.values.tolist() == contexts_shared_
     assert len(df_x.columns.values.tolist()) == len(contexts_shared_)
 
     # convert data to numeric
-    X_ = df_x.values
+    x_ = df_x.values
     y_ = np.array([cat2id[probe2cat[p]] for p in df_x.index])
 
-    # scale
-    X_ = (X_ + 1) / (X_.sum(1)[:, np.newaxis] + 1)
+    # scale (so that features are the proportion of times a probe occurs with a given context)
+    x_ = (x_ + 1) / (x_.sum(1)[:, np.newaxis] + 1)
 
-    # train classifier
-    if clf_ is None:
-        print('Fitting classifier...')
-        clf_ = LinearDiscriminantAnalysis(n_components=N_COMPONENTS)
-        if RANDOM_LABELS:
-            clf_.fit(X_, np.random.permutation(y_))
-        else:
-            clf_.fit(X_, y_)
+    return x_, y_
+
+
+def eval_clf(clf_: LinearDiscriminantAnalysis,
+             x_: np.array,
+             y_: np.array,
+             ) -> float:
 
     # eval on the same data
-    acc = clf_.score(X_, y_)
-    print(f'direction={direction_:<12} accuracy ={acc:.4f}')
+    acc = clf_.score(x_, y_)
+    print(f'accuracy ={acc:.4f}')
 
     # get tpr and fpr for each category
-    prob_mat = clf_.predict_proba(X_)
+    prob_mat = clf_.predict_proba(x_)
     cat2roc = {}
     for cat in cat2id:
         fpr, tpr, thresholds = roc_curve(np.where(y_ == cat2id[cat], 1, 0),
@@ -96,21 +117,17 @@ def train_and_eval(df_: pd.DataFrame,
     for cat, (fpr, tpr) in sorted(cat2roc.items(),
                                   key=lambda i: auc(*i[1]),
                                   reverse=True):
-        if VERBOSE:
+        if VERBOSE_AUC:
             print(f'{cat:<12} auc={auc(fpr, tpr)}')
 
-    # print most diagnostic contexts for each category
-    for cat, coefficient_in_class in zip(cat2id, clf_.coef_):
-        assert len(contexts_shared_) == len(coefficient_in_class), (len(contexts_shared_), len(coefficient_in_class))
-        max_context_ids = np.argsort(coefficient_in_class)[-10:]
-        max_contexts = [contexts_shared_[i] for i in max_context_ids]
-        if VERBOSE:
-            print(cat)
-            print(' '.join([f'{c:<12}' for c in max_contexts]))
-            print(' '.join([f'{coefficient_in_class[i]:<12.2f}' for i in max_context_ids]))
+    return acc
 
-    return clf_  # for testing on another partition
 
+# ############################################################## conditions
+
+context_directions = ['l', 'r']
+shuffled_labels_levels = [True, False]
+transfer_directions = ['f', 'b']  # forward, and backward transfer
 
 # ############################################################## start tokenization
 
@@ -168,19 +185,19 @@ replaced_probes_it = iter(replaced_probes)
 tokens = [token if token != special_token else next(replaced_probes_it) for token in tokens]
 assert len(list(replaced_probes_it)) == 0
 
-# ############################################################## end tokenization
+# ############################################################## get partitions and contexts
 
 # make partitions
 part_id2tokens = {}
-for part_id in range(NUM_PARTITIONS):
-    partition_size = len(tokens) // NUM_PARTITIONS
+for part_id in range(num_parts):
+    partition_size = len(tokens) // num_parts
     start = part_id * partition_size
     part_id2tokens[part_id] = tokens[start:start + partition_size]
 
 # get all contexts
 part_id2contexts_l = defaultdict(list)
 part_id2contexts_r = defaultdict(list)
-for part_id in range(NUM_PARTITIONS):
+for part_id in range(num_parts):
     part = part_id2tokens[part_id]
     for n, token in enumerate(part):
         if token in probe2cat:
@@ -188,70 +205,164 @@ for part_id in range(NUM_PARTITIONS):
             part_id2contexts_r[part_id].append(part[n + 1])
 
 # get shared contexts
-dir2contexts_shared = {'l': set(part_id2contexts_l[0]),
-                       'r': set(part_id2contexts_r[0])}
-for part_id in range(NUM_PARTITIONS):
-    dir2contexts_shared['l'].intersection_update(part_id2contexts_l[part_id])
-    dir2contexts_shared['r'].intersection_update(part_id2contexts_r[part_id])
+cd2contexts_shared = {'l': set(part_id2contexts_l[0]),
+                      'r': set(part_id2contexts_r[0])}
+for part_id in range(num_parts):
+    cd2contexts_shared['l'].intersection_update(part_id2contexts_l[part_id])
+    cd2contexts_shared['r'].intersection_update(part_id2contexts_r[part_id])
 
-# only use most frequent shared contexts
-counter_l = Counter()
-counter_r = Counter()
-for part_id in range(NUM_PARTITIONS):
-    counter_l.update(part_id2contexts_l[part_id])
-    counter_r.update(part_id2contexts_r[part_id])
-dir2contexts_shared['l'] = [c for c in dir2contexts_shared['l'] if counter_l[c] > MIN_CONTEXT_FREQ]
-dir2contexts_shared['r'] = [c for c in dir2contexts_shared['r'] if counter_r[c] > MIN_CONTEXT_FREQ]
+# count (only shared) contexts so that they can be excluded by frequency
+cd2context2f = {cd: Counter() for cd in context_directions}
+for part_id in range(num_parts):
+    cd2context2f['l'].update([c for c in part_id2contexts_l[part_id] if c in cd2contexts_shared['l']])
+    cd2context2f['r'].update([c for c in part_id2contexts_r[part_id] if c in cd2contexts_shared['r']])
 
-for direction, c_shared in dir2contexts_shared.items():
-    print(f'direction={direction} num contexts={len(c_shared)}')
+for context_dir, c_shared in cd2contexts_shared.items():
+    print(f'direction={context_dir} num contexts={len(c_shared)}')
 
-# collect data, train, and evaluate on train data
-part_id2classifiers = {part_id: [] for part_id in range(NUM_PARTITIONS)}
-part_id2df = {}
-directions = ['l', 'r']
-for part_id in range(NUM_PARTITIONS):
+# ############################################################# collect all data
 
-    # collect data
-    name2col = {'probe': [],
-                'l': [],
-                'r': [],
-                'cat': [],
-                }
-    part = part_id2tokens[part_id]
+# collect all data
+name2col = {'probe': [],
+            'l': [],
+            'r': [],
+            'cat': [],
+            'part_id': []
+            }
+for part_id, part in part_id2tokens.items():
     for n, token in enumerate(part):
         if token in probe2cat:
             name2col['probe'].append(token)
             name2col['l'].append(part[n - 1])
             name2col['r'].append(part[n + 1])
             name2col['cat'].append(probe2cat[token])
-    df = pd.DataFrame(data=name2col)
+            name2col['part_id'].append(part_id)
+df = pd.DataFrame(data=name2col)
 
-    # train and evaluate
-    for direction in directions:
-        clf = train_and_eval(df,
-                             direction,
-                             contexts_shared_=list(sorted(dir2contexts_shared[direction])),
-                             )
-        part_id2classifiers[part_id].append(clf)
-
-    print()
-
-    part_id2df[part_id] = df
+# ############################################################## use mutual info to estimate redundancy
 
 
-# evaluate classifier trained on partition 1 but with data from partition 2
-for direction in directions:
-    train_and_eval(part_id2df[1],
-                   direction,
-                   contexts_shared_=list(sorted(dir2contexts_shared[direction])),
-                   clf_=part_id2classifiers[0][directions.index(direction)],
+# approximate the redundancy between left and right contexts and semantic category membership.
+# note: an upper bound on redundancy is the minimum mutual information, min(mi(l,c), mi(r,c))
+# Nils Bertschinger, Johannes Rauh, Eckehard Olbrich, and Jürgen Jost (2013).
+# Shared information—new insights and problems in decomposing information in complex systems.
+for part_id in range(num_parts):
+
+    df_part = df[df['part_id'] == part_id]
+
+    if VERBOSE_MUTUAL_INFO:
+        token2id = {token: n for n, token in enumerate(tokens)}
+        l_obs = [token2id[token] for token in df_part['l']]
+        r_obs = [token2id[token] for token in df_part['r']]
+        c_obs = [cat2id[cat] for cat in df_part['cat']]
+        nmi_lc = drv.information_mutual_normalised(l_obs, c_obs)
+        nmi_rc = drv.information_mutual_normalised(r_obs, c_obs)
+        print(f'part_id={part_id} nmi(l,c)               ={nmi_lc:.4f}')
+        print(f'part_id={part_id} nmi(r,c)               ={nmi_rc:.4f}')
+
+# ############################################################## train classifier on all conditions
+
+
+@dataclass
+class Fit:
+    df: pd.DataFrame
+    clf: LinearDiscriminantAnalysis
+    context_dir: str
+    min_num_c: int
+    part_id: int
+    shuffled_labels: bool
+
+
+fits = []
+
+# collect data and train
+for context_dir in context_directions:
+
+    for part_id in range(num_parts):
+
+        for min_num_c in min_num_contexts:
+
+            context2f: Counter = cd2context2f[context_dir]
+            contexts_shared = [c for c, f in context2f.most_common(min_num_c)]
+
+            for shuffled_labels in shuffled_labels_levels:
+
+                # train
+                clf = train_clf(*make_x_y(df, contexts_shared, context_dir, part_id),
+                                shuffled_labels)
+
+                # collect classifier, data, and information about condition
+                fits.append(Fit(df=df,
+                                clf=clf,
+                                context_dir=context_dir,
+                                min_num_c=min_num_c,
+                                part_id=part_id,
+                                shuffled_labels=shuffled_labels,
+                                ))
+
+# ############################################################## evaluate classifiers
+
+
+def get_condition(cd: str,
+                  td: str,
+                  sl: bool
+                  ) -> str:
+    """ there are 4 conditions, one for each curve that is plotted. the design is 2x2x1"""
+    return '-'.join([cd, td, 'shuffled' if sl else ''])
+
+
+condition2curve = {get_condition(cd, td, sl): [] for cd, td, sl in product(context_directions,
+                                                                           transfer_directions,
+                                                                           shuffled_labels_levels)}
+
+# evaluate classifiers
+for fit in fits:
+
+    part_id = {0: 1, 1: 0}[fit.part_id]  # use opposite partition during evaluation
+
+    context2f: Counter = cd2context2f[fit.context_dir]
+    contexts_shared = [c for c, f in context2f.most_common(fit.min_num_c)]
+
+    acc = eval_clf(fit.clf,
+                   *make_x_y(df, contexts_shared, fit.context_dir, part_id)
                    )
 
-# evaluate classifier trained on partition 2 but with data from partition 1
-for direction in directions:
-    train_and_eval(part_id2df[0],
-                   direction,
-                   contexts_shared_=list(sorted(dir2contexts_shared[direction])),
-                   clf_=part_id2classifiers[1][directions.index(direction)],
-                   )
+    # collect accuracy in on of 4 curves
+    transfer_dir = 'f' if part_id == 1 else 'b'
+    condition = get_condition(fit.context_dir, transfer_dir, fit.shuffled_labels)
+    condition2curve[condition].append(acc)
+
+
+# fig
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 4), dpi=configs.Figs.dpi)
+plt.title('')
+for ax, context_dir in zip(axes, context_directions):
+    ax.set_xlabel('Number of Context Words', fontsize=configs.Figs.axlabel_fs)
+    ax.set_ylabel('Out-of-Sample Classification Accuracy', fontsize=configs.Figs.axlabel_fs)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.tick_params(axis='both', which='both', top=False, right=False)
+    ax.yaxis.grid(True)
+    ax.set_title(f'context direction = {context_dir}')
+    ax.set_ylim([0, 0.4])
+    # plot
+    for transfer_dir in transfer_directions:
+        for shuffled_labels in shuffled_labels_levels:
+            condition = get_condition(context_dir, transfer_dir, shuffled_labels)
+            curve = condition2curve[condition]
+            ax.plot(min_num_contexts,
+                    curve,
+                    color=f'C{transfer_directions.index(transfer_dir)}',
+                    linestyle=':' if shuffled_labels else '-',
+                    label=condition,
+                    )
+
+
+plt.legend(bbox_to_anchor=(0.0, 1.0),
+           borderaxespad=1.0,
+           fontsize=8,
+           frameon=False,
+           loc='lower center',
+           ncol=2,
+           )
+plt.show()

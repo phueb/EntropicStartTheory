@@ -11,11 +11,11 @@ from typing import Tuple, Union, Dict, Any
 # specify params to submit here
 param2requests = {
     # 'reverse': [False, True],
-    'shuffle_transcripts': [True],
-    'num_parts': [1, 8],
+    'shuffle_transcripts': [True, False],
+    # 'num_parts': [1, 8],
 
     # 'reverse_tokens': [True, False],
-    'flavor': ['srn'],
+    'flavor': ['lstm'],
 
     # paper 2 exp1a
     # 'corpus': [
