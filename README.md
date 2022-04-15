@@ -9,7 +9,7 @@ The research paper associated with this repository can be found [here](https://o
 ## Training Data
 
 The training input consists of transcribed child-directed speech from the CHILDES database.
-The text used to train the RNN is loaded, in memory, using the custom-builtPython package [AOCHILDES](https://github.com/UIUCLearningLanguageLab/AOCHILDES).
+The text used to train the RNN is loaded, in memory, using the custom-built Python package [AOCHILDES](https://github.com/UIUCLearningLanguageLab/AOCHILDES).
 After the minimally processed raw text is loaded, ordered by the age of the target child,
 a ByteLevel BPE tokenizer (introduced with GPT-2) is used to build the training vocabulary and for tokenization.
 
