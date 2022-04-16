@@ -13,6 +13,11 @@ It takes about 600 of the most frequent contexts to get above 95% accuracy and a
 This is only true when contexts must not be shared across the 2 partitions.
 When context sharing is enforced, it takes more than 900 contexts just to get above 90%
 
+The out-of-sample accuracy of classifying right contexts might best be understood as
+the quality of the supervisory signal for the RNN.
+ie. how diagnostic are the distributions that best define each category?
+there are 28 distributions, one for each category. they are learned by LDA
+
 """
 from dataclasses import dataclass
 from typing import List, Optional
@@ -33,7 +38,7 @@ from entropicstarttheory.bpe import train_bpe_tokenizer
 
 BPE_VOCAB_SIZE = 8_000  # this number includes 256 reserved latin and non-latin characters
 N_COMPONENTS = 27  # should be number of categories - 1
-NUM_X = 5  # the more, the smoother the lines in the figure
+NUM_X = 50  # the more, the smoother the lines in the figure
 STRUCTURE_NAME = 'sem-all'
 
 VERBOSE_COEF = False
