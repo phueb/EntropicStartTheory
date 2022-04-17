@@ -21,7 +21,7 @@ there are 28 distributions, one for each category. they are learned by LDA
 """
 import random
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List
 from itertools import product
 import pandas as pd
 import numpy as np
@@ -41,9 +41,9 @@ NUM_REPS = 10
 SHUFFLE_SENTENCES = True
 BPE_VOCAB_SIZE = 8_000  # this number includes 256 reserved latin and non-latin characters
 N_COMPONENTS = 27  # should be number of categories - 1
-NUM_X = 10  # the more, the smoother the lines in the figure
+NUM_X = 20  # the more, the smoother the lines in the figure
 STRUCTURE_NAME = 'sem-all'
-INCLUDE_SHUFFLED_LABELS_CONDITION = False
+INCLUDE_SHUFFLED_LABELS_CONDITION = True
 
 VERBOSE_COEF = False
 VERBOSE_AUC = False
@@ -79,23 +79,22 @@ def save_to_text(fn: str,
 
 def train_clf(x_: np.array,
               y_: np.array,
-              shuffled_labels_: bool,
               ):
 
     clf_ = LinearDiscriminantAnalysis(n_components=N_COMPONENTS)
-    if shuffled_labels_:
-        clf_.fit(x_, np.random.permutation(y_))
-    else:
-        clf_.fit(x_, y_)
+    clf_.fit(x_, y_)
 
     return clf_  # for testing on another partition
 
 
 def make_x_y(df_x_train_: pd.DataFrame,
              contexts_shared_: List[str],
+             shuffled_labels_: bool,
+             rep_: int,
              ):
 
-    # scale before feature selection so that values are the same no matter what features are selected
+    # scale before feature selection so that values are the same no matter what features are selected.
+    # note: this was observed not to make much of a difference in accuracy
     # df_x = (df_x.T / df_x.T.sum()).T
 
     # get only features that are shared
@@ -107,6 +106,12 @@ def make_x_y(df_x_train_: pd.DataFrame,
     # convert data to numeric
     x_ = df_x_train_.values
     y_ = np.array([cat2id[probe2cat[p]] for p in df_x_train_.index])
+
+    # shuffle labels
+    # note: make sure that the same shuffled labels are used during training AND evaluation by setting random seed
+    if shuffled_labels_:
+        np.random.seed(rep_)
+        y_ = np.random.permutation(y_)
 
     # scale (so that features are the proportion of times a probe occurs with a given context)
     x_ = (x_ + 1) / (x_.sum(1)[:, np.newaxis] + 1)
@@ -253,19 +258,28 @@ def get_data():
             print(f'part_id={pi} nmi(l,c)               ={nmi_lc:.4f}')
             print(f'part_id={pi} nmi(r,c)               ={nmi_rc:.4f}')
 
-    # make the objects that are returned
+    # transform data so that columns are contexts, rows are probes, and values are frequencies
     part_id2cd2df_x_ = defaultdict(dict)
-    cd2context2f_ = defaultdict(Counter)
     for pi, df_part in enumerate([df1, df2]):
         for cd in context_directions:
-            # transform data so that columns are contexts, rows are probes, and values are frequencies
             dummies = pd.get_dummies(df_part[cd])
             df_x = dummies.groupby(dummies.index).sum()
             part_id2cd2df_x_[pi][cd] = df_x
 
-            # get contexts shared across partitions and sorted by decreasing frequency
-            t2f = df_x.sum(0).to_dict()
-            cd2context2f_[cd].update(t2f)
+    # get contexts shared across partitions
+    cd2context2f_ = defaultdict(Counter)
+    for cd in context_directions:
+        df_x1 = part_id2cd2df_x_[0][cd]
+        df_x2 = part_id2cd2df_x_[1][cd]
+        contexts1 = set(df_x1.columns)
+        contexts2 = set(df_x2.columns)
+        contexts_shared = set()
+        contexts_shared.update(contexts2)
+        contexts_shared.intersection_update(contexts1)
+        t2f1 = df_x1[contexts_shared].sum(0).to_dict()
+        t2f2 = df_x2[contexts_shared].sum(0).to_dict()
+        cd2context2f_[cd].update(t2f1)
+        cd2context2f_[cd].update(t2f2)
 
     return part_id2cd2df_x_, cd2context2f_
 
@@ -307,8 +321,8 @@ for rep in range(NUM_REPS):
 
             for num_contexts in num_contexts_levels:
 
-                context2f: Counter = cd2context2f[context_dir]
-                contexts_train = [c for c, f in context2f.most_common(num_contexts)]
+                context_shared2f: Counter = cd2context2f[context_dir]
+                contexts_train = [c for c, f in context_shared2f.most_common(num_contexts)]
 
                 for shuffled_labels in shuffled_labels_levels:
 
@@ -316,11 +330,11 @@ for rep in range(NUM_REPS):
                         continue
 
                     # get train and valid data (for later)
-                    x_train, y_train = make_x_y(df_x_train, contexts_train)
-                    x_valid, y_valid = make_x_y(df_x_valid, contexts_train)
+                    x_train, y_train = make_x_y(df_x_train, contexts_train, shuffled_labels, rep)
+                    x_valid, y_valid = make_x_y(df_x_valid, contexts_train, shuffled_labels, rep)
 
                     # train
-                    clf = train_clf(x_train, y_train, shuffled_labels)
+                    clf = train_clf(x_train, y_train)
 
                     # collect classifier, data, and information about condition
                     fits.append(Fit(clf=clf,
