@@ -18,6 +18,9 @@ the quality of the supervisory signal for the RNN.
 ie. how diagnostic are the distributions that best define each category?
 there are 28 distributions, one for each category. they are learned by LDA
 
+The test split includes all of the same probes, but the random partition used to collect frequency was different.
+When holding out probe types instead of a random partition, generalization accuracy is worse.
+
 """
 import random
 from dataclasses import dataclass
@@ -47,7 +50,7 @@ INCLUDE_SHUFFLED_LABELS_CONDITION = True
 
 VERBOSE_COEF = False
 VERBOSE_AUC = False
-VERBOSE_MUTUAL_INFO = False
+VERBOSE_MUTUAL_INFO = True
 
 if BPE_VOCAB_SIZE < 256:
     raise AttributeError('BPE_VOCAB_SIZE must be greater than 256.')
@@ -229,7 +232,7 @@ def get_data():
             name2col['cat'].append(probe2cat[t])
     df = pd.DataFrame(data=name2col)
     df.set_index('probe', inplace=True)
-    print('Collected all co-occurrences')
+    print(f'Number of probe occurrences={len(df)}')
 
     # shuffle or preserve age-order
     if NUM_REPS > 1 and SHUFFLE_SENTENCES:
@@ -265,6 +268,8 @@ def get_data():
             dummies = pd.get_dummies(df_part[cd])
             df_x = dummies.groupby(dummies.index).sum()
             part_id2cd2df_x_[pi][cd] = df_x
+
+            print(f'Number of columns in df={len(df_x.columns):>9,} with direction={cd}')
 
     # get contexts shared across partitions
     cd2context2f_ = defaultdict(Counter)
