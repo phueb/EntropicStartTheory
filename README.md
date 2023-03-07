@@ -1,6 +1,6 @@
 # EntropicStartTheory
 
-Research code. Under active development.
+Research code. No longer maintained (as of 2022)
 
 ## Background
 
