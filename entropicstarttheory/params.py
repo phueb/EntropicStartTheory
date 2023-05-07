@@ -1,21 +1,50 @@
 """
-notes:
+Explanation of hyper-parameters.
 
-age-order effect for AO-Newsela with dedicated semantic structure (created in August 2021)
-is most prominent with vocab size = 6K and 8K and disappears at 16K.
-the effect also disappears with num_parts=4, and num_parts=16, and num_iterations=(32,4), and num_iterations=(20, 20)
+CORPUS:
+
+reverse: `True` reverses the order of the corpus.
+shuffle_transcripts: `True` shuffles the order of AO-CHILDES transcripts (or any other documents part of a larger corpus).
+corpus: `aochildes` will load an age-ordered American-English corpus from the CHILDES database, using the package `aochildes`.
+num_types: `8000` is the number of unique BPE tokens in the model's vocabulary, including any probe words. 
+num_transcripts: `None` will load all available transcripts from the corpus. use a lower number for debugging.
+num_parts: the number of partitions of the corpus, used for corpus re-ordering. performance peaks if set to `1`. the age-order effect occurs for any value between 2 and 256.
+context_size: the number of backprop-through-time steps. set to `7` for optimal performance (i.e balanced accuracy).
+start: unused (legacy) parameter. set to `None`.
+shuffle_at_start: determines whether sentences in the first partition should be shuffled. set to `True` to reduce any unwanted effect due to starting training of each model on the same exact data.
+
+MODEL:
+
+flavor: `srn` or `lstm`
+hidden_size: `512`
+num_layers: `1`
+bias: `True`
+probe_embeddings_info: determines which probes to use for evaluation of balanced accuracy. a 3-element with `param_name`, `structure_name`, and `step`
+
+TRAINING:
+
+sliding: `False` to cycle over corpus partitions during training. otherwise model iterates over the corpus in order, once.
+reverse_tokens: `False`. otherwise, the order of tokens in each sentence is reversed, while preserving the order of corpus partitions.
+reverse: `True` reverses the order of corpus partitions. 
+num_iterations: `(12, 12)` to iterate over each corpus partition 12 times. 12 is optimal given 8 partitions.
+batch_size: `64` to get optimal performance and speed given the default hyper perameters. 
+lr: `0.01`
+optimizer: `adagrad`
 """
+
 from dataclasses import dataclass
 from typing import Tuple, Union, Dict, Any
 
 # specify params to submit here
 param2requests = {
-    # 'reverse': [False, True],
+    
+    # an example of how to specify params. 
+    # note: all possible combinations of the parameter values below will be submitted to Ludwig.
+    'reverse': [False, True],
     'shuffle_transcripts': [True, False],
-    # 'num_parts': [1, 8],
-
-    # 'reverse_tokens': [True, False],
-    'flavor': ['lstm'],
+    'num_parts': [1, 8],
+    'reverse_tokens': [True, False],
+    'flavor': ['srn'],
 
     # paper 2 exp1a
     # 'corpus': [
@@ -100,7 +129,7 @@ param2debug = {
 # default params
 param2default = {
     'shuffle_transcripts': False,
-    'corpus': 'aochildes',  # or aonewsela, or
+    'corpus': 'aochildes',  # or aonewsela
     'num_types': 8000,  # lower than 8K preserves age-order effect but reduces balanced accuracy
     'num_transcripts': None,  # useful for debugging only
     'num_parts': 8,  # the lower the better performance, and age-order effect occurs across num_parts=2-256
@@ -112,7 +141,7 @@ param2default = {
     'hidden_size': 512,
     'num_layers': 1,
     'bias': True,
-    'probe_embeddings_info': (None, None, None),  # pram_name, structure_name, step (of type int)
+    'probe_embeddings_info': (None, None, None),  # param_name, structure_name, step (of type int)
 
     'sliding': False,
     'reverse_tokens': False,
