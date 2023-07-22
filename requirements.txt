@@ -7,7 +7,7 @@ PyYaml
 pandas
 celluloid
 pyprind
-torch==1.6
+torch==1.13.1
 numpy==1.21.0
 tokenizers==0.10.1
 https://github.com/phueb/Ludwig/archive/v4.0.7.tar.gz
