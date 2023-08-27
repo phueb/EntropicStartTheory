@@ -41,7 +41,7 @@ To install  the dependencies, execute the following in your virtual environment:
 pip install -r requirements.txt
 ```
 
-This will install custom-built packages, from Github, see below.
+This will also install the following custom dependencies.
 
 ### AOCHILDES
 
@@ -70,7 +70,9 @@ This is recommended if multiple replications need to be run, or if no access to 
 
 ## Usage
 
-First, obtain access to the lab's file server.
+### For Lab Members
+
+If you are a member of the lab, you should first obtain access to the lab's file server.
 Next, find the locations to the source code folders for the custom dependencies.
 Assuming new packages are installed into a virtual environment at, `venv/lib/pyton3.7/site-packages/`, 
 you can submit jobs with `ludwig`:
@@ -89,6 +91,18 @@ Alternatively, the experiment can be run without access to the lab's file server
 ludwig --isolated
 ```
 
+### For Non Lab Members
+
+The core logic to train and evalute a single model is contained in `entropicstarttheory.jobs.main()`. 
+Notice, however, that this function takes as input a dict that specifies a single set of hyper parameters called `param2val`.
+You can:
+- create this dict yourself (see `entropicstarttheory.params.py`), or
+- use my command line tool `ludwig` to automatically pass this dict to `entropicstarttheory.jobs.main()` based on what is in `entropicstarttheory.params.py`
+
+ For training multiple models or performing hyper parameter tuning, I recommend the latter option. 
+ It allows the researcher to specify all possible combinations of hyper parameters once in `entropicstarttheory.params.py`, 
+ and `ludwig` does the hard work of 1) creating one `param2val` for each combination, 2) creating jobs, and 3) passing a unique `param2val` to each job.
+
 ### Plot results
 
 To plot a summary of the results:
@@ -96,6 +110,8 @@ To plot a summary of the results:
 ```bash
 python3 plot/plot_ba_summary.py
 ```
+
+Note: Results are plotted for all models matching any hyper parameter combination specified in `entropicstarttheory.params.py`.
 
 ## History
 
