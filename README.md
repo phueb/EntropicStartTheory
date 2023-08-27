@@ -103,6 +103,23 @@ You can:
  It allows the researcher to specify all possible combinations of hyper parameters once in `entropicstarttheory.params.py`, 
  and `ludwig` does the hard work of 1) creating one `param2val` for each combination, 2) creating jobs, and 3) passing a unique `param2val` to each job.
 
+ When using `ludwig` to train and evaluate 1 replication of each hyperparmater combination, type into your terminal:
+ 
+ ```bash
+ludwig --isolated
+```
+
+The flag `--isolated` simply means the program will not try to communicate with the lab's file server, and will instead read and write from and to your local machine only.
+
+When done, look for a folder called `runs` in the root directory of your project. All files created during the job should be stored there.
+
+To run 10 replications of each hyper parameter combination, type into your terminal:
+ 
+ ```bash
+ludwig --isolated -r 10
+```
+
+
 ### Plot results
 
 To plot a summary of the results:
